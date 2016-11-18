@@ -23,13 +23,8 @@ SteamTargetRenderer::SteamTargetRenderer()
 
 	getSteamOverlay();
 
-#ifdef NDEBUG
-	if (overlayPtr != NULL)
-		openUserWindow();
-	else
-		exit(1);
-#else
 	openUserWindow();
+#ifndef NDEBUG
 	bDrawDebugEdges = true;
 #endif // NDEBUG
 

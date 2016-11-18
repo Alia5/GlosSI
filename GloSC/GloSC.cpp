@@ -33,7 +33,7 @@ void GloSC::updateEntryList()
 
 	for (auto &dirName : dirNames)
 	{
-		if (dirName != "." && dirName != "..")
+		if (dirName != "." && dirName != ".." && dirName != "platforms")
 			ui.lwInstances->addItem(dirName);
 	}
 
@@ -89,6 +89,18 @@ void GloSC::on_pbSave_clicked()
 	if (!dir.exists())
 		dir.mkdir(".");
 
+#ifdef NDEBUG
+	QString fileNames[] = {
+		"Qt5Core.dll",
+		"Qt5Gui.dll",
+		"Qt5Widgets.dll",
+		"sfml-system-2.dll",
+		"sfml-window-2.dll",
+		"sfml-graphics-2.dll",
+		"ViGEmUM.dll",
+		"SteamTargetUserWindow.exe",
+		"TargetConfig.ini" };
+#else
 	QString fileNames[] = {
 		"Qt5Cored.dll",
 		"Qt5Guid.dll",
@@ -98,12 +110,20 @@ void GloSC::on_pbSave_clicked()
 		"sfml-graphics-d-2.dll",
 		"ViGEmUM.dll",
 		"SteamTargetUserWindow.exe",
-		"TargetConfig.ini"};
+		"TargetConfig.ini"
+};
+#endif
 
 	for (auto &fileName : fileNames)
 	{
 		QFile::copy(fileName, dir.path() + "\\" + fileName);
 	}
+	QDir platformdir(name + "\\platforms");
+	if (!platformdir.exists())
+		platformdir.mkdir(".");
+
+
+	QFile::copy("platforms\\qwindows.dll", dir.path() + "\\" + "platforms\\qwindows.dll");
 	QFile::copy("SteamTarget.exe", dir.path() + "\\" + name + ".exe");
 
 	writeIni(name);
