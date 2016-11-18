@@ -1,0 +1,229 @@
+#include "GloSC.h"
+
+GloSC::GloSC(QWidget *parent)
+	: QMainWindow(parent)
+{
+	ui.setupUi(this);
+
+	updateEntryList();
+
+}
+
+void GloSC::updateEntryList()
+{
+	ui.lwInstances->clear();
+
+	QDir dir(".\\");
+	QStringList dirNames = dir.entryList(QDir::Dirs);
+
+	for (auto &dirName : dirNames)
+	{
+		if (dirName != "." && dirName != "..")
+			ui.lwInstances->addItem(dirName);
+	}
+
+
+}
+
+void GloSC::writeIni(QString entryName)
+{
+	QSettings settings(entryName + "\\TargetConfig.ini", QSettings::IniFormat);
+
+	settings.beginGroup("BaseConf");
+
+	settings.setValue("bShowDebugConsole", 0 + ui.cbDebug->isChecked());
+	settings.setValue("bShowOverlay", 0 + ui.cbOverlay->isChecked());
+	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
+	settings.setValue("bEnableVsync", 0 + ui.cbVsync->isChecked());
+	settings.setValue("iRefreshRate", ui.sbRefresh->value());
+
+	settings.endGroup();
+
+
+	settings.beginGroup("LaunchGame");
+
+	settings.setValue("bLaunchGame", 0 + ui.cbLaunchGame->isChecked());
+	if (ui.cbLaunchGame->isChecked())
+	{
+		settings.setValue("Path", ui.lePath->text());
+		if (ui.lePath->text().contains("\\") || ui.lePath->text().contains("/"))
+		{
+			settings.setValue("Type", "Win32");
+		} else {
+			settings.setValue("Type", "UWP");
+		}
+	}
+
+	settings.endGroup();
+
+}
+
+void GloSC::on_pbSave_clicked()
+{
+	QString name = ui.leName->text();
+	name.remove("\\");
+	name.remove("/");
+	name.remove(":");
+	name.remove(".");
+
+	QString temp = name;
+	if (temp.remove(" ") == "")
+		return;
+
+	QDir dir(name);
+	if (!dir.exists())
+		dir.mkdir(".");
+
+	QString fileNames[] = {
+		"Qt5Cored.dll",
+		"Qt5Guid.dll",
+		"Qt5Widgetsd.dll",
+		"sfml-system-d-2.dll",
+		"sfml-window-d-2.dll",
+		"sfml-graphics-d-2.dll",
+		"ViGEmUM.dll",
+		"SteamTargetUserWindow.exe",
+		"TargetConfig.ini"};
+
+	for (auto &fileName : fileNames)
+	{
+		QFile::copy(fileName, dir.path() + "\\" + fileName);
+	}
+	QFile::copy("SteamTarget.exe", dir.path() + "\\" + name + ".exe");
+
+	writeIni(name);
+
+	updateEntryList();
+
+}
+
+
+void GloSC::on_pbDelete_clicked()
+{
+	QString name = ui.leName->text();
+	name.remove("\\");
+	name.remove("/");
+	name.remove(":");
+	name.remove(".");
+
+	QString temp = name;
+	if (temp.remove(" ") == "")
+		return;
+
+	QDir dir(name);
+	if (dir.exists())
+	{
+		dir.removeRecursively();
+	}
+	updateEntryList();
+}
+
+void GloSC::on_pbAddToSteam_clicked()
+{
+	//TODO
+}
+
+void GloSC::on_pbSearchPath_clicked()
+{
+	QString filePath = QFileDialog::getOpenFileName(this, "Select Game", "", "*.exe");
+	ui.lePath->setText(filePath);
+}
+
+void GloSC::on_pbUWP_clicked()
+{
+	QSettings *settings = new QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat);
+
+	QStringList childs = settings->childGroups();
+	QStringList packages;
+
+	for (auto& child : childs)
+	{
+		if (child.indexOf("AppX") == 0)
+		{
+			packages << child;
+		}
+	}
+
+	delete settings;
+
+
+	QList<UWPPair> pairs;
+
+	QString AppName;
+	QString AppUMId;
+
+	QStringList AppNames;
+	QStringList AppUMIds;
+
+	for (auto &package : packages)
+	{
+		settings = new QSettings("HKEY_CLASSES_ROOT\\"+package, QSettings::NativeFormat);
+
+		AppName = settings->value("Application/ApplicationName").toString();
+		AppUMId = settings->value("Application/AppUserModelID").toString();
+		if (!AppNames.contains(AppName) && !AppUMIds.contains(AppUMId) && AppUMId.size() > 0)
+		{
+
+			AppNames << AppName;
+			AppUMIds << AppUMId;
+
+			if (AppName.size() == 0 || AppName.at(0) == '@')
+				AppName = "Unknown";
+
+			UWPPair uwpPair = {
+				AppName,
+				AppUMId,
+			};
+
+			pairs.push_back(uwpPair);
+
+		}
+		delete settings;
+	}
+
+	uwpPairs = pairs;
+
+
+	UWPSelectDialog dialog(this);
+	dialog.setUWPList(uwpPairs);
+	int selection = dialog.exec();
+
+	if (selection > -1)
+	{
+		ui.lePath->setText(uwpPairs.at(selection).AppUMId);
+	}
+
+}
+
+void GloSC::on_lwInstances_currentRowChanged(int row)
+{
+	if (row < 0)
+		return;
+	QString entryName = ui.lwInstances->item(row)->text();
+	ui.leName->setText(entryName);
+
+	QSettings settings(entryName + "\\TargetConfig.ini", QSettings::IniFormat);
+
+	settings.beginGroup("BaseConf");
+
+	ui.cbDebug->setChecked(settings.value("bShowDebugConsole").toBool());
+	ui.cbOverlay->setChecked(settings.value("bShowOverlay").toBool());
+	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
+	ui.cbVsync->setChecked(settings.value("bEnableVsync").toBool());
+	ui.sbRefresh->setValue(settings.value("iRefreshRate").toInt());
+
+	settings.endGroup();
+
+
+	settings.beginGroup("LaunchGame");
+
+	ui.cbLaunchGame->setChecked(settings.value("bLaunchGame").toBool());
+	if (ui.cbLaunchGame->isChecked())
+	{
+		ui.lePath->setText(settings.value("Path").toString());
+	}
+
+	settings.endGroup();
+
+
+}
