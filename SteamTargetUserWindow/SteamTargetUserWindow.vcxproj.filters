@@ -71,5 +71,14 @@
     <ClInclude Include="GeneratedFiles\ui_SteamTargetUserWindow.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SteamTargetUserWindow.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\GloSC_Icon.ico" />
   </ItemGroup>
 </Project>

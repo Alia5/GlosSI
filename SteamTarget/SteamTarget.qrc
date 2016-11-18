@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="SteamTarget">
+    <qresource prefix="/SteamTarget">
+        <file>Resources/GloSC_Icon.png</file>
     </qresource>
 </RCC>

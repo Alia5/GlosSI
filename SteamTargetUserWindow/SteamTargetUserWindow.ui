@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>GloSC</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="SteamTargetUserWindow.qrc">
+    <normaloff>:/SteamTargetUserWindow/Resources/GloSC_Icon.png</normaloff>:/SteamTargetUserWindow/Resources/GloSC_Icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QCheckBox" name="checkBox_showOverlay">
     <property name="geometry">

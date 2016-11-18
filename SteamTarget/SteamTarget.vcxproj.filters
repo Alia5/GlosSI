@@ -64,4 +64,16 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SteamTarget.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\GloSC_Icon.png" />
+    <Image Include="..\..\..\..\..\Downloads\GloSC_Icon.ico" />
+  </ItemGroup>
 </Project>

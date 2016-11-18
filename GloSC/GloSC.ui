@@ -25,6 +25,10 @@
   <property name="windowTitle">
    <string>GloSC</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="GloSC.qrc">
+    <normaloff>:/GloSC/Resources/GloSC_Icon.png</normaloff>:/GloSC/Resources/GloSC_Icon.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
