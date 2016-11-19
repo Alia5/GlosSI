@@ -35,7 +35,7 @@
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">font: 8pt &quot;MS Shell Dlg 2&quot;;</string>
+    <string notr="true">font: 8pt &quot;Lucida Console&quot;;</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pushButton">

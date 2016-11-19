@@ -36,7 +36,7 @@ void UWPSelectDialog::setUWPList(QList<UWPPair> uwpPairs)
 	for (auto uwp : uwpPairs)
 	{
 		QString space = " ";
-		for (int i = 0; i < 60 - uwp.AppName.size(); i++)
+		for (int i = 0; i < 40 - uwp.AppName.size(); i++)
 		{
 			space += " ";
 		}
