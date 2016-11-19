@@ -21,7 +21,7 @@ SteamTargetRenderer::SteamTargetRenderer()
 {
 	getSteamOverlay();
 
-	openUserWindow();
+	//openUserWindow();
 #ifndef NDEBUG
 	bDrawDebugEdges = true;
 #endif // NDEBUG
@@ -34,17 +34,13 @@ SteamTargetRenderer::SteamTargetRenderer()
 		if (childkey == "bDrawDebugEdges")
 		{
 			bDrawDebugEdges = settings.value(childkey).toBool();
-		} else if (childkey == "bShowDebugConsole") {
-			bShowDebugConsole = settings.value(childkey).toBool();
+		//} else if (childkey == "bShowDebugConsole") {
+		//	bShowDebugConsole = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableOverlay") {
 			bDrawOverlay = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableControllers") {
 			bEnableControllers = settings.value(childkey).toBool();
-		} /*else if (childkey == "bEnableVsync") {
-			bVsync = settings.value(childkey).toBool();
-		} else if (childkey == "iRefreshRate") {
-			iRefreshRate = settings.value(childkey).toInt();
-		}*/
+		}
 	}
 	settings.endGroup();
 
@@ -62,12 +58,12 @@ SteamTargetRenderer::SteamTargetRenderer()
 	sfWindow.setActive(false);
 	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings - Also useful for debugging
 
-	LONG_PTR style = GetWindowLongPtr(consoleHwnd, GWL_STYLE); 
-	SetWindowLongPtr(consoleHwnd, GWL_STYLE, style & ~WS_SYSMENU);
+	//LONG_PTR style = GetWindowLongPtr(consoleHwnd, GWL_STYLE); 
+	//SetWindowLongPtr(consoleHwnd, GWL_STYLE, style & ~WS_SYSMENU);
 
-	if(!bShowDebugConsole) {
+	/*if(!bShowDebugConsole) {
 		ShowWindow(consoleHwnd, SW_HIDE); //Hide the console window; it just confuses the user;
-	}
+	}*/
 	if (bEnableControllers)
 		controllerThread.run();
 
@@ -81,12 +77,15 @@ SteamTargetRenderer::~SteamTargetRenderer()
 	renderThread.join();
 	if (controllerThread.isRunning())
 		controllerThread.stop();
-	qpUserWindow->kill();
-	delete qpUserWindow;
+	//qpUserWindow->kill();
+	//delete qpUserWindow;
 }
 
 void SteamTargetRenderer::run()
 {
+	/*QTimer::singleShot(500, this, [this]() {
+		focusSwitchNeeded = true;
+	});*/
 	renderThread = std::thread(&SteamTargetRenderer::RunSfWindowLoop, this);
 }
 
@@ -95,21 +94,24 @@ void SteamTargetRenderer::RunSfWindowLoop()
 	if (!bRunLoop)
 		return;
 	sfWindow.setActive(true);
-	DWORD result;
-	bool focusSwitchNeeded = true;
-	sf::Clock reCheckControllerTimer;
 
+	sf::Clock reCheckControllerTimer;
+	bool focusSwitchNeeded = true;
 	if (!bDrawOverlay)
 	{
 		ShowWindow(consoleHwnd, SW_HIDE);
 	}
 
+	if (bDrawOverlay)
+	{
+		SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
+	} else {
+		ShowWindow(consoleHwnd, SW_HIDE);
+	}
+	
+
 	while (sfWindow.isOpen() && bRunLoop)
 	{
-		if (bDrawOverlay)
-		{
-			SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-		}
 
 		sf::Event event;
 		while (sfWindow.pollEvent(event))
@@ -133,7 +135,11 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		{
 			focusSwitchNeeded = false;
 			SetFocus(consoleHwnd);
-			SetForegroundWindow(consoleHwnd);
+			sf::Clock clock;
+			while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+			{
+				Sleep(1);
+			}
 		}
 
 		//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
@@ -149,35 +155,39 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 					hwForeGroundWindow = GetForegroundWindow();
 
-					std::cout << "ForegorundWindow HWND: " << hwForeGroundWindow << std::endl;
+					std::cout << "Saving current ForegorundWindow HWND: " << hwForeGroundWindow << std::endl;
+					std::cout << "Activating OverlayWindow" << std::endl;
 
-					SetFocus(consoleHwnd);
-					SetForegroundWindow(consoleHwnd);
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOOLWINDOW); //make overlay window clickable
 
+					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
-					SetForegroundWindow(sfWindow.getSystemHandle());
 
-					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
-
+					//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
 					SetFocus(consoleHwnd);
-					SetForegroundWindow(consoleHwnd);
+					sf::Clock clock;
+					while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+					{
+						Sleep(1);
+					}
 				}
-			}
-			else {
+			} else {
 				if (bNeedFocusSwitch)
 				{
+					std::cout << "Deactivating OverlayWindow" << std::endl;
 
-					SetFocus(sfWindow.getSystemHandle());
-					SetForegroundWindow(sfWindow.getSystemHandle());
+					//make overlaywindow clickthrough - WS_EX_TRANSPARENT - again
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW);
 
-					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
+					std::cout << "Switching to previously focused window" << std::endl;
 
-					SetFocus(consoleHwnd);
-					SetForegroundWindow(consoleHwnd);
-
+					//switch back the the previosly focused window
 					SetFocus(hwForeGroundWindow);
-					SetForegroundWindow(hwForeGroundWindow);
-
+					sf::Clock clock;
+					while (!SetForegroundWindow(hwForeGroundWindow) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+					{
+						Sleep(1);
+					}
 					bNeedFocusSwitch = false;
 				}
 			}
@@ -208,7 +218,7 @@ void SteamTargetRenderer::makeSfWindowTransparent(sf::RenderWindow & window)
 	margins.cxLeftWidth = -1;
 
 	DwmExtendFrameIntoClientArea(hwnd, &margins);
-	SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 
 	window.clear(sf::Color::Transparent);
 	window.display();
@@ -227,25 +237,25 @@ void SteamTargetRenderer::drawDebugEdges()
 
 }
 
-void SteamTargetRenderer::openUserWindow()
-{
-	qpUserWindow = new QProcess(this);
-	qpUserWindow->start("SteamTargetUserWindow.exe", QStringList(), QProcess::ReadWrite);
-	qpUserWindow->waitForStarted();
-	connect(qpUserWindow, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-		this, &SteamTargetRenderer::userWindowFinished);
-	connect(qpUserWindow, SIGNAL(readyRead()) , this,SLOT(readChildProcess()));
-}
-
-void SteamTargetRenderer::userWindowFinished()
-{
-	delete qpUserWindow;
-	bRunLoop = false;
-	renderThread.join();
-	if (controllerThread.isRunning())
-		controllerThread.stop();
-	exit(0);
-}
+//void SteamTargetRenderer::openUserWindow()
+//{
+//	qpUserWindow = new QProcess(this);
+//	qpUserWindow->start("SteamTargetUserWindow.exe", QStringList(), QProcess::ReadWrite);
+//	qpUserWindow->waitForStarted();
+//	connect(qpUserWindow, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+//		this, &SteamTargetRenderer::userWindowFinished);
+//	connect(qpUserWindow, SIGNAL(readyRead()) , this,SLOT(readChildProcess()));
+//}
+//
+//void SteamTargetRenderer::userWindowFinished()
+//{
+//	delete qpUserWindow;
+//	bRunLoop = false;
+//	renderThread.join();
+//	if (controllerThread.isRunning())
+//		controllerThread.stop();
+//	exit(0);
+//}
 
 void SteamTargetRenderer::launchApp()
 {
@@ -301,59 +311,59 @@ void SteamTargetRenderer::launchApp()
 	}
 }
 
-void SteamTargetRenderer::readChildProcess()
-{
-	QString message(qpUserWindow->readLine());
-	if (message.contains("ResetControllers"))
-	{
-		if (controllerThread.isRunning())
-		{
-			controllerThread.stop();
-			controllerThread.run();
-		}
-	} else if (message.contains("ShowConsole")) {
-		message.chop(1);
-		message.remove("ShowConsole ");
-		int showConsole = message.toInt();
-		if (showConsole > 0)
-		{
-			bShowDebugConsole = true;
-			ShowWindow(consoleHwnd, SW_SHOW);
-			SetFocus(consoleHwnd);
-			SetForegroundWindow(consoleHwnd);
-		} else {
-			bShowDebugConsole = false;
-			ShowWindow(consoleHwnd, SW_HIDE);
-			SetFocus(consoleHwnd);
-			SetForegroundWindow(consoleHwnd);
-		}
-	} else if (message.contains("ShowOverlay")) {
-		message.chop(1);
-		message.remove("ShowOverlay ");
-		int showOverlay = message.toInt();
-		if (showOverlay > 0)
-		{
-			ShowWindow(sfWindow.getSystemHandle(), SW_SHOW);
-			SetFocus(consoleHwnd);
-			SetForegroundWindow(consoleHwnd);
-		} else {
-			ShowWindow(sfWindow.getSystemHandle(), SW_HIDE);
-			SetFocus(consoleHwnd);
-			SetForegroundWindow(consoleHwnd);
-		}
-	} else if (message.contains("EnableControllers")) {
-		message.chop(1);
-		message.remove("EnableControllers ");
-		int enableControllers = message.toInt();
-		if (enableControllers > 0)
-		{
-			bEnableControllers = true;
-			if (!controllerThread.isRunning())
-				controllerThread.run();
-		} else {
-			bEnableControllers = false;
-			if (controllerThread.isRunning())
-				controllerThread.stop();
-		}
-	}
-}
+//void SteamTargetRenderer::readChildProcess()
+//{
+//	QString message(qpUserWindow->readLine());
+//	if (message.contains("ResetControllers"))
+//	{
+//		if (controllerThread.isRunning())
+//		{
+//			controllerThread.stop();
+//			controllerThread.run();
+//		}
+//	} else if (message.contains("ShowConsole")) {
+//		message.chop(1);
+//		message.remove("ShowConsole ");
+//		int showConsole = message.toInt();
+//		if (showConsole > 0)
+//		{
+//			bShowDebugConsole = true;
+//			ShowWindow(consoleHwnd, SW_SHOW);
+//			SetFocus(consoleHwnd);
+//			SetForegroundWindow(consoleHwnd);
+//		} else {
+//			bShowDebugConsole = false;
+//			ShowWindow(consoleHwnd, SW_HIDE);
+//			SetFocus(consoleHwnd);
+//			SetForegroundWindow(consoleHwnd);
+//		}
+//	} else if (message.contains("ShowOverlay")) {
+//		message.chop(1);
+//		message.remove("ShowOverlay ");
+//		int showOverlay = message.toInt();
+//		if (showOverlay > 0)
+//		{
+//			ShowWindow(sfWindow.getSystemHandle(), SW_SHOW);
+//			SetFocus(consoleHwnd);
+//			SetForegroundWindow(consoleHwnd);
+//		} else {
+//			ShowWindow(sfWindow.getSystemHandle(), SW_HIDE);
+//			SetFocus(consoleHwnd);
+//			SetForegroundWindow(consoleHwnd);
+//		}
+//	} else if (message.contains("EnableControllers")) {
+//		message.chop(1);
+//		message.remove("EnableControllers ");
+//		int enableControllers = message.toInt();
+//		if (enableControllers > 0)
+//		{
+//			bEnableControllers = true;
+//			if (!controllerThread.isRunning())
+//				controllerThread.run();
+//		} else {
+//			bEnableControllers = false;
+//			if (controllerThread.isRunning())
+//				controllerThread.stop();
+//		}
+//	}
+//}

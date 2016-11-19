@@ -46,18 +46,18 @@ public:
 private:
 	bool bRunLoop = true;
 
-	bool bDrawDebugEdges = false; //TODO: init from .ini ; make default false
+	bool bDrawDebugEdges = false;
 	bool bDrawOverlay = true;
 	bool bVsync = false;
 	int iRefreshRate = 60;
 	sf::CircleShape sfCshape;
 	sf::RenderWindow sfWindow;
 
-	QProcess *qpUserWindow;
+	//QProcess *qpUserWindow;
 
 	std::thread renderThread;
 
-	bool bShowDebugConsole = true;
+	//bool bShowDebugConsole = true;
 	HWND consoleHwnd;
 
 	HMODULE hmodGameOverlayRenderer;
@@ -74,11 +74,11 @@ private:
 	void makeSfWindowTransparent(sf::RenderWindow& window);
 	void drawDebugEdges();
 
-	void openUserWindow();
+	//void openUserWindow();
 
 private slots:
-	void userWindowFinished();
+	//void userWindowFinished();
 	void launchApp();
-	void readChildProcess();
+	//void readChildProcess();
 };
 
