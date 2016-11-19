@@ -69,7 +69,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>281</y>
+       <y>231</y>
        <width>261</width>
        <height>20</height>
       </rect>
@@ -79,7 +79,7 @@
      <property name="geometry">
       <rect>
        <x>344</x>
-       <y>280</y>
+       <y>230</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -92,7 +92,7 @@
      <property name="geometry">
       <rect>
        <x>300</x>
-       <y>280</y>
+       <y>230</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -101,24 +101,11 @@
       <string>...</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="cbDebug">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>121</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Show debug console</string>
-     </property>
-    </widget>
     <widget class="QCheckBox" name="cbOverlay">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>70</y>
        <width>111</width>
        <height>17</height>
       </rect>
@@ -134,7 +121,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>140</y>
+       <y>100</y>
        <width>151</width>
        <height>17</height>
       </rect>
@@ -150,7 +137,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>260</y>
+       <y>210</y>
        <width>91</width>
        <height>17</height>
       </rect>
@@ -163,7 +150,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>281</y>
+       <y>231</y>
        <width>31</width>
        <height>20</height>
       </rect>
@@ -244,6 +231,20 @@
      </property>
      <property name="text">
       <string>Delete</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="cbCloseWhenDone">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>260</y>
+       <width>371</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Close shortcut when launched Application closes
+(Disable for Uplay-games!)</string>
      </property>
     </widget>
    </widget>

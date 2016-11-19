@@ -46,7 +46,6 @@ void GloSC::writeIni(QString entryName)
 
 	settings.beginGroup("BaseConf");
 
-	settings.setValue("bShowDebugConsole", 0 + ui.cbDebug->isChecked());
 	settings.setValue("bShowOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
 
@@ -66,6 +65,8 @@ void GloSC::writeIni(QString entryName)
 			settings.setValue("Type", "UWP");
 		}
 	}
+
+	settings.setValue("bCloseWhenDone", 0 + ui.cbCloseWhenDone->isChecked());
 
 	settings.endGroup();
 
@@ -239,7 +240,6 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	settings.beginGroup("BaseConf");
 
-	ui.cbDebug->setChecked(settings.value("bShowDebugConsole").toBool());
 	ui.cbOverlay->setChecked(settings.value("bShowOverlay").toBool());
 	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
 
@@ -253,6 +253,7 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 	{
 		ui.lePath->setText(settings.value("Path").toString());
 	}
+	ui.cbCloseWhenDone->setChecked(settings.value("bCloseWhenDone").toBool());
 
 	settings.endGroup();
 

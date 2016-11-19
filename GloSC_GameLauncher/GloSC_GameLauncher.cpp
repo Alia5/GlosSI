@@ -37,7 +37,7 @@ GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 	memset(sharedMemInstance.data(), NULL, 1024);
 	sharedMemInstance.unlock();
 
-	//connect(&qApp, SIGNAL(aboutToQuit()), this SLOT(isAboutToBeKilled()));
+	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(isAboutToBeKilled()));
 	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(checkSharedMem()));
 
 	updateTimer.setInterval(1000);
@@ -56,14 +56,35 @@ void GloSC_GameLauncher::checkSharedMem()
 	QStringList stringList;
 
 	sharedMemInstance.lock();
-	buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
-	buffer.open(QBuffer::ReadOnly);
-	in >> stringList;
-	stringListFromShared = stringList;
-	memset(sharedMemInstance.data(), NULL, 1024);
-	sharedMemInstance.unlock();
 
-	launchGameIfRequired();
+	if (pid != NULL)
+	{
+		memset(sharedMemInstance.data(), NULL, 1024);
+		if (!IsProcessRunning(pid))
+		{
+			pid = NULL;
+			stringListFromShared = stringList;
+			stringList << "LaunchedProcessFinished";
+			buffer.open(QBuffer::ReadWrite);
+			QDataStream out(&buffer);
+			out << stringList;
+			int size = buffer.size();
+			char *to = (char*)sharedMemInstance.data();
+			const char *from = buffer.data().data();
+			memcpy(to, from, qMin(sharedMemInstance.size(), size));
+			sharedMemInstance.unlock();
+		}
+	} else {
+		buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+		buffer.open(QBuffer::ReadOnly);
+		in >> stringList;
+		stringListFromShared = stringList;
+		memset(sharedMemInstance.data(), NULL, 1024);
+		sharedMemInstance.unlock();
+
+		launchGameIfRequired();
+	}
+
 
 }
 
@@ -73,25 +94,27 @@ void GloSC_GameLauncher::launchGameIfRequired()
 	{
 		if (stringListFromShared.at(0) == "LaunchWin32Game")
 		{
-			//At this point, we start detached
-			//Listening while an app is alive and the reporting back? Naah, too much work.
 			QProcess app;
 			if (stringListFromShared.at(1).contains("\\"))
 			{
-
-				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("\\")));
+				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("\\")), &pid);
 			}
 			else
 			{
-				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("/")));
+				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("/")), &pid);
+
 			}
 		} else if (stringListFromShared.at(0) == "LaunchUWPGame") {
-			//UWP Games cannot be opened twice. No further checking at this point
 			DWORD pid = 0;
 			HRESULT hr = CoInitialize(nullptr);
 			std::wstring appUMId = stringListFromShared.at(1).toStdWString();
 			if (SUCCEEDED(hr)) {
 				HRESULT result = LaunchUWPApp(appUMId.c_str(), &pid);
+				if (SUCCEEDED(result))
+				{
+					this->pid = pid;
+				
+				}
 			}
 			CoUninitialize();
 
@@ -112,8 +135,6 @@ HRESULT GloSC_GameLauncher::LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProc
 		return result;
 
 	//This call causes troubles; especially with our always in foreground overlay-window
-	//I was way to lazy to patch the Steamtarget... Ouh well...
-
 	/*
 	// This call ensures that the app is launched as the foreground window
 	result = CoAllowSetForegroundWindow(spAppActivationManager, NULL);

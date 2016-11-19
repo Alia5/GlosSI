@@ -74,11 +74,14 @@ private:
 	void makeSfWindowTransparent(sf::RenderWindow& window);
 	void drawDebugEdges();
 
+	QTimer updateTimer;
+
 	//void openUserWindow();
 
 private slots:
 	//void userWindowFinished();
 	void launchApp();
+	void checkSharedMem();
 	//void readChildProcess();
 };
 

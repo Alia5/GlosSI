@@ -49,10 +49,19 @@ private:
 	QTimer updateTimer;
 	QStringList stringListFromShared;
 
+	qint64 pid = NULL;
+
 	void launchGameIfRequired();
 
 	HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
+	bool IsProcessRunning(DWORD pid)
+	{
+		HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+		DWORD ret = WaitForSingleObject(process, 1);
+		CloseHandle(process);
+		return ret == WAIT_TIMEOUT;
+	}
 
 private slots:
 	void checkSharedMem();

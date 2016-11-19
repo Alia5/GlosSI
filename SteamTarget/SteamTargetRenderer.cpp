@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http ://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -261,6 +261,7 @@ void SteamTargetRenderer::launchApp()
 {
 
 	bool launchGame = false;
+	bool closeWhenDone = false;
 	QString type = "Win32";
 	QString path = "";
 	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
@@ -277,6 +278,9 @@ void SteamTargetRenderer::launchApp()
 		}
 		else if (childkey == "Path") {
 			path = settings.value(childkey).toString();
+		}
+		else if (childkey == "bCloseWhenDone") {
+			closeWhenDone = settings.value("bCloseWhenDone").toBool();
 		}
 	}
 	settings.endGroup();
@@ -307,6 +311,42 @@ void SteamTargetRenderer::launchApp()
 			memcpy(to, from, qMin(sharedMemInstance.size(), size));
 			sharedMemInstance.unlock();
 			sharedMemInstance.detach();
+
+			if (closeWhenDone)
+			{
+				updateTimer.setInterval(1111);
+				connect(&updateTimer, SIGNAL(timeout()), this, SLOT(checkSharedMem()));
+				updateTimer.start();
+			}
+		}
+	}
+}
+
+void SteamTargetRenderer::checkSharedMem()
+{
+	QSharedMemory sharedMemInstance("GloSC_GameLauncher");
+	if (!sharedMemInstance.create(1024) && sharedMemInstance.error() == QSharedMemory::AlreadyExists)
+	{
+		QBuffer buffer;
+		QDataStream in(&buffer);
+		QStringList stringList;
+
+		sharedMemInstance.attach();
+		sharedMemInstance.lock();
+		buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+		buffer.open(QBuffer::ReadOnly);
+		in >> stringList;
+		memset(sharedMemInstance.data(), NULL, 1024);
+		sharedMemInstance.unlock();
+		sharedMemInstance.detach();
+
+		if (stringList.size() > 0 && stringList.at(0) == "LaunchedProcessFinished")
+		{
+			bRunLoop = false;
+			renderThread.join();
+			if (controllerThread.isRunning())
+				controllerThread.stop();
+			exit(0);
 		}
 	}
 }
