@@ -72,6 +72,7 @@ void GloSC::writeIni(QString entryName)
 
 }
 
+
 void GloSC::on_pbSave_clicked()
 {
 	QString name = ui.leName->text();
@@ -187,6 +188,7 @@ void GloSC::on_pbUWP_clicked()
 	QStringList AppNames;
 	QStringList AppUMIds;
 
+
 	for (auto &package : packages)
 	{
 		settings = new QSettings("HKEY_CLASSES_ROOT\\"+package, QSettings::NativeFormat);
@@ -199,8 +201,43 @@ void GloSC::on_pbUWP_clicked()
 			AppNames << AppName;
 			AppUMIds << AppUMId;
 
-			if (AppName.size() == 0 || AppName.at(0) == '@')
+			if (AppName.size() == 0)
+			{
 				AppName = "Unknown";
+			} else if (AppName.at(0) == '@') {
+				QString packageName = AppName.mid(AppName.indexOf('{') + 1, AppName.size() -1);
+				packageName = packageName.mid(0, packageName.indexOf('?'));
+				QStringList cachedNameChildGroups;
+				QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache", QSettings::NativeFormat);
+
+				cachedNameChildGroups = settings.childGroups();
+
+				for (auto &childGroup : cachedNameChildGroups)
+				{
+					
+					if (childGroup.contains(packageName))
+					{
+						QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache\\"+ childGroup, QSettings::NativeFormat);
+
+						QStringList allKeys = settings.allKeys();
+
+						AppName.replace("/", "\\");
+						for (auto &key : allKeys)
+						{
+							if (key.contains(AppName))
+							{
+								AppName = settings.value(key).toString();
+								break;
+							}
+						}
+
+						break;
+					}
+				}
+				if (AppName.at(0) == '@') {
+					AppName = "Unknown";
+				}
+			}
 
 			UWPPair uwpPair = {
 				AppName,
