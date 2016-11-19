@@ -77,8 +77,6 @@ void VirtualControllerThread::controllerLoop()
 	int i, j;
 	while (bShouldRun)
 	{
-
-		//auto begin = std::chrono::high_resolution_clock::now();
 		sfClock.restart();
 
 		if (reCheckControllerTimer.getElapsedTime().asSeconds() >= 1.f)
@@ -154,17 +152,11 @@ void VirtualControllerThread::controllerLoop()
 				}
 			}
 		}
-		//auto end = std::chrono::high_resolution_clock::now();
-		//auto dur = end - begin;
-		//auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(dur);
-		//auto delay = std::chrono::milliseconds(5) - ns;
 
 		tickTime = sfClock.getElapsedTime().asMicroseconds();
 		//std::cout << tickTime << std::endl;
 		if (tickTime < delay)
 			std::this_thread::sleep_for(std::chrono::microseconds(delay-tickTime));
-
-		//auto finished = std::chrono::high_resolution_clock::now();
 	}
 }
 
@@ -204,7 +196,7 @@ void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR Larg
 
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API ises two, ViGEm also only uses one, like the hardware does so we have to multiply
+	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
 	vibration.wRightMotorSpeed = SmallMotor * 0xff;
 
 
