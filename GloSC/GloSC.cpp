@@ -97,7 +97,6 @@ void GloSC::on_pbSave_clicked()
 		"sfml-window-2.dll",
 		"sfml-graphics-2.dll",
 		"ViGEmUM.dll",
-		"SteamTargetUserWindow.exe",
 		"TargetConfig.ini" };
 #else
 	QString fileNames[] = {
@@ -108,7 +107,6 @@ void GloSC::on_pbSave_clicked()
 		"sfml-window-d-2.dll",
 		"sfml-graphics-d-2.dll",
 		"ViGEmUM.dll",
-		"SteamTargetUserWindow.exe",
 		"TargetConfig.ini"
 };
 #endif

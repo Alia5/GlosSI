@@ -53,11 +53,8 @@ private:
 	sf::CircleShape sfCshape;
 	sf::RenderWindow sfWindow;
 
-	//QProcess *qpUserWindow;
-
 	std::thread renderThread;
 
-	//bool bShowDebugConsole = true;
 	HWND consoleHwnd;
 
 	HMODULE hmodGameOverlayRenderer;
@@ -76,12 +73,8 @@ private:
 
 	QTimer updateTimer;
 
-	//void openUserWindow();
-
 private slots:
-	//void userWindowFinished();
 	void launchApp();
 	void checkSharedMem();
-	//void readChildProcess();
 };
 

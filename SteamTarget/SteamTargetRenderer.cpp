@@ -21,11 +21,6 @@ SteamTargetRenderer::SteamTargetRenderer()
 {
 	getSteamOverlay();
 
-	//openUserWindow();
-#ifndef NDEBUG
-	bDrawDebugEdges = true;
-#endif // NDEBUG
-
 	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
 	settings.beginGroup("BaseConf");
 	const QStringList childKeys = settings.childKeys();
@@ -34,8 +29,6 @@ SteamTargetRenderer::SteamTargetRenderer()
 		if (childkey == "bDrawDebugEdges")
 		{
 			bDrawDebugEdges = settings.value(childkey).toBool();
-		//} else if (childkey == "bShowDebugConsole") {
-		//	bShowDebugConsole = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableOverlay") {
 			bDrawOverlay = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableControllers") {
@@ -43,6 +36,10 @@ SteamTargetRenderer::SteamTargetRenderer()
 		}
 	}
 	settings.endGroup();
+
+#ifndef NDEBUG
+	bDrawDebugEdges = true;
+#endif // NDEBUG
 
 	sfCshape = sf::CircleShape(100.f);
 	sfCshape.setFillColor(sf::Color(128, 128, 128, 128));
@@ -58,12 +55,6 @@ SteamTargetRenderer::SteamTargetRenderer()
 	sfWindow.setActive(false);
 	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings - Also useful for debugging
 
-	//LONG_PTR style = GetWindowLongPtr(consoleHwnd, GWL_STYLE); 
-	//SetWindowLongPtr(consoleHwnd, GWL_STYLE, style & ~WS_SYSMENU);
-
-	/*if(!bShowDebugConsole) {
-		ShowWindow(consoleHwnd, SW_HIDE); //Hide the console window; it just confuses the user;
-	}*/
 	if (bEnableControllers)
 		controllerThread.run();
 
@@ -77,15 +68,10 @@ SteamTargetRenderer::~SteamTargetRenderer()
 	renderThread.join();
 	if (controllerThread.isRunning())
 		controllerThread.stop();
-	//qpUserWindow->kill();
-	//delete qpUserWindow;
 }
 
 void SteamTargetRenderer::run()
 {
-	/*QTimer::singleShot(500, this, [this]() {
-		focusSwitchNeeded = true;
-	});*/
 	renderThread = std::thread(&SteamTargetRenderer::RunSfWindowLoop, this);
 }
 
@@ -237,26 +223,6 @@ void SteamTargetRenderer::drawDebugEdges()
 
 }
 
-//void SteamTargetRenderer::openUserWindow()
-//{
-//	qpUserWindow = new QProcess(this);
-//	qpUserWindow->start("SteamTargetUserWindow.exe", QStringList(), QProcess::ReadWrite);
-//	qpUserWindow->waitForStarted();
-//	connect(qpUserWindow, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-//		this, &SteamTargetRenderer::userWindowFinished);
-//	connect(qpUserWindow, SIGNAL(readyRead()) , this,SLOT(readChildProcess()));
-//}
-//
-//void SteamTargetRenderer::userWindowFinished()
-//{
-//	delete qpUserWindow;
-//	bRunLoop = false;
-//	renderThread.join();
-//	if (controllerThread.isRunning())
-//		controllerThread.stop();
-//	exit(0);
-//}
-
 void SteamTargetRenderer::launchApp()
 {
 
@@ -351,59 +317,3 @@ void SteamTargetRenderer::checkSharedMem()
 	}
 }
 
-//void SteamTargetRenderer::readChildProcess()
-//{
-//	QString message(qpUserWindow->readLine());
-//	if (message.contains("ResetControllers"))
-//	{
-//		if (controllerThread.isRunning())
-//		{
-//			controllerThread.stop();
-//			controllerThread.run();
-//		}
-//	} else if (message.contains("ShowConsole")) {
-//		message.chop(1);
-//		message.remove("ShowConsole ");
-//		int showConsole = message.toInt();
-//		if (showConsole > 0)
-//		{
-//			bShowDebugConsole = true;
-//			ShowWindow(consoleHwnd, SW_SHOW);
-//			SetFocus(consoleHwnd);
-//			SetForegroundWindow(consoleHwnd);
-//		} else {
-//			bShowDebugConsole = false;
-//			ShowWindow(consoleHwnd, SW_HIDE);
-//			SetFocus(consoleHwnd);
-//			SetForegroundWindow(consoleHwnd);
-//		}
-//	} else if (message.contains("ShowOverlay")) {
-//		message.chop(1);
-//		message.remove("ShowOverlay ");
-//		int showOverlay = message.toInt();
-//		if (showOverlay > 0)
-//		{
-//			ShowWindow(sfWindow.getSystemHandle(), SW_SHOW);
-//			SetFocus(consoleHwnd);
-//			SetForegroundWindow(consoleHwnd);
-//		} else {
-//			ShowWindow(sfWindow.getSystemHandle(), SW_HIDE);
-//			SetFocus(consoleHwnd);
-//			SetForegroundWindow(consoleHwnd);
-//		}
-//	} else if (message.contains("EnableControllers")) {
-//		message.chop(1);
-//		message.remove("EnableControllers ");
-//		int enableControllers = message.toInt();
-//		if (enableControllers > 0)
-//		{
-//			bEnableControllers = true;
-//			if (!controllerThread.isRunning())
-//				controllerThread.run();
-//		} else {
-//			bEnableControllers = false;
-//			if (controllerThread.isRunning())
-//				controllerThread.stop();
-//		}
-//	}
-//}
