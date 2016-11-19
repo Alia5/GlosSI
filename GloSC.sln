@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SteamTarget", "SteamTarget\SteamTarget.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SteamTargetUserWindow", "SteamTargetUserWindow\SteamTargetUserWindow.vcxproj", "{8F1F96E0-F662-4453-A758-2984C7828528}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC", "GloSC\GloSC.vcxproj", "{2E7F8131-0BD8-475D-B16F-20445CCF2D16}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC_GameLauncher", "GloSC_GameLauncher\GloSC_GameLauncher.vcxproj", "{431D29FD-73F8-4374-868B-F72972566F41}"
@@ -25,12 +23,6 @@ Global
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.ActiveCfg = Release|x64
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.Build.0 = Release|x64
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x86.ActiveCfg = Release|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Debug|x64.ActiveCfg = Debug|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Debug|x64.Build.0 = Debug|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Debug|x86.ActiveCfg = Debug|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Release|x64.ActiveCfg = Release|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Release|x64.Build.0 = Release|x64
-		{8F1F96E0-F662-4453-A758-2984C7828528}.Release|x86.ActiveCfg = Release|x64
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Debug|x64.ActiveCfg = Debug|x64
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Debug|x64.Build.0 = Debug|x64
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Debug|x86.ActiveCfg = Debug|x64
