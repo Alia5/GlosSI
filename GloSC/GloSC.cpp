@@ -153,7 +153,114 @@ void GloSC::on_pbDelete_clicked()
 
 void GloSC::on_pbAddToSteam_clicked()
 {
-	//TODO
+	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
+	QString steamPath = settings.value("SteamPath").toString();
+	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
+
+	QFile shortcutsFile(steamPath + "/userdata/" + activeUser + "/config/shortcuts.vdf");
+
+	if (!shortcutsFile.exists())
+	{
+		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!", QMessageBox::Ok);
+		return;
+	}
+	if (!shortcutsFile.open(QFile::ReadWrite))
+	{
+		QMessageBox::information(this, "GloSC", "Couldn't open Steam shortcuts file!", QMessageBox::Ok);
+		return;
+	}
+
+	//just detect already present paths the easy way and hardcode the actual shortcut structure
+	//will prob. come back to bite me, but for now it should be enough
+	QByteArray shortcutsFileBytes = shortcutsFile.readAll();
+
+	//get shortcutcount
+	QByteArray temp = shortcutsFileBytes;
+	temp.chop(9); //chop off last "tags"
+	temp = temp.mid(temp.lastIndexOf("tags") + 8, temp.size() - 1);
+	int shortcutCount = QString(temp).toInt();
+
+	QString itemName;
+	QString appDir = QDir::toNativeSeparators(QCoreApplication::applicationFilePath().mid(0, QCoreApplication::applicationFilePath().lastIndexOf("/")));
+	for (int i = 0; i < ui.lwInstances->count(); i++)
+	{
+		itemName = ui.lwInstances->item(i)->text();
+		if (!shortcutsFileBytes.contains(QString(appDir + "\\" + itemName + "\\" + itemName + ".exe").toStdString().c_str()))
+		{
+			shortcutsFileBytes.chop(2); //chop of end bytes
+			shortcutCount++;
+
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append(QString::number(shortcutCount));
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append("appname");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append(itemName);
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append("exe");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append(QString("\"" + appDir + "\\" + itemName + "\\" + itemName + ".exe\""));
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append("StartDir");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append(QString("\"" + appDir + "\\" + itemName + "\\" + "\""));
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append("icon");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append("ShortcutPath");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x02');
+			shortcutsFileBytes.append("IsHidden");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x02');
+			shortcutsFileBytes.append("AllowDesktopConfig");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x01');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x02');
+			shortcutsFileBytes.append("OpenVR");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append("tags");
+			shortcutsFileBytes.append('\x00');
+			shortcutsFileBytes.append('\x08');
+			shortcutsFileBytes.append('\x08');
+
+			//append chopped of bytes
+			shortcutsFileBytes.append('\x08');
+			shortcutsFileBytes.append('\x08');
+		}
+	}
+
+	shortcutsFile.close();
+	if (!shortcutsFile.open(QFile::ReadWrite | QIODevice::Truncate)) //damn qt is complicated...
+	{
+		QMessageBox::information(this, "GloSC", "Couldn't open Steam shortcuts file!", QMessageBox::Ok);
+		return;
+	}
+
+	shortcutsFile.write(shortcutsFileBytes);
+
+	shortcutsFile.close();
+	QMessageBox::information(this, "GloSC", "Shortcuts were added! Restart Steam for changes to take effect!", QMessageBox::Ok);
+
 }
 
 void GloSC::on_pbSearchPath_clicked()

@@ -23,6 +23,7 @@ limitations under the License.
 #include <qsettings.h>
 #include <QFileDialog>
 #include <qlist.h>
+#include <qmessagebox.h>
 
 #include <Windows.h>
 #include <appmodel.h>

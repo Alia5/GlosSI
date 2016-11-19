@@ -174,13 +174,13 @@
     </widget>
     <widget class="QPushButton" name="pbAddToSteam">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
-       <x>300</x>
+       <x>270</x>
        <y>330</y>
-       <width>81</width>
+       <width>111</width>
        <height>31</height>
       </rect>
      </property>
@@ -225,7 +225,7 @@
       <rect>
        <x>170</x>
        <y>330</y>
-       <width>121</width>
+       <width>91</width>
        <height>31</height>
       </rect>
      </property>
