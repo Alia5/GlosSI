@@ -55,6 +55,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_SteamTargetRenderer.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="VirtualControllerThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SteamTarget.qrc">
@@ -66,6 +69,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualControllerThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

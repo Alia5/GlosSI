@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http ://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,6 @@ limitations under the License.
 
 #include <Windows.h>
 #include <dwmapi.h>
-#include <Xinput.h>
-#include <ViGEmUM.h>
 
 #include <SFML\System.hpp>
 #include <SFML\Graphics.hpp>
@@ -32,6 +30,8 @@ limitations under the License.
 #include <QDatastream>
 #include <QSharedmemory>
 #include <QSettings>
+
+#include "VirtualControllerThread.h"
 
 class SteamTargetRenderer : public QObject
 {
@@ -49,7 +49,6 @@ private:
 	bool bDrawDebugEdges = false; //TODO: init from .ini ; make default false
 	bool bDrawOverlay = true;
 	bool bVsync = false;
-	bool bPauseControllers = false;
 	int iRefreshRate = 60;
 	sf::CircleShape sfCshape;
 	sf::RenderWindow sfWindow;
@@ -67,21 +66,11 @@ private:
 	bool bNeedFocusSwitch = false;
 	void getSteamOverlay();
 
+	VirtualControllerThread controllerThread;
 
-	int bEnableControllers;
-	int iRealControllers = 0;
-	int iTotalControllers = 0;
-	int iVirtualControllers = 0;
-
-	static ULONG ulTargetSerials[XUSER_MAX_COUNT];
-	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
-	XINPUT_STATE xsState[XUSER_MAX_COUNT];
-	XUSB_REPORT xrReport[XUSER_MAX_COUNT];
-
-	int getRealControllers();
+	bool bEnableControllers = true;
 
 	void RunSfWindowLoop();
-	static void controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
 	void makeSfWindowTransparent(sf::RenderWindow& window);
 	void drawDebugEdges();
 

@@ -15,12 +15,10 @@ limitations under the License.
 */
 #include "SteamTargetRenderer.h"
 
-ULONG SteamTargetRenderer::ulTargetSerials[XUSER_MAX_COUNT];
+
 
 SteamTargetRenderer::SteamTargetRenderer()
 {
-	iRealControllers = getRealControllers();
-
 	getSteamOverlay();
 
 	openUserWindow();
@@ -41,12 +39,12 @@ SteamTargetRenderer::SteamTargetRenderer()
 		} else if (childkey == "bEnableOverlay") {
 			bDrawOverlay = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableControllers") {
-			bPauseControllers = !settings.value(childkey).toBool();
-		} else if (childkey == "bEnableVsync") {
+			bEnableControllers = settings.value(childkey).toBool();
+		} /*else if (childkey == "bEnableVsync") {
 			bVsync = settings.value(childkey).toBool();
 		} else if (childkey == "iRefreshRate") {
 			iRefreshRate = settings.value(childkey).toInt();
-		}
+		}*/
 	}
 	settings.endGroup();
 
@@ -70,20 +68,8 @@ SteamTargetRenderer::SteamTargetRenderer()
 	if(!bShowDebugConsole) {
 		ShowWindow(consoleHwnd, SW_HIDE); //Hide the console window; it just confuses the user;
 	}
-
-	if (!VIGEM_SUCCESS(vigem_init()))
-	{
-		std::cout << "Error initializing ViGem!" << std::endl;
-		bRunLoop = false;
-	}
-
-
-	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		VIGEM_TARGET_INIT(&vtX360[i]);
-		SteamTargetRenderer::ulTargetSerials[i] = NULL;
-	}
+	if (bEnableControllers)
+		controllerThread.run();
 
 	QTimer::singleShot(2000, this, &SteamTargetRenderer::launchApp); // lets steam do its thing
 
@@ -93,12 +79,8 @@ SteamTargetRenderer::~SteamTargetRenderer()
 {	
 	bRunLoop = false;
 	renderThread.join();
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		vigem_target_unplug(&vtX360[i]);
-
-	}
-	vigem_shutdown();
+	if (controllerThread.isRunning())
+		controllerThread.stop();
 	qpUserWindow->kill();
 	delete qpUserWindow;
 }
@@ -106,27 +88,6 @@ SteamTargetRenderer::~SteamTargetRenderer()
 void SteamTargetRenderer::run()
 {
 	renderThread = std::thread(&SteamTargetRenderer::RunSfWindowLoop, this);
-}
-
-void SteamTargetRenderer::controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber)
-{
-	std::cout << "Target Serial: " << Target.SerialNo
-		<< "; LMotor: " << (unsigned int)(LargeMotor * 0xff) << "; "
-		<< " SMotor: " << (unsigned int)(SmallMotor * 0xff) << "; " << std::endl;
-
-	XINPUT_VIBRATION vibration;
-	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-	vibration.wLeftMotorSpeed = LargeMotor * 0xff; 
-	vibration.wRightMotorSpeed = SmallMotor * 0xff; 
-
-
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		if (SteamTargetRenderer::ulTargetSerials[i] == Target.SerialNo)
-		{
-			XInputSetState(i, &vibration);
-		}
-	}
 }
 
 void SteamTargetRenderer::RunSfWindowLoop()
@@ -164,140 +125,60 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 		sfWindow.display();
 
-		if (!bPauseControllers)
+		//This ensures that we stay in game binding, even if focused application changes! (Why does this work? Well, i dunno... ask Valve...)
+		//Only works with a console window
+		//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
+		//This is trying to avoid hooking Steam.exe
+		if (focusSwitchNeeded)
 		{
+			focusSwitchNeeded = false;
+			SetFocus(consoleHwnd);
+			SetForegroundWindow(consoleHwnd);
+		}
 
-			if (reCheckControllerTimer.getElapsedTime().asSeconds() >= 1.f)
+		//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
+		//This is trying to avoid hooking Steam.exe
+		if (overlayPtr != NULL)
+		{
+			char overlayOpen = *(char*)overlayPtr;
+			if (overlayOpen)
 			{
-				int totalbefore = iTotalControllers;
-				iTotalControllers = 0;
-				for (int i = 0; i < XUSER_MAX_COUNT; i++)
+				if (!bNeedFocusSwitch)
 				{
-					ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
+					bNeedFocusSwitch = true;
 
-					result = XInputGetState(i, &xsState[i]);
+					hwForeGroundWindow = GetForegroundWindow();
 
-					if (result == ERROR_SUCCESS)
-					{
-						iTotalControllers++;
-					}
-					else {
-						break;
-					}
-				}
-				iTotalControllers -= iVirtualControllers;
-				reCheckControllerTimer.restart();
-			}
+					std::cout << "ForegorundWindow HWND: " << hwForeGroundWindow << std::endl;
 
-			for (int i = iRealControllers; i < iTotalControllers && i < XUSER_MAX_COUNT; i++)
-			{
-				////////
-				ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
+					SetFocus(consoleHwnd);
+					SetForegroundWindow(consoleHwnd);
 
+					SetFocus(sfWindow.getSystemHandle());
+					SetForegroundWindow(sfWindow.getSystemHandle());
 
-				result = XInputGetState(i, &xsState[i]);
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
 
-				if (result == ERROR_SUCCESS)
-				{
-
-					if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &vtX360[i])))
-					{
-						iVirtualControllers++;
-
-						std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
-
-						SteamTargetRenderer::ulTargetSerials[i] = vtX360[i].SerialNo;
-
-						vigem_register_xusb_notification((PVIGEM_XUSB_NOTIFICATION)&SteamTargetRenderer::controllerCallback, vtX360[i]);
-					}
-
-					RtlCopyMemory(&xrReport[i], &xsState[i].Gamepad, sizeof(XUSB_REPORT));
-
-					vigem_xusb_submit_report(vtX360[i], xrReport[i]);
-				}
-				else
-				{
-					if (VIGEM_SUCCESS(vigem_target_unplug(&vtX360[i])))
-					{
-						iVirtualControllers--;
-						iTotalControllers = 0;
-						for (int i = 0; i < XUSER_MAX_COUNT; i++)
-						{
-							ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
-
-							result = XInputGetState(i, &xsState[i]);
-
-							if (result == ERROR_SUCCESS)
-							{
-								iTotalControllers++;
-							}
-							else {
-								break;
-							}
-						}
-						iTotalControllers -= iVirtualControllers;
-						std::cout << "Unplugged controller " << vtX360[i].SerialNo << std::endl;
-						SteamTargetRenderer::ulTargetSerials[i] = NULL;
-					}
+					SetFocus(consoleHwnd);
+					SetForegroundWindow(consoleHwnd);
 				}
 			}
-
-
-			//This ensures that we stay in game binding, even if focused application changes! (Why does this work? Well, i dunno... ask Valve...)
-			//Only works with a console window
-			//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
-			//This is trying to avoid hooking Steam.exe
-			if (focusSwitchNeeded)
-			{
-				focusSwitchNeeded = false;
-				SetFocus(consoleHwnd);
-				SetForegroundWindow(consoleHwnd);
-			}
-
-			//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
-			//This is trying to avoid hooking Steam.exe
-			if (overlayPtr != NULL)
-			{
-				char overlayOpen = *(char*)overlayPtr;
-				if (overlayOpen)
+			else {
+				if (bNeedFocusSwitch)
 				{
-					if (!bNeedFocusSwitch)
-					{
-						bNeedFocusSwitch = true;
 
-						hwForeGroundWindow = GetForegroundWindow();
+					SetFocus(sfWindow.getSystemHandle());
+					SetForegroundWindow(sfWindow.getSystemHandle());
 
-						std::cout << "ForegorundWindow HWND: " << hwForeGroundWindow << std::endl;
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
 
-						SetFocus(consoleHwnd);
-						SetForegroundWindow(consoleHwnd);
+					SetFocus(consoleHwnd);
+					SetForegroundWindow(consoleHwnd);
 
-						SetFocus(sfWindow.getSystemHandle());
-						SetForegroundWindow(sfWindow.getSystemHandle());
+					SetFocus(hwForeGroundWindow);
+					SetForegroundWindow(hwForeGroundWindow);
 
-						SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
-
-						SetFocus(consoleHwnd);
-						SetForegroundWindow(consoleHwnd);
-					}
-				}
-				else {
-					if (bNeedFocusSwitch)
-					{
-
-						SetFocus(sfWindow.getSystemHandle());
-						SetForegroundWindow(sfWindow.getSystemHandle());
-
-						SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
-
-						SetFocus(consoleHwnd);
-						SetForegroundWindow(consoleHwnd);
-
-						SetFocus(hwForeGroundWindow);
-						SetForegroundWindow(hwForeGroundWindow);
-
-						bNeedFocusSwitch = false;
-					}
+					bNeedFocusSwitch = false;
 				}
 			}
 		}
@@ -314,34 +195,6 @@ void SteamTargetRenderer::getSteamOverlay()
 		overlayPtr = (uint64_t*)(uint64_t(hmodGameOverlayRenderer) + 0x1365e8);
 		overlayPtr = (uint64_t*)(*overlayPtr + 0x40);
 	}
-}
-
-int SteamTargetRenderer::getRealControllers()
-{
-	int realControllers = 0;
-	UINT numDevices = NULL;
-
-	GetRawInputDeviceList(NULL, &numDevices, sizeof(RAWINPUTDEVICELIST));
-
-	PRAWINPUTDEVICELIST rawInputDeviceList;
-	rawInputDeviceList = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * numDevices);
-	GetRawInputDeviceList(rawInputDeviceList, &numDevices, sizeof(RAWINPUTDEVICELIST));
-
-	for (unsigned int i = 0; i < numDevices; i++)
-	{
-		RID_DEVICE_INFO devInfo;
-		devInfo.cbSize = sizeof(RID_DEVICE_INFO);
-		GetRawInputDeviceInfo(rawInputDeviceList[i].hDevice, RIDI_DEVICEINFO, &devInfo, (PUINT)&devInfo.cbSize);
-		if (devInfo.hid.dwVendorId == 0x45e && devInfo.hid.dwProductId == 0x28e)
-		{
-			realControllers++;
-		}
-
-	}
-
-	free(rawInputDeviceList);
-	std::cout << "Detected " << realControllers << " real connected X360 Controllers" << std::endl;
-	return realControllers;
 }
 
 
@@ -389,12 +242,8 @@ void SteamTargetRenderer::userWindowFinished()
 	delete qpUserWindow;
 	bRunLoop = false;
 	renderThread.join();
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		vigem_target_unplug(&vtX360[i]);
-
-	}
-	vigem_shutdown();
+	if (controllerThread.isRunning())
+		controllerThread.stop();
 	exit(0);
 }
 
@@ -433,13 +282,6 @@ void SteamTargetRenderer::launchApp()
 				stringList << "LaunchWin32Game";
 			} else if (type == "UWP") {
 				stringList << "LaunchUWPGame";
-
-				/*bool drawOverlayBefore = bDrawOverlay;
-				bDrawOverlay = false;
-				QTimer::singleShot(5000, [=] {
-					bDrawOverlay = drawOverlayBefore;
-				});*/
-
 			}
 			stringList << path;
 
@@ -464,18 +306,11 @@ void SteamTargetRenderer::readChildProcess()
 	QString message(qpUserWindow->readLine());
 	if (message.contains("ResetControllers"))
 	{
-		bPauseControllers = true;
-		for (int i = 0; i < XUSER_MAX_COUNT; i++)
+		if (controllerThread.isRunning())
 		{
-			vigem_target_unplug(&vtX360[i]);
-			SteamTargetRenderer::ulTargetSerials[i] = NULL;
+			controllerThread.stop();
+			controllerThread.run();
 		}
-		Sleep(1000); //give the driver time to unplug before redetecting
-		iRealControllers = 0;
-		iTotalControllers = 0;
-		iVirtualControllers = 0;
-		iRealControllers = getRealControllers();
-		bPauseControllers = false;
 	} else if (message.contains("ShowConsole")) {
 		message.chop(1);
 		message.remove("ShowConsole ");
@@ -512,28 +347,13 @@ void SteamTargetRenderer::readChildProcess()
 		int enableControllers = message.toInt();
 		if (enableControllers > 0)
 		{
-			for (int i = 0; i < XUSER_MAX_COUNT; i++)
-			{
-				vigem_target_unplug(&vtX360[i]);
-				SteamTargetRenderer::ulTargetSerials[i] = NULL;
-			}
-			Sleep(1000); //give the driver time to unplug before redetecting
-			iRealControllers = 0;
-			iTotalControllers = 0;
-			iVirtualControllers = 0;
-			iRealControllers = getRealControllers();
-			bPauseControllers = false;
+			bEnableControllers = true;
+			if (!controllerThread.isRunning())
+				controllerThread.run();
 		} else {
-			bPauseControllers = true;
-			for (int i = 0; i < XUSER_MAX_COUNT; i++)
-			{
-				vigem_target_unplug(&vtX360[i]);
-				SteamTargetRenderer::ulTargetSerials[i] = NULL;
-			}
-			Sleep(1000); //give the driver time to unplug before redetecting
-			iRealControllers = 0;
-			iVirtualControllers = 0;
-			iRealControllers = getRealControllers();
+			bEnableControllers = false;
+			if (controllerThread.isRunning())
+				controllerThread.stop();
 		}
 	}
 }

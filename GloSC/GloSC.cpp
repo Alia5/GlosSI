@@ -49,8 +49,6 @@ void GloSC::writeIni(QString entryName)
 	settings.setValue("bShowDebugConsole", 0 + ui.cbDebug->isChecked());
 	settings.setValue("bShowOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
-	settings.setValue("bEnableVsync", 0 + ui.cbVsync->isChecked());
-	settings.setValue("iRefreshRate", ui.sbRefresh->value());
 
 	settings.endGroup();
 
@@ -244,8 +242,6 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 	ui.cbDebug->setChecked(settings.value("bShowDebugConsole").toBool());
 	ui.cbOverlay->setChecked(settings.value("bShowOverlay").toBool());
 	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
-	ui.cbVsync->setChecked(settings.value("bEnableVsync").toBool());
-	ui.sbRefresh->setValue(settings.value("iRefreshRate").toInt());
 
 	settings.endGroup();
 
