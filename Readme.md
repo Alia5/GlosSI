@@ -4,15 +4,16 @@ GlosSC or Global SteamController is a little set of tools that allows you to use
 
 The systemwide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
+It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
+
 
 GloSC consists of:
  
  * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and (at a later date) automatically add them to Steam
  * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation
- * A little config window for the SteamTarget, "SteamTargetUserWindow" which allows the user to close the SteamTarget as well as to configure a few basic things while a SteamTarget is running
 
-
+ 
 Like my stuff? Consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
 _Work in progress_
