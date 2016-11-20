@@ -1,11 +1,18 @@
 # GloSC
 
-GlosSC or Global SteamController is a little set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay with **per application bindings and working rumble emulation.**
+GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
+All complete with **per application bindings and working rumble emulation.**
 
-The systemwide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
+GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!
+
+It is **the tool** to enjoy any Game that has trouble with Steam and add extra functionality to your SteamController
+
+```
+```
 
 It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
+The systemwide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
 GloSC consists of:
  
