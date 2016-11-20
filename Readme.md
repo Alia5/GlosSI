@@ -9,7 +9,7 @@ It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-d
 
 GloSC consists of:
  
- * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and (at a later date) automatically add them to Steam
+ * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
  * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation
 
