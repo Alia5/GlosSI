@@ -58,7 +58,11 @@ private:
 	HWND consoleHwnd;
 
 	HMODULE hmodGameOverlayRenderer;
+#ifdef _AMD64_
 	uint64_t *overlayPtr = NULL;
+#else
+	uint32_t *overlayPtr = NULL;
+#endif
 	HWND hwForeGroundWindow = NULL;
 	bool bNeedFocusSwitch = false;
 	void getSteamOverlay();

@@ -183,6 +183,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 void SteamTargetRenderer::getSteamOverlay()
 {
+#ifdef _AMD64_
 	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer64.dll");
 
 	if (hmodGameOverlayRenderer != NULL)
@@ -191,6 +192,16 @@ void SteamTargetRenderer::getSteamOverlay()
 		overlayPtr = (uint64_t*)(uint64_t(hmodGameOverlayRenderer) + 0x1365e8);
 		overlayPtr = (uint64_t*)(*overlayPtr + 0x40);
 	}
+#else
+	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer.dll");
+
+	if (hmodGameOverlayRenderer != NULL)
+	{
+		std::cout << "GameOverlayrenderer.dll found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
+		overlayPtr = (uint32_t*)(uint32_t(hmodGameOverlayRenderer) + 0xED7A0);
+		//overlayPtr = (uint32_t*)(*overlayPtr + 0x40);
+	}
+#endif
 }
 
 
