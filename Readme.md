@@ -16,6 +16,10 @@ It is **the tool** to enjoy any Game that has trouble with Steam and add extra f
   A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
      This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
      Try running your games as borderless window
+     
+* **Q: Audio turns off when using this**
+  A: ViGEm emulates a full X360-controller incl. peripherals
+  Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches
 
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
