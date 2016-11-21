@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>GloSC - Global SteamController</title>
+    <title>GloSC by Alia5</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -13,30 +13,60 @@
     <section class="page-header">
       <h1 class="project-name">GloSC</h1>
       <h2 class="project-tagline">Tool for using the SteamController as systemwide XInput controller alongside a global overlay</h2>
-       <a href="https://github.com/Alia5/GloSC" class="btn">View on GitHub</a>
-       <a href="https://github.com/Alia5/GloSC/releases" class="btn">Download latest Release</a>
-       <a href="https://github.com/Alia5/GloSC/zipball/master" class="btn">Download source .zip</a>
+      <a href="https://github.com/Alia5/GloSC" class="btn">View on GitHub</a>
+      <a href="https://github.com/Alia5/GloSC/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Alia5/GloSC/tarball/master" class="btn">Download .tar.gz</a>
     </section>
 
     <section class="main-content">
       <h1>
 <a id="glosc" class="anchor" href="#glosc" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GloSC</h1>
 
-<p>GlosSC or Global SteamController is a little set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay with <strong>per application bindings and working rumble emulation.</strong></p>
+<p>GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
+All complete with <strong>per application bindings and working rumble emulation.</strong></p>
+
+<p>GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!</p>
+
+<p>It is <strong>the tool</strong> to enjoy any Game that has trouble with Steam and add extra functionality to your SteamController</p>
+
+<pre><code></code></pre>
+<h2>
+<a id="faq--troubleshooting" class="anchor" href="#faq--troubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FAQ / Troubleshooting</h2>
+
+<ul>
+<li><p><strong>Q: The overlay isn't showing up!</strong>
+A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
+   This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
+   Try running your games as borderless window</p></li>
+<li><p><strong>Q: Audio turns off when using this</strong>
+A: ViGEm emulates a full X360-controller incl. peripherals
+Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches</p></li>
+<li><p><strong>Q: Hitting the Steam Button + RT to take a screenshot doesn't work</strong>
+A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image</p></li>
+<li><p><strong>Q: UWP Games don't launch in foreground</strong>
+A: For some reason trying to launch them in foreground stops them fron launching entirely
+   For now use alt+tab via Steam-chords
+   This is currently beeing investigated</p></li>
+<li><p><strong>Q: When using big picture the controller switches to desktop-config</strong>
+A: Don't really know why this is happening
+   For now launch your GloSC shortcuts via Steam desktop mode
+   This is currently beeing investigated</p></li>
+</ul>
+
+<pre><code></code></pre>
+<p>It is built using <a href="https://www.qt.io/">Qt 5.7</a> and uses <a href="http://www.sfml-dev.org/">SFML</a> for drawing the overlay</p>
 
 <p>The systemwide Xbox-Controller works via <a href="https://github.com/nefarius/ViGEm">ViGEm</a></p>
-
-<p>It is built using <a href="https://www.qt.io/">Qt 5.7</a> and uses <a href="http://www.sfml-dev.org/">SFML</a> for drawing the overlay</p>
 
 <p>GloSC consists of:</p>
 
 <ul>
-<li>A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and (at a later date) automatically add them to Steam</li>
+<li>A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam</li>
 <li>The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays</li>
 <li>The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation</li>
 </ul>
 
-<p>Like my stuff? Hit me up on <a href="https://twitter.com/flatspotpics">Twitter</a> or consider donating to my <a href="https://www.paypal.me/Flatspotpics">PayPal</a></p>
+<p>Like my stuff? Consider donating to my <a href="https://www.paypal.me/Flatspotpics">PayPal</a></p>
 
 <p><em>Work in progress</em></p>
 
@@ -59,7 +89,7 @@ limitations under the License.
 </code></pre>
 
       <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/Alia5/GloSC">Glosc</a> is maintained by <a href="https://github.com/Alia5">Alia5</a>.</span>
+        <span class="site-footer-owner"><a href="https://github.com/Alia5/GloSC">GloSC</a> is maintained by <a href="https://github.com/Alia5">Alia5</a>.</span>
 
         <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
