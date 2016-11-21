@@ -10,6 +10,29 @@ It is **the tool** to enjoy any Game that has trouble with Steam and add extra f
 ```
 ```
 
+## FAQ / Troubleshooting
+
+* **Q: The overlay isn't showing up!**
+  A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
+     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
+     Try running your games as borderless window
+
+* **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
+  A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
+
+* **Q: UWP Games don't launch in foreground**
+  A: For some reason trying to launch them in foreground stops them fron launching entirely
+     For now use alt+tab via Steam-chords
+     This is currently beeing investigated
+  
+* **Q: When using big picture the controller switches to desktop-config**
+  A: Don't really know why this is happening
+     For now launch your GloSC shortcuts via Steam desktop mode
+     This is currently beeing investigated
+
+```
+```
+
 It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
 The systemwide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
