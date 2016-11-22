@@ -1,11 +1,12 @@
 # GloSC
 
 GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
+
 All complete with **per application bindings and working rumble emulation.**
 
 GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!
 
-It is **the tool** to enjoy any Game that has trouble with Steam and add extra functionality to your SteamController
+It is **the tool** to enjoy any Game that has trouble with Steam and/or *add extra functionality* to your SteamController
 
 ```
 ```
