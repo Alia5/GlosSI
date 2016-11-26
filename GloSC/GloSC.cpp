@@ -175,6 +175,13 @@ void GloSC::on_pbDelete_clicked()
 
 void GloSC::on_pbAddToSteam_clicked()
 {
+
+	if (ui.lwInstances->count() <= 0)
+	{
+		QMessageBox::information(this, "GloSC", "No shortcuts! Create some shortcuts first for them to be added to Steam!", QMessageBox::Ok);
+		return;
+	}
+
 	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
 	QString steamPath = settings.value("SteamPath").toString();
 	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
