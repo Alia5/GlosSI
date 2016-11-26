@@ -33,6 +33,8 @@ SteamTargetRenderer::SteamTargetRenderer()
 			bDrawOverlay = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableControllers") {
 			bEnableControllers = settings.value(childkey).toBool();
+		}else if (childkey == "bHookSteam") {
+			bHookSteam = settings.value(childkey).toBool();
 		}
 	}
 	settings.endGroup();
@@ -40,12 +42,11 @@ SteamTargetRenderer::SteamTargetRenderer()
 #ifndef NDEBUG
 	bDrawDebugEdges = true;
 #endif // NDEBUG
-
 	sfCshape = sf::CircleShape(100.f);
 	sfCshape.setFillColor(sf::Color(128, 128, 128, 128));
 	sfCshape.setOrigin(sf::Vector2f(100, 100));
 	sf::VideoMode mode = sf::VideoMode::getDesktopMode();
-	sfWindow.create(sf::VideoMode(mode.width-16, mode.height-32), "OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
+	sfWindow.create(sf::VideoMode(mode.width-16, mode.height-32), "GloSC_OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
 	sfWindow.setVerticalSyncEnabled(bVsync);
 	if (!bVsync)
 		sfWindow.setFramerateLimit(iRefreshRate);
@@ -117,8 +118,15 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		//Only works with a console window
 		//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
 		//This is trying to avoid hooking Steam.exe
+		//----
+		//alternatively, we can just hook steam and make our lives so much easier
+		//we inject and hook here to spare IPC and let the dll grab the steam appID of the launched process when the config switches (config switches w/ focus)
 		if (focusSwitchNeeded)
 		{
+
+			if (bHookSteam)
+				hookBindings(); //cleanup - unhooking / unloading of dll is managed by the GloSC gamelauncher rather than here
+
 			focusSwitchNeeded = false;
 			SetFocus(consoleHwnd);
 			sf::Clock clock;
@@ -129,7 +137,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		}
 
 		//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
-		//This is trying to avoid hooking Steam.exe
+		//even if hooking steam, this ensures the overlay stays working
 		if (overlayPtr != NULL)
 		{
 			char overlayOpen = *(char*)overlayPtr;
@@ -148,6 +156,10 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
+
+					//Move the mouse cursor inside the overlaywindow
+					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
+					SetCursorPos(16, 16);
 
 					//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
 					SetFocus(consoleHwnd);
@@ -234,9 +246,62 @@ void SteamTargetRenderer::drawDebugEdges()
 
 }
 
+void SteamTargetRenderer::hookBindings()
+{
+	std::cout << "Hooking Steam..." << std::endl;
+
+	QString dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+	dir = dir.mid(0, dir.lastIndexOf("\\"));
+
+	QProcess proc;
+	proc.setNativeArguments(" --process-name Steam.exe --module-name " + dir + "\\EnforceBindingDLL.dll --inject ");
+	proc.start(dir + "\\Injector.exe", QIODevice::ReadOnly);
+	proc.waitForFinished();
+	if (QString::fromStdString(proc.readAll().toStdString()).contains("Successfully injected module!")) //if we have injected (and patched the function)
+	{
+		std::cout << "Successfully hooked Steam!" << std::endl;
+
+		//tell the GloSC_GameLauncher that we have hooked steam
+		//it will deal with checking if the target is still alive and unload the dll / unhook then
+		// - ensures unloading / unhooking even if this process crashes or gets unexpectedly killed
+		QSharedMemory sharedMemInstance("GloSC_GameLauncher");
+		if (!sharedMemInstance.create(1024) && sharedMemInstance.error() == QSharedMemory::AlreadyExists)
+		{
+			QBuffer buffer;
+			QDataStream dataStream(&buffer);
+			QStringList stringList;
+
+			sharedMemInstance.attach();
+			sharedMemInstance.lock();
+
+			buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+			buffer.open(QBuffer::ReadOnly);
+			dataStream >> stringList;
+			buffer.close();
+
+			int i = stringList.indexOf(IsSteamHooked) + 1;
+			stringList.replace(i, "1");
+
+
+			buffer.open(QBuffer::ReadWrite);
+			QDataStream out(&buffer);
+			out << stringList;
+			int size = buffer.size();
+			char *to = (char*)sharedMemInstance.data();
+			const char *from = buffer.data().data();
+			memcpy(to, from, qMin(sharedMemInstance.size(), size));
+			buffer.close();
+
+			sharedMemInstance.unlock();
+			sharedMemInstance.detach();
+		}
+	} else {
+		std::cout << "Hooking Steam failed!" << std::endl;
+	}
+}
+
 void SteamTargetRenderer::launchApp()
 {
-
 	bool launchGame = false;
 	bool closeWhenDone = false;
 	QString type = "Win32";
@@ -267,25 +332,35 @@ void SteamTargetRenderer::launchApp()
 		QSharedMemory sharedMemInstance("GloSC_GameLauncher");
 		if (!sharedMemInstance.create(1024) && sharedMemInstance.error() == QSharedMemory::AlreadyExists)
 		{
-			QStringList stringList;
-			if (type == "Win32")
-			{
-				stringList << "LaunchWin32Game";
-			} else if (type == "UWP") {
-				stringList << "LaunchUWPGame";
-			}
-			stringList << path;
-
 			QBuffer buffer;
+			QDataStream dataStream(&buffer);
+			QStringList stringList;
+
+			sharedMemInstance.attach();
+			sharedMemInstance.lock();
+
+			buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+			buffer.open(QBuffer::ReadOnly);
+			dataStream >> stringList;
+			buffer.close();
+
+
+
+			int lgt_index = stringList.indexOf(LaunchGame);
+			stringList.replace(lgt_index + 1, type);
+			stringList.replace(lgt_index + 2, path);
+
+
+
 			buffer.open(QBuffer::ReadWrite);
 			QDataStream out(&buffer);
 			out << stringList;
 			int size = buffer.size();
-
-			sharedMemInstance.attach();
 			char *to = (char*)sharedMemInstance.data();
 			const char *from = buffer.data().data();
 			memcpy(to, from, qMin(sharedMemInstance.size(), size));
+			buffer.close();
+
 			sharedMemInstance.unlock();
 			sharedMemInstance.detach();
 
@@ -313,11 +388,13 @@ void SteamTargetRenderer::checkSharedMem()
 		buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
 		buffer.open(QBuffer::ReadOnly);
 		in >> stringList;
-		memset(sharedMemInstance.data(), NULL, 1024);
+		buffer.close();
 		sharedMemInstance.unlock();
 		sharedMemInstance.detach();
 
-		if (stringList.size() > 0 && stringList.at(0) == "LaunchedProcessFinished")
+		int close_index = stringList.indexOf(LaunchedProcessFinished)+1;
+
+		if (close_index > 0 && stringList.at(close_index).toInt() == 1)
 		{
 			bRunLoop = false;
 			renderThread.join();

@@ -13,14 +13,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "SteamTargetRenderer.h"
-#include <QtCore/QCoreApplication>
 
-int main(int argc, char *argv[])
+#pragma once
+
+
+#include <stdint.h>
+
+#include <Windows.h>
+#include <psapi.h>
+
+
+class EnforceBindings
 {
-	QCoreApplication a(argc, argv);
-	SteamTargetRenderer renderer;
-	renderer.run();
-	return a.exec();
-}
+public:
+
+
+	static void patchBytes();
+	static void Unpatch();
+
+
+private:
+
+	static void PlaceJMP(BYTE * Address, DWORD jumpTo, DWORD lenght);
+	static void RestoreBytes(BYTE *Address, BYTE *original, DWORD lenght);
+	static MODULEINFO GetModInfo(char *szModule);
+	static DWORD FindPattern(char *module, char *pattern, char *mask);
+};
 

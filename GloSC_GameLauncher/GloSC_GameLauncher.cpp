@@ -35,12 +35,23 @@ GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 	sharedMemInstance.attach();
 	sharedMemInstance.lock();
 	memset(sharedMemInstance.data(), NULL, 1024);
+
+	QBuffer buffer;
+	buffer.open(QBuffer::ReadWrite);
+	QDataStream out(&buffer);
+	out << defaultSharedMemData;
+	int size = buffer.size();
+	char *to = (char*)sharedMemInstance.data();
+	const char *from = buffer.data().data();
+	memcpy(to, from, qMin(sharedMemInstance.size(), size));
+
 	sharedMemInstance.unlock();
+
 
 	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(isAboutToBeKilled()));
 	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(checkSharedMem()));
 
-	updateTimer.setInterval(1000);
+	updateTimer.setInterval(250);
 	updateTimer.start();
 }
 
@@ -52,62 +63,82 @@ void GloSC_GameLauncher::isAboutToBeKilled()
 void GloSC_GameLauncher::checkSharedMem()
 {
 	QBuffer buffer;
-	QDataStream in(&buffer);
+	QDataStream dataStream(&buffer);
 	QStringList stringList;
 
 	sharedMemInstance.lock();
 
+	buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+	buffer.open(QBuffer::ReadOnly);
+	dataStream >> stringList;
+	buffer.close();
+	int i = stringList.indexOf(LaunchGame);
+	if (i > -1)
+	{
+		if (stringList.at(i + 1) != "" && stringList.at(i + 2) != "")
+		{
+			launchGame(stringList.at(i + 1), stringList.at(i + 2));
+			stringList = defaultSharedMemData;
+		}
+	}
+
+	i = stringList.indexOf(IsSteamHooked);
+	if (i > -1)
+	{
+		bHookedSteam = true;
+		if (stringList.at(i + 1).toInt() > -1)
+		{
+			stringList.replace(i + 1, "-1");
+		}
+	}
+
 	if (pid != NULL)
 	{
-		memset(sharedMemInstance.data(), NULL, 1024);
 		if (!IsProcessRunning(pid))
 		{
 			pid = NULL;
-			stringListFromShared = stringList;
-			stringList << "LaunchedProcessFinished";
-			buffer.open(QBuffer::ReadWrite);
-			QDataStream out(&buffer);
-			out << stringList;
-			int size = buffer.size();
-			char *to = (char*)sharedMemInstance.data();
-			const char *from = buffer.data().data();
-			memcpy(to, from, qMin(sharedMemInstance.size(), size));
-			sharedMemInstance.unlock();
+			int i = stringList.indexOf(LaunchedProcessFinished) + 1;
+			stringList.replace(i, "1");
 		}
-	} else {
-		buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
-		buffer.open(QBuffer::ReadOnly);
-		in >> stringList;
-		stringListFromShared = stringList;
-		memset(sharedMemInstance.data(), NULL, 1024);
-		sharedMemInstance.unlock();
-
-		launchGameIfRequired();
 	}
 
+	buffer.open(QBuffer::ReadWrite);
+	QDataStream out(&buffer);
+	out << stringList;
+	int size = buffer.size();
+	char *to = (char*)sharedMemInstance.data();
+	const char *from = buffer.data().data();
+	memcpy(to, from, qMin(sharedMemInstance.size(), size));
+	buffer.close();
 
+	sharedMemInstance.unlock();
+
+	if (FindWindow(NULL, L"GloSC_OverlayWindow") == NULL)
+	{
+		unhookBindings();
+		bHookedSteam = false;
+	}
 }
 
-void GloSC_GameLauncher::launchGameIfRequired()
+void GloSC_GameLauncher::launchGame(QString type, QString path)
 {
-	if (stringListFromShared.size() > 1)
-	{
-		if (stringListFromShared.at(0) == "LaunchWin32Game")
+
+		if (type == LGT_Win32)
 		{
 			QProcess app;
-			if (stringListFromShared.at(1).contains("\\"))
+			if (path.contains("\\"))
 			{
-				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("\\")), &pid);
+				app.startDetached(path, QStringList(), path.mid(0, path.lastIndexOf("\\")), &pid);
 			}
 			else
 			{
-				app.startDetached(stringListFromShared.at(1), QStringList(), stringListFromShared.at(1).mid(0, stringListFromShared.at(1).lastIndexOf("/")), &pid);
+				app.startDetached(path, QStringList(), path.mid(0, path.lastIndexOf("/")), &pid);
 
 			}
-		} else if (stringListFromShared.at(0) == "LaunchUWPGame") {
+		} else if (type == LGT_UWP) {
 			DWORD pid = 0;
 			HRESULT hr = CoInitialize(nullptr);
-			std::wstring appUMId = stringListFromShared.at(1).toStdWString();
+			std::wstring appUMId = path.toStdWString();
 			if (SUCCEEDED(hr)) {
 				HRESULT result = LaunchUWPApp(appUMId.c_str(), &pid);
 				if (SUCCEEDED(result))
@@ -119,8 +150,6 @@ void GloSC_GameLauncher::launchGameIfRequired()
 			CoUninitialize();
 
 		}
-	}
-
 }
 
 HRESULT GloSC_GameLauncher::LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId)
@@ -149,4 +178,22 @@ HRESULT GloSC_GameLauncher::LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProc
 
 	return result;
 }
+
+bool GloSC_GameLauncher::IsProcessRunning(DWORD pid)
+{
+	HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+	DWORD ret = WaitForSingleObject(process, 1);
+	CloseHandle(process);
+	return ret == WAIT_TIMEOUT;
+}
+
+void GloSC_GameLauncher::unhookBindings()
+{
+	QProcess proc;
+	proc.setNativeArguments(" --process-name Steam.exe --module-name EnforceBindingDLL.dll --eject ");
+	proc.start("Injector.exe", QIODevice::ReadOnly);
+	proc.waitForFinished();
+}
+
+
 

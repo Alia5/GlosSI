@@ -13,14 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "SteamTargetRenderer.h"
-#include <QtCore/QCoreApplication>
+#include <Windows.h>
+#include "EnforceBindings.h"
 
-int main(int argc, char *argv[])
+HANDLE hThread;
+
+void WINAPI Run()
 {
-	QCoreApplication a(argc, argv);
-	SteamTargetRenderer renderer;
-	renderer.run();
-	return a.exec();
+
 }
 
+
+int WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
+{
+	if (reason == DLL_PROCESS_ATTACH)
+	{
+		EnforceBindings::patchBytes();
+		//hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Run, 0, 0, 0);
+	} else if (reason == DLL_PROCESS_DETACH) {
+		EnforceBindings::Unpatch();
+		//TerminateThread(hThread, 0);
+	}
+	return true;
+}

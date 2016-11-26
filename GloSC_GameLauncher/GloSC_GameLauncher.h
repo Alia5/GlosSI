@@ -31,6 +31,8 @@ limitations under the License.
 #include <QBuffer>
 #include <qprocess.h>
 
+#include <qmessagebox.h>
+
 
 class GloSC_GameLauncher : public QMainWindow
 {
@@ -45,23 +47,36 @@ public slots:
 private:
     Ui::GloSC_GameLauncherClass ui;
 
+	const QString LaunchGame = "LaunchGame";
+	const QString LGT_UWP = "UWP";
+	const QString LGT_Win32 = "Win32";
+	const QString LaunchedProcessFinished = "LaunchedProcessFinished";
+	const QString IsSteamHooked = "IsSteamHooked";
+	const QStringList defaultSharedMemData = QStringList()
+		<< LaunchGame
+		<< ""
+		<< ""
+		<< LaunchedProcessFinished
+		<< "0"
+		<< IsSteamHooked
+		<< "-1";
+
+	
+
 	QSharedMemory sharedMemInstance;
 	QTimer updateTimer;
-	QStringList stringListFromShared;
 
 	qint64 pid = NULL;
 
-	void launchGameIfRequired();
+	bool bHookedSteam = false;
+
+	void launchGame(QString type, QString path);
 
 	HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
-	bool IsProcessRunning(DWORD pid)
-	{
-		HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
-		DWORD ret = WaitForSingleObject(process, 1);
-		CloseHandle(process);
-		return ret == WAIT_TIMEOUT;
-	}
+	bool IsProcessRunning(DWORD pid);
+
+	void unhookBindings();
 
 private slots:
 	void checkSharedMem();

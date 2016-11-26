@@ -44,7 +44,11 @@ private:
 	void updateEntryList();
 	void writeIni(QString entryName);
 
+	void updateTargetsToNewVersion();
+
 	QList<UWPPair> uwpPairs;
+
+
 
 private slots:
 	void on_pbSave_clicked();

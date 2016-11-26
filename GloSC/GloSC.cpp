@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http ://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ GloSC::GloSC(QWidget *parent)
 	ui.setupUi(this);
 
 	updateEntryList();
+	updateTargetsToNewVersion();
 
 }
 
@@ -46,8 +47,9 @@ void GloSC::writeIni(QString entryName)
 
 	settings.beginGroup("BaseConf");
 
-	settings.setValue("bShowOverlay", 0 + ui.cbOverlay->isChecked());
+	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
+	settings.setValue("bHookSteam", 1);
 
 	settings.endGroup();
 
@@ -70,6 +72,26 @@ void GloSC::writeIni(QString entryName)
 
 	settings.endGroup();
 
+}
+
+void GloSC::updateTargetsToNewVersion()
+{
+	//incredible lazy way to update to this next version but eh...
+	for (int i = 0; i < ui.lwInstances->count(); i++)
+	{
+		on_lwInstances_currentRowChanged(i);
+		QString name = ui.leName->text();
+
+		QSettings settings(name + "\\TargetConfig.ini", QSettings::IniFormat);
+		settings.beginGroup("BaseConf");
+		bool newVersion = settings.value("bHookSteam").toBool();
+		settings.endGroup();
+
+		if (!newVersion)
+			settings.endGroup();
+
+		on_pbSave_clicked();
+	}
 }
 
 
@@ -382,7 +404,7 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	settings.beginGroup("BaseConf");
 
-	ui.cbOverlay->setChecked(settings.value("bShowOverlay").toBool());
+	ui.cbOverlay->setChecked(settings.value("bEnableOverlay").toBool());
 	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
 
 	settings.endGroup();

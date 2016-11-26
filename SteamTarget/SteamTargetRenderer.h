@@ -30,6 +30,9 @@ limitations under the License.
 #include <QDatastream>
 #include <QSharedmemory>
 #include <QSettings>
+#include <QCoreApplication>
+#include <QDir>
+
 
 #include "VirtualControllerThread.h"
 
@@ -71,11 +74,28 @@ private:
 
 	bool bEnableControllers = true;
 
+	bool bHookSteam = false;
+
 	void RunSfWindowLoop();
 	void makeSfWindowTransparent(sf::RenderWindow& window);
 	void drawDebugEdges();
 
 	QTimer updateTimer;
+
+
+	void hookBindings();
+
+	const QString LaunchGame = "LaunchGame";
+	const QString LaunchedProcessFinished = "LaunchedProcessFinished";
+	const QString IsSteamHooked = "IsSteamHooked";
+	const QStringList defaultSharedMemData = QStringList()
+		<< LaunchGame
+		<< ""
+		<< ""
+		<< LaunchedProcessFinished
+		<< "0"
+		<< IsSteamHooked
+		<< "-1";
 
 private slots:
 	void launchApp();
