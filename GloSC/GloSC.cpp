@@ -88,9 +88,11 @@ void GloSC::updateTargetsToNewVersion()
 		settings.endGroup();
 
 		if (!newVersion)
-			settings.endGroup();
-
-		on_pbSave_clicked();
+		{
+			QFile file(name + "\\" + name + ".exe");
+			file.remove();
+			on_pbSave_clicked();
+		}
 	}
 }
 
@@ -141,6 +143,9 @@ void GloSC::on_pbSave_clicked()
 	QDir platformdir(name + "\\platforms");
 	if (!platformdir.exists())
 		platformdir.mkdir(".");
+
+	QFile file(dir.path() + "\\" + name + ".exe");
+	file.remove();
 
 
 	QFile::copy("platforms\\qwindows.dll", dir.path() + "\\" + "platforms\\qwindows.dll");
