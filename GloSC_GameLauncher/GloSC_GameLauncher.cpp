@@ -190,9 +190,10 @@ bool GloSC_GameLauncher::IsProcessRunning(DWORD pid)
 void GloSC_GameLauncher::unhookBindings()
 {
 	QProcess proc;
-	proc.setNativeArguments(" --process-name Steam.exe --module-name EnforceBindingDLL.dll --eject ");
+	proc.setNativeArguments(" --process-name Steam.exe --module-name \"EnforceBindingDLL.dll\" --eject ");
 	proc.start("Injector.exe", QIODevice::ReadOnly);
 	proc.waitForFinished();
+	bHookedSteam = false;
 }
 
 
