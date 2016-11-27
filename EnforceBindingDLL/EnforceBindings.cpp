@@ -17,58 +17,60 @@ limitations under the License.
 
 //stuff for finding the function as well as the injected code
 //should probably be moved somewhere else
-DWORD address = 0x381FA91B;
+DWORD address;
 DWORD JMPBack;
 int32_t currentBindings;
 const int32_t desktopBindingsID = 413080; //desktop_config appid
-const int32_t bigPictureBindingsID = 413090; //desktop_config appid
-const int32_t steamChordBindingsID = 443510; //desktop_config appid
-int32_t enforceBindingsID = 413080; //0x80000009;
-char originalBytes[] = "\x8B\x45\x0c\x57\x8B\x7D\x08";
+const int32_t bigPictureBindingsID = 413090; //big_picture_config appid
+const int32_t steamChordBindingsID = 443510; //steam_chord_config appid
+int32_t enforceBindingsID = 413080;
+char originalBytes[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook
+char mask[] = "xxxxxxxx????";											//mask for searching 
 
 __declspec(naked) void enforceBindingsHookFn()
 {
 	__asm
 	{
-		mov eax, dword ptr ss : [ebp + 0xc]
-		mov currentBindings, eax
+		mov eax, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
+		mov currentBindings, eax								//move into "currentBindings" variable
 	}
 
-	if (currentBindings != desktopBindingsID 
-		&& currentBindings != bigPictureBindingsID 
-		&& currentBindings != steamChordBindingsID)
+	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
+		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
+		&& currentBindings != steamChordBindingsID)				//we can grab theme here, because bindings switch, after we have injected and the target changes focuses window
 	{
 		enforceBindingsID = currentBindings;
 	}
 
-	if (currentBindings == desktopBindingsID)
+	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
 	{
 		__asm
 		{
-			mov eax, enforceBindingsID
+			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
 		}
 	}
 
 	__asm
 	{
-		push edi
-		mov edi, dword ptr ss : [ebp + 0x8]
-		jmp[JMPBack]
-	}
+		push edi												//part of original steam code
+		mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
+		cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
+		jmp[JMPBack]											//jump back and continiue with original steam function 
+	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
 }
 //\\\
 
 
 void EnforceBindings::patchBytes()
 {
-	address = FindPattern("steamclient.dll", originalBytes, "xxxxxxx");
-	JMPBack = address + 0x7;			//7 size of pattern/mask == patched instructions
-	PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, 7);
+	address = FindPattern("steamclient.dll", originalBytes, mask);
+	JMPBack = address + 12;			//12 size of pattern/mask == patched instructions
+	PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, 12);
 }
 
 void EnforceBindings::Unpatch()
 {
-	RestoreBytes((BYTE*)address, (BYTE*)originalBytes, 7);
+	RestoreBytes((BYTE*)address, (BYTE*)originalBytes, 12);
 }
 
 
@@ -77,8 +79,10 @@ void EnforceBindings::Unpatch()
 
 
 
-
-void EnforceBindings::PlaceJMP(BYTE * Address, DWORD jumpTo, DWORD lenght)
+//places a jmp instruction to a __declspec(naked) function on a given adress
+//nops the rest of bytes to don't break any instructions
+//part of patched code may has to be executed in the hook function
+void EnforceBindings::PlaceJMP(BYTE * Address, DWORD jumpTo, DWORD lenght)	
 {
 	DWORD dwOldProtect, dwBkup, dwReloadAddr;
 	VirtualProtect(Address, lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);	
@@ -116,6 +120,7 @@ MODULEINFO EnforceBindings::GetModInfo(char * szModule)
 	return ret;
 }
 
+//returns memory address of given pattern ind given module
 DWORD EnforceBindings::FindPattern(char * module, char * pattern, char * mask)
 {
 	MODULEINFO mInfo = GetModInfo(module);
