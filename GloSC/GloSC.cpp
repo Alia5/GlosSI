@@ -84,7 +84,7 @@ void GloSC::updateTargetsToNewVersion()
 
 		QSettings settings(name + "\\TargetConfig.ini", QSettings::IniFormat);
 		settings.beginGroup("BaseConf");
-		bool newVersion = settings.value("bHookSteam").toBool();
+		bool newVersion = settings.contains("bHookSteam");
 		settings.endGroup();
 
 		if (!newVersion)
