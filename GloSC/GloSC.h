@@ -24,6 +24,7 @@ limitations under the License.
 #include <QFileDialog>
 #include <qlist.h>
 #include <qmessagebox.h>
+#include <qprocess.h>
 
 #include <Windows.h>
 #include <appmodel.h>
