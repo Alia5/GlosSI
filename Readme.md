@@ -29,12 +29,6 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
   A: For some reason trying to launch them in foreground stops them fron launching entirely
      For now use alt+tab via Steam-chords
      This is currently beeing investigated
-  
-* **Q: When using big picture the controller switches to desktop-config**
-  A: Don't really know why this is happening
-     For now launch your GloSC shortcuts via Steam desktop mode
-     This is currently beeing investigated
-
 ```
 ```
 
