@@ -25,7 +25,13 @@ const int32_t bigPictureBindingsID = 413090; //big_picture_config appid
 const int32_t steamChordBindingsID = 443510; //steam_chord_config appid
 int32_t enforceBindingsID = 413080;
 char originalBytes[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook
-char mask[] = "xxxxxxxx????";											//mask for searching 
+/* == 
+mov eax, dword ptr ss : [ebp + 0xc]						//appId of bindings to be switched gets moved into eax register
+push edi												//part of original steam code
+mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
+cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
+*/
+char mask[] = "xxxxxxxxxxxx";											   //mask for searching 
 
 __declspec(naked) void enforceBindingsHookFn()
 {
@@ -37,7 +43,7 @@ __declspec(naked) void enforceBindingsHookFn()
 
 	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
 		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
-		&& currentBindings != steamChordBindingsID)				//we can grab theme here, because bindings switch, after we have injected and the target changes focuses window
+		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
 	{
 		enforceBindingsID = currentBindings;
 	}
@@ -64,12 +70,20 @@ __declspec(naked) void enforceBindingsHookFn()
 void EnforceBindings::patchBytes()
 {
 	address = FindPattern("steamclient.dll", originalBytes, mask);
+	if (address == NULL)
+	{
+		return;
+	}
 	JMPBack = address + 12;			//12 size of pattern/mask == patched instructions
 	PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, 12);
 }
 
 void EnforceBindings::Unpatch()
 {
+	if (address == NULL)
+	{
+		return;
+	}
 	RestoreBytes((BYTE*)address, (BYTE*)originalBytes, 12);
 }
 
