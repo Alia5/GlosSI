@@ -111,10 +111,9 @@ void GloSC_GameLauncher::checkSharedMem()
 
 	sharedMemInstance.unlock();
 
-	if (FindWindow(NULL, L"GloSC_OverlayWindow") == NULL)
+	if (bHookedSteam && FindWindow(NULL, L"GloSC_OverlayWindow") == NULL)
 	{
 		unhookBindings();
-		bHookedSteam = false;
 	}
 }
 
