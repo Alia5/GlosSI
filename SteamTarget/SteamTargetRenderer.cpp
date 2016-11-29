@@ -254,10 +254,10 @@ void SteamTargetRenderer::hookBindings()
 	dir = dir.mid(0, dir.lastIndexOf("\\"));
 
 	QProcess proc;
-	proc.setNativeArguments(" --process-name Steam.exe --module-name \"" + dir + "\\EnforceBindingDLL.dll\" --inject ");
+	proc.setNativeArguments(" --inject ");
 	proc.start(dir + "\\Injector.exe", QIODevice::ReadOnly);
 	proc.waitForFinished();
-	if (QString::fromStdString(proc.readAll().toStdString()).contains("Successfully injected module!")) //if we have injected (and patched the function)
+	if (QString::fromStdString(proc.readAll().toStdString()).contains("Inject success!")) //if we have injected (and patched the function)
 	{
 		std::cout << "Successfully hooked Steam!" << std::endl;
 

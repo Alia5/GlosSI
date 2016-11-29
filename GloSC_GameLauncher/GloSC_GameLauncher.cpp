@@ -20,8 +20,6 @@ GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 {
 	ui.setupUi(this);
 
-	//SetDebugPrivilege();
-
 	QTimer::singleShot(0, this, SLOT(hide()));
 
 	sharedMemInstance.setKey("GloSC_GameLauncher");
@@ -190,7 +188,7 @@ bool GloSC_GameLauncher::IsProcessRunning(DWORD pid)
 void GloSC_GameLauncher::unhookBindings()
 {
 	QProcess proc;
-	proc.setNativeArguments(" --process-name Steam.exe --module-name \"EnforceBindingDLL.dll\" --eject ");
+	proc.setNativeArguments(" --eject ");
 	proc.start("Injector.exe", QIODevice::ReadOnly);
 	proc.waitForFinished();
 	bHookedSteam = false;
