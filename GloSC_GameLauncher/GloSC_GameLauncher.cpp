@@ -49,7 +49,7 @@ GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(isAboutToBeKilled()));
 	connect(&updateTimer, SIGNAL(timeout()), this, SLOT(checkSharedMem()));
 
-	updateTimer.setInterval(250);
+	updateTimer.setInterval(333);
 	updateTimer.start();
 }
 
