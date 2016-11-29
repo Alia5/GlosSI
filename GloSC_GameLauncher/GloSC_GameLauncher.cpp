@@ -83,9 +83,9 @@ void GloSC_GameLauncher::checkSharedMem()
 	i = stringList.indexOf(IsSteamHooked);
 	if (i > -1)
 	{
-		bHookedSteam = true;
 		if (stringList.at(i + 1).toInt() > -1)
 		{
+			bHookedSteam = true;
 			stringList.replace(i + 1, "-1");
 		}
 	}
