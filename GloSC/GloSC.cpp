@@ -55,6 +55,7 @@ void GloSC::writeIni(QString entryName)
 	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
 	settings.setValue("bHookSteam", 1);
+	settings.setValue("version", GLOSC_VERSION);
 
 	settings.endGroup();
 
@@ -89,10 +90,10 @@ void GloSC::updateTargetsToNewVersion()
 
 		QSettings settings(name + "\\TargetConfig.ini", QSettings::IniFormat);
 		settings.beginGroup("BaseConf");
-		bool newVersion = settings.contains("bHookSteam");
+		unsigned int version = settings.value("version").toInt();
 		settings.endGroup();
 
-		if (!newVersion)
+		if (version < GLOSC_VERSION)
 		{
 			QFile file(name + "\\" + name + ".exe");
 			file.remove();

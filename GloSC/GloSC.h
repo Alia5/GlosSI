@@ -49,7 +49,7 @@ private:
 
 	QList<UWPPair> uwpPairs;
 
-
+	const unsigned int GLOSC_VERSION = 0x00000111;
 
 private slots:
 	void on_pbSave_clicked();
