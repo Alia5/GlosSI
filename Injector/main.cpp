@@ -7,7 +7,6 @@
 
 int wmain(int argc, wchar_t* argv[])
 {
-
 	if (argc < 2)
 	{
 		std::wcout << "Missing arguments" << std::endl;
@@ -44,8 +43,7 @@ int wmain(int argc, wchar_t* argv[])
 		return 1;
 	}
 
-
-	if (std::wstring(argv[1]) == L"--inject")
+	if (std::wstring(argv[1]).find(L"--inject") != std::wstring::npos)
 	{
 		int result = Injector::Inject(pid, libPath);
 		switch (result)
@@ -70,7 +68,7 @@ int wmain(int argc, wchar_t* argv[])
 			break;
 		}
 	}
-	else if (std::wstring(argv[1]) == L"--eject")
+	else if (std::wstring(argv[1]).find(L"--eject") != std::wstring::npos)
 	{
 		int result = Injector::Eject(pid, libPath);
 		switch (result)

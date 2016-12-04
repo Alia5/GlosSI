@@ -255,8 +255,11 @@ void SteamTargetRenderer::hookBindings()
 
 	QProcess proc;
 	proc.setNativeArguments(" --inject ");
-	proc.start(dir + "\\Injector.exe", QIODevice::ReadOnly);
+	proc.setWorkingDirectory(dir);
+	proc.start("..\\Injector.exe", QIODevice::ReadOnly);
+	proc.waitForStarted();
 	proc.waitForFinished();
+
 	if (QString::fromStdString(proc.readAll().toStdString()).contains("Inject success!")) //if we have injected (and patched the function)
 	{
 		std::cout << "Successfully hooked Steam!" << std::endl;
