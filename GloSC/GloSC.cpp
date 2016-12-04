@@ -307,6 +307,16 @@ void GloSC::on_pbSearchPath_clicked()
 {
 	QString filePath = QFileDialog::getOpenFileName(this, "Select Game", "", "*.exe");
 	ui.lePath->setText(filePath);
+	if (filePath.length() > 0)
+	{
+		QString name;
+		if (filePath.contains("\\"))
+			name = filePath.mid(filePath.lastIndexOf("\\") + 1, -1);
+		else
+			name = filePath.mid(filePath.lastIndexOf("/") + 1, -1);
+		name.chop(4);
+		ui.leName->setText(name);
+	}
 }
 
 void GloSC::on_pbUWP_clicked()
@@ -407,6 +417,7 @@ void GloSC::on_pbUWP_clicked()
 	if (selection > -1)
 	{
 		ui.lePath->setText(uwpPairs.at(selection).AppUMId);
+		ui.leName->setText(uwpPairs.at(selection).AppName);
 	}
 
 }
