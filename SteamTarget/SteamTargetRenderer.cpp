@@ -155,11 +155,6 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
-
-					//Move the mouse cursor inside the overlaywindow
-					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
-					SetCursorPos(16, 16);
-
 					//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
 					SetFocus(consoleHwnd);
 					sf::Clock clock;
@@ -167,6 +162,11 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					{
 						Sleep(1);
 					}
+
+					//Move the mouse cursor inside the overlaywindow
+					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
+					SetCursorPos(16, 16);
+
 				}
 			} else {
 				if (bNeedFocusSwitch)
