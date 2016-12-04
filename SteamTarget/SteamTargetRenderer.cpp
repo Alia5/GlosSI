@@ -48,8 +48,7 @@ SteamTargetRenderer::SteamTargetRenderer()
 	sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 	sfWindow.create(sf::VideoMode(mode.width-16, mode.height-32), "GloSC_OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
 	sfWindow.setVerticalSyncEnabled(bVsync);
-	if (!bVsync)
-		sfWindow.setFramerateLimit(iRefreshRate);
+	sfWindow.setFramerateLimit(iRefreshRate);
 	sfWindow.setPosition(sf::Vector2i(0, 0));
 	makeSfWindowTransparent(sfWindow);
 
