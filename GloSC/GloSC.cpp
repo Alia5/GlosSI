@@ -54,7 +54,7 @@ void GloSC::writeIni(QString entryName)
 
 	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
-	settings.setValue("bHookSteam", 1);
+	settings.setValue("bHookSteam", 0 + ui.cbHookSteam->isChecked());
 	settings.setValue("version", GLOSC_VERSION);
 
 	settings.endGroup();
@@ -201,7 +201,7 @@ void GloSC::on_pbAddToSteam_clicked()
 
 	if (!shortcutsFile.exists())
 	{
-		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!", QMessageBox::Ok);
+		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!\nSteam must be running for it to be detected", QMessageBox::Ok);
 		return;
 	}
 	if (!shortcutsFile.open(QFile::ReadWrite))
@@ -424,6 +424,7 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	ui.cbOverlay->setChecked(settings.value("bEnableOverlay").toBool());
 	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
+	ui.cbHookSteam->setChecked(settings.value("bHookSteam").toBool());
 
 	settings.endGroup();
 

@@ -247,6 +247,23 @@
 (Disable for Uplay-games!)</string>
      </property>
     </widget>
+    <widget class="QCheckBox" name="cbHookSteam">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>371</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Hook Steam
+Enforces bindings by hooking into Steam</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
