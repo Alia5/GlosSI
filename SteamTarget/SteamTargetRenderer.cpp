@@ -118,7 +118,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
 		//This is trying to avoid hooking Steam.exe
 		//----
-		//alternatively, we can just hook steam and make our lives so much easier
+		//alternatively / additionaly, we can just hook steam and make our lives so much easier
 		//we inject and hook here to spare IPC and let the dll grab the steam appID of the launched process when the config switches (config switches w/ focus)
 		if (focusSwitchNeeded)
 		{

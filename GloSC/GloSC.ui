@@ -258,7 +258,8 @@
      </property>
      <property name="text">
       <string>Hook Steam
-Enforces bindings by hooking into Steam</string>
+Enforces bindings reliably by hooking into Steam
+</string>
      </property>
      <property name="checked">
       <bool>true</bool>
