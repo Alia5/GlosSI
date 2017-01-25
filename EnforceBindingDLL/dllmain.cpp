@@ -29,10 +29,8 @@ int WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		EnforceBindings::patchBytes();
-		//hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Run, 0, 0, 0);
 	} else if (reason == DLL_PROCESS_DETACH) {
 		EnforceBindings::Unpatch();
-		//TerminateThread(hThread, 0);
 	}
 	return true;
 }
