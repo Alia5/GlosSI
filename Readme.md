@@ -1,4 +1,4 @@
-![GloSC logo](GloSC/GloSC/Resources/GloSC_Icon.png "GloSC logo")
+![GloSC logo](https://github.com/Alia5/GloSC/blob/masterGloSC_Icon_small.png?raw=true "GloSC logo")
 
 # GloSC
 
