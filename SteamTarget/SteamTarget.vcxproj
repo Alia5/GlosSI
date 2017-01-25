@@ -201,6 +201,9 @@
     <Image Include="..\GloSC_Icon.ico" />
     <Image Include="Resources\GloSC_Icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\rcdata1.bin" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

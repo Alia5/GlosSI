@@ -82,4 +82,7 @@
     <Image Include="Resources\GloSC_Icon.png" />
     <Image Include="..\GloSC_Icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\rcdata1.bin" />
+  </ItemGroup>
 </Project>

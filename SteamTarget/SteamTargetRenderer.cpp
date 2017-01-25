@@ -19,6 +19,7 @@ limitations under the License.
 SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(argc, argv)
 {
 	getSteamOverlay();
+	loadLogo();
 
 	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
 	settings.beginGroup("BaseConf");
@@ -60,7 +61,6 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		controllerThread.run();
 
 	QTimer::singleShot(2000, this, &SteamTargetRenderer::launchApp); // lets steam do its thing
-
 }
 
 SteamTargetRenderer::~SteamTargetRenderer()
@@ -112,8 +112,6 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 		if (bDrawDebugEdges)
 			drawDebugEdges();
-
-		sfWindow.display();
 
 		//This ensures that we stay in game binding, even if focused application changes! (Why does this work? Well, i dunno... ask Valve...)
 		//Only works with a console window
@@ -168,8 +166,8 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					//Move the mouse cursor inside the overlaywindow
 					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
 					SetCursorPos(16, 16);
-
 				}
+				sfWindow.draw(backgroundSprite);
 			} else {
 				if (bNeedFocusSwitch)
 				{
@@ -191,6 +189,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 				}
 			}
 		}
+		sfWindow.display();
 	}
 	stop();
 }
@@ -306,6 +305,20 @@ void SteamTargetRenderer::hookBindings()
 		
 		MessageBoxW(NULL, L"Hooking Steam failed!", L"GloSC-SteamTarget", MB_OK);
 	}
+}
+
+void SteamTargetRenderer::loadLogo()
+{
+	HRSRC rsrcData = FindResource(NULL, L"ICOPNG", RT_RCDATA);
+	DWORD rsrcDataSize = SizeofResource(NULL, rsrcData);
+	HGLOBAL grsrcData = LoadResource(NULL, rsrcData);
+	LPVOID firstByte = LockResource(grsrcData);
+	spriteTexture = std::make_unique<sf::Texture>();
+	spriteTexture->loadFromMemory(firstByte, rsrcDataSize);
+	backgroundSprite.setTexture(*spriteTexture);
+	backgroundSprite.setOrigin(sf::Vector2f(spriteTexture->getSize().x / 2.f, spriteTexture->getSize().y / 2));
+	sf::VideoMode winSize = sf::VideoMode::getDesktopMode();
+	backgroundSprite.setPosition(sf::Vector2f(winSize.width / 2.f, winSize.height / 2.f));
 }
 
 void SteamTargetRenderer::launchApp()

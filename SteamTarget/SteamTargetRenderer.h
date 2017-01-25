@@ -53,6 +53,13 @@ public:
 private:
 
 	void stop();
+	void getSteamOverlay();
+	void RunSfWindowLoop();
+	void makeSfWindowTransparent(sf::RenderWindow& window);
+	void drawDebugEdges();
+	void hookBindings();
+
+	void loadLogo();
 
 	bool bRunLoop = true;
 
@@ -75,7 +82,6 @@ private:
 #endif
 	HWND hwForeGroundWindow = NULL;
 	bool bNeedFocusSwitch = false;
-	void getSteamOverlay();
 
 	VirtualControllerThread controllerThread;
 
@@ -83,14 +89,10 @@ private:
 
 	bool bHookSteam = false;
 
-	void RunSfWindowLoop();
-	void makeSfWindowTransparent(sf::RenderWindow& window);
-	void drawDebugEdges();
-
 	QTimer updateTimer;
 
-
-	void hookBindings();
+	std::unique_ptr<sf::Texture> spriteTexture;
+	sf::Sprite backgroundSprite;
 
 	const QString LaunchGame = "LaunchGame";
 	const QString LaunchedProcessFinished = "LaunchedProcessFinished";
