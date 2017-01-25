@@ -80,6 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\GloSC_Icon.png" />
-    <Image Include="..\..\..\..\..\Downloads\GloSC_Icon.ico" />
+    <Image Include="..\GloSC_Icon.ico" />
   </ItemGroup>
 </Project>
