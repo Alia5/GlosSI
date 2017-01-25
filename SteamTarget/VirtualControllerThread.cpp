@@ -155,9 +155,10 @@ void VirtualControllerThread::controllerLoop()
 		}
 
 		tickTime = sfClock.getElapsedTime().asMicroseconds();
-		//std::cout << tickTime << std::endl;
 		if (tickTime < delay)
-			std::this_thread::sleep_for(std::chrono::microseconds(delay-tickTime));
+		{
+			std::this_thread::sleep_for(std::chrono::microseconds(delay - tickTime));
+		}
 	}
 }
 

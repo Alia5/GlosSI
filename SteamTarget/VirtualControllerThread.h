@@ -56,7 +56,7 @@ private:
 
 	sf::Clock sfClock;
 	int tickTime = 0;
-	int delay = 700;
+	int delay = 1000000 / 200;
 
 	void controllerLoop();
 
