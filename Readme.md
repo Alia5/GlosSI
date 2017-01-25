@@ -1,3 +1,5 @@
+![GloSC logo](GloSC/GloSC/Resources/GloSC_Icon.png "GloSC logo")
+
 # GloSC
 
 GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
@@ -26,6 +28,10 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
   
   Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches
 
+* **Q: Multiple different controllers are not working**
+
+  A: Will probably be fixed in the long run, for now we have to wait for a new ViGEm release.
+
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
 
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
@@ -51,9 +57,7 @@ GloSC consists of:
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation
 
  
-Like my stuff? Consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
-
-_Work in progress_
+Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
 
 ## License
