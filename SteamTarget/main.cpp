@@ -18,9 +18,8 @@ limitations under the License.
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication a(argc, argv);
-	SteamTargetRenderer renderer;
+	SteamTargetRenderer renderer(argc, argv);
 	renderer.run();
-	return a.exec();
+	return renderer.exec();
 }
 

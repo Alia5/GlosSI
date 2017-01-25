@@ -35,18 +35,25 @@ limitations under the License.
 
 
 #include "VirtualControllerThread.h"
+#include <QApplication>
 
-class SteamTargetRenderer : public QObject
+class SteamTargetRenderer : public QApplication
 {
 	Q_OBJECT
 
 public:
-	SteamTargetRenderer();
+	SteamTargetRenderer(int& argc, char** argv);
 	~SteamTargetRenderer();
 
 	void run();
 
+
+
+
 private:
+
+	void stop();
+
 	bool bRunLoop = true;
 
 	bool bDrawDebugEdges = false;

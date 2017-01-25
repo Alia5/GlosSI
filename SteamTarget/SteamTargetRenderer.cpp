@@ -16,7 +16,7 @@ limitations under the License.
 #include "SteamTargetRenderer.h"
 
 
-SteamTargetRenderer::SteamTargetRenderer()
+SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(argc, argv)
 {
 	getSteamOverlay();
 
@@ -65,7 +65,6 @@ SteamTargetRenderer::SteamTargetRenderer()
 
 SteamTargetRenderer::~SteamTargetRenderer()
 {	
-	bRunLoop = false;
 	renderThread.join();
 	if (controllerThread.isRunning())
 		controllerThread.stop();
@@ -74,6 +73,12 @@ SteamTargetRenderer::~SteamTargetRenderer()
 void SteamTargetRenderer::run()
 {
 	renderThread = std::thread(&SteamTargetRenderer::RunSfWindowLoop, this);
+}
+
+void SteamTargetRenderer::stop()
+{
+	bRunLoop = false;
+	QApplication::exit(0);
 }
 
 void SteamTargetRenderer::RunSfWindowLoop()
@@ -187,6 +192,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 			}
 		}
 	}
+	stop();
 }
 
 void SteamTargetRenderer::getSteamOverlay()

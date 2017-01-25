@@ -41,7 +41,7 @@ VirtualControllerThread::VirtualControllerThread()
 
 VirtualControllerThread::~VirtualControllerThread()
 {
-	stop();
+	controllerThread.join();
 	vigem_shutdown();
 }
 
@@ -54,7 +54,6 @@ void VirtualControllerThread::run()
 void VirtualControllerThread::stop()
 {
 	bShouldRun = false;
-	controllerThread.join();
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
 		vigem_target_unplug(&vtX360[i]);
