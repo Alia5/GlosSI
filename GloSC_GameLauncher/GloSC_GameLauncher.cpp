@@ -39,7 +39,7 @@ GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 	QDataStream out(&buffer);
 	out << defaultSharedMemData;
 	int size = buffer.size();
-	char *to = (char*)sharedMemInstance.data();
+	char *to = static_cast<char*>(sharedMemInstance.data());
 	const char *from = buffer.data().data();
 	memcpy(to, from, qMin(sharedMemInstance.size(), size));
 
@@ -66,7 +66,7 @@ void GloSC_GameLauncher::checkSharedMem()
 
 	sharedMemInstance.lock();
 
-	buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+	buffer.setData(static_cast<const char*>(sharedMemInstance.constData()), sharedMemInstance.size());
 	buffer.open(QBuffer::ReadOnly);
 	dataStream >> stringList;
 	buffer.close();
@@ -104,7 +104,7 @@ void GloSC_GameLauncher::checkSharedMem()
 	QDataStream out(&buffer);
 	out << stringList;
 	int size = buffer.size();
-	char *to = (char*)sharedMemInstance.data();
+	char *to = static_cast<char*>(sharedMemInstance.data());
 	const char *from = buffer.data().data();
 	memcpy(to, from, qMin(sharedMemInstance.size(), size));
 	buffer.close();

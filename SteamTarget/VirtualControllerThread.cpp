@@ -120,7 +120,7 @@ void VirtualControllerThread::controllerLoop()
 
 					VirtualControllerThread::ulTargetSerials[i] = vtX360[i].SerialNo;
 
-					vigem_register_xusb_notification((PVIGEM_XUSB_NOTIFICATION)&VirtualControllerThread::controllerCallback, vtX360[i]);
+					vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
 				}
 
 				RtlCopyMemory(&xrReport[i], &xsState[i].Gamepad, sizeof(XUSB_REPORT));
@@ -192,10 +192,6 @@ int VirtualControllerThread::getRealControllers()
 
 void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber)
 {
-	std::cout << "Target Serial: " << Target.SerialNo
-		<< "; LMotor: " << (unsigned int)(LargeMotor * 0xff) << "; "
-		<< " SMotor: " << (unsigned int)(SmallMotor * 0xff) << "; " << std::endl;
-
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply

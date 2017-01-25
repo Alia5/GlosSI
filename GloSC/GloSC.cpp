@@ -290,7 +290,7 @@ void GloSC::on_pbAddToSteam_clicked()
 	}
 
 	shortcutsFile.close();
-	if (!shortcutsFile.open(QFile::ReadWrite | QIODevice::Truncate)) //damn qt is complicated...
+	if (!shortcutsFile.open(QFile::ReadWrite | QIODevice::Truncate)) 
 	{
 		QMessageBox::information(this, "GloSC", "Couldn't open Steam shortcuts file!", QMessageBox::Ok);
 		return;

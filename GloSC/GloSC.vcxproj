@@ -266,7 +266,7 @@
     <ResourceCompile Include="GloSC.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\..\Downloads\GloSC_Icon.ico" />
+    <Image Include="..\GloSC_Icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -29,7 +29,7 @@ int wmain(int argc, wchar_t* argv[])
 	{
 		while (Process32Next(snapshot, &entry) == TRUE)
 		{
-			if (wcsicmp(entry.szExeFile, L"steam.exe") == 0)
+			if (_wcsicmp(entry.szExeFile, L"steam.exe") == 0)
 			{
 				pid = entry.th32ProcessID;
 			}
