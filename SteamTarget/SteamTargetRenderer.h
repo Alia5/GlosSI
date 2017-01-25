@@ -52,7 +52,7 @@ private:
 	bool bDrawDebugEdges = false;
 	bool bDrawOverlay = true;
 	bool bVsync = false;
-	int iRefreshRate = 60;
+	int iRefreshRate = 30;
 	sf::CircleShape sfCshape;
 	sf::RenderWindow sfWindow;
 

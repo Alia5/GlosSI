@@ -16,7 +16,6 @@ limitations under the License.
 #include "SteamTargetRenderer.h"
 
 
-
 SteamTargetRenderer::SteamTargetRenderer()
 {
 	getSteamOverlay();
@@ -47,13 +46,15 @@ SteamTargetRenderer::SteamTargetRenderer()
 	sfCshape.setOrigin(sf::Vector2f(100, 100));
 	sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 	sfWindow.create(sf::VideoMode(mode.width-16, mode.height-32), "GloSC_OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
-	sfWindow.setVerticalSyncEnabled(bVsync);
 	sfWindow.setFramerateLimit(iRefreshRate);
 	sfWindow.setPosition(sf::Vector2i(0, 0));
 	makeSfWindowTransparent(sfWindow);
 
 	sfWindow.setActive(false);
-	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings - Also useful for debugging
+	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
+									  //QT Windows cause trouble with the overlay, so we cannot use them
+
+	ShowWindow(consoleHwnd, SW_HIDE);
 
 	if (bEnableControllers)
 		controllerThread.run();
@@ -83,16 +84,12 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 	sf::Clock reCheckControllerTimer;
 	bool focusSwitchNeeded = true;
-	if (!bDrawOverlay)
-	{
-		ShowWindow(consoleHwnd, SW_HIDE);
-	}
 
 	if (bDrawOverlay)
 	{
 		SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
 	} else {
-		ShowWindow(consoleHwnd, SW_HIDE);
+		ShowWindow(consoleHwnd, SW_SHOW);
 	}
 	
 
@@ -139,7 +136,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		//even if hooking steam, this ensures the overlay stays working
 		if (overlayPtr != NULL)
 		{
-			char overlayOpen = *(char*)overlayPtr;
+			char overlayOpen = *reinterpret_cast<char*>(overlayPtr);
 			if (overlayOpen)
 			{
 				if (!bNeedFocusSwitch)
@@ -151,7 +148,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					std::cout << "Saving current ForegorundWindow HWND: " << hwForeGroundWindow << std::endl;
 					std::cout << "Activating OverlayWindow" << std::endl;
 
-					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOOLWINDOW); //make overlay window clickable
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED); //make overlay window clickable
 
 					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
@@ -174,7 +171,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					std::cout << "Deactivating OverlayWindow" << std::endl;
 
 					//make overlaywindow clickthrough - WS_EX_TRANSPARENT - again
-					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW);
+					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT);
 
 					std::cout << "Switching to previously focused window" << std::endl;
 
@@ -197,19 +194,19 @@ void SteamTargetRenderer::getSteamOverlay()
 #ifdef _AMD64_
 	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer64.dll");
 
-	if (hmodGameOverlayRenderer != NULL)
+	if (hmodGameOverlayRenderer != nullptr)
 	{
 		std::cout << "GameOverlayrenderer64.dll found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
-		overlayPtr = (uint64_t*)(uint64_t(hmodGameOverlayRenderer) + 0x1365e8);
-		overlayPtr = (uint64_t*)(*overlayPtr + 0x40);
+		overlayPtr = reinterpret_cast<uint64_t*>(uint64_t(hmodGameOverlayRenderer) + 0x1365e8);
+		overlayPtr = reinterpret_cast<uint64_t*>(*overlayPtr + 0x40);
 	}
 #else
 	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer.dll");
 
-	if (hmodGameOverlayRenderer != NULL)
+	if (hmodGameOverlayRenderer != nullptr)
 	{
 		std::cout << "GameOverlayrenderer.dll found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
-		overlayPtr = (uint32_t*)(uint32_t(hmodGameOverlayRenderer) + 0xED7A0);
+		overlayPtr = reinterpret_cast<uint32_t*>(uint32_t(hmodGameOverlayRenderer) + 0xED7A0);
 		//overlayPtr = (uint32_t*)(*overlayPtr + 0x40);
 	}
 #endif
@@ -220,13 +217,14 @@ void SteamTargetRenderer::makeSfWindowTransparent(sf::RenderWindow & window)
 {
 	HWND hwnd = window.getSystemHandle();
 	SetWindowLong(hwnd, GWL_STYLE, WS_VISIBLE | WS_POPUP &~WS_CAPTION);
-	SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
+	SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST);
 
 	MARGINS margins;
 	margins.cxLeftWidth = -1;
 
 	DwmExtendFrameIntoClientArea(hwnd, &margins);
 	SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+
 
 	window.clear(sf::Color::Transparent);
 	window.display();
@@ -276,7 +274,7 @@ void SteamTargetRenderer::hookBindings()
 			sharedMemInstance.attach();
 			sharedMemInstance.lock();
 
-			buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+			buffer.setData(static_cast<const char*>(sharedMemInstance.constData()), sharedMemInstance.size());
 			buffer.open(QBuffer::ReadOnly);
 			dataStream >> stringList;
 			buffer.close();
@@ -289,7 +287,7 @@ void SteamTargetRenderer::hookBindings()
 			QDataStream out(&buffer);
 			out << stringList;
 			int size = buffer.size();
-			char *to = (char*)sharedMemInstance.data();
+			char *to = static_cast<char*>(sharedMemInstance.data());
 			const char *from = buffer.data().data();
 			memcpy(to, from, qMin(sharedMemInstance.size(), size));
 			buffer.close();
@@ -299,6 +297,8 @@ void SteamTargetRenderer::hookBindings()
 		}
 	} else {
 		std::cout << "Hooking Steam failed!" << std::endl;
+		
+		MessageBoxW(NULL, L"Hooking Steam failed!", L"GloSC-SteamTarget", MB_OK);
 	}
 }
 
@@ -341,7 +341,7 @@ void SteamTargetRenderer::launchApp()
 			sharedMemInstance.attach();
 			sharedMemInstance.lock();
 
-			buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+			buffer.setData(static_cast<const char*>(sharedMemInstance.constData()), sharedMemInstance.size());
 			buffer.open(QBuffer::ReadOnly);
 			dataStream >> stringList;
 			buffer.close();
@@ -358,7 +358,7 @@ void SteamTargetRenderer::launchApp()
 			QDataStream out(&buffer);
 			out << stringList;
 			int size = buffer.size();
-			char *to = (char*)sharedMemInstance.data();
+			char *to = static_cast<char*>(sharedMemInstance.data());
 			const char *from = buffer.data().data();
 			memcpy(to, from, qMin(sharedMemInstance.size(), size));
 			buffer.close();
@@ -387,7 +387,7 @@ void SteamTargetRenderer::checkSharedMem()
 
 		sharedMemInstance.attach();
 		sharedMemInstance.lock();
-		buffer.setData((char*)sharedMemInstance.constData(), sharedMemInstance.size());
+		buffer.setData(static_cast<const char*>(sharedMemInstance.constData()), sharedMemInstance.size());
 		buffer.open(QBuffer::ReadOnly);
 		in >> stringList;
 		buffer.close();

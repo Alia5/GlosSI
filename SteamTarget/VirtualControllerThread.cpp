@@ -24,6 +24,7 @@ VirtualControllerThread::VirtualControllerThread()
 	if (!VIGEM_SUCCESS(vigem_init()))
 	{
 		std::cout << "Error initializing ViGem!" << std::endl;
+		MessageBoxW(NULL, L"Error initializing ViGem!", L"GloSC-SteamTarget", MB_OK);
 		bShouldRun = false;
 	}
 
