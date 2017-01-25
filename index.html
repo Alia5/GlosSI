@@ -1,96 +1,186 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>GloSC - Global SteamController</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">GloSC</h1>
-      <h2 class="project-tagline">Tool for using the SteamController as systemwide XInput controller alongside a global overlay</h2>
-      <a href="https://github.com/Alia5/GloSC" class="btn">View on GitHub</a>
-      <a href="https://github.com/Alia5/GloSC/releases" class="btn">Download latest Release</a>
-      <a href="https://github.com/Alia5/GloSC/zipball/master" class="btn">Download source .zip</a>
-    </section>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+  <title>GloSC - Global SteamController</title>
 
-    <section class="main-content">
-      <h1>
-<a id="glosc" class="anchor" href="#glosc" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GloSC</h1>
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+  <div id="index-banner" class="parallax-container">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <br><br>
+        <div class="row center">
+          <img src="GloSC_Icon_small.png" alt="Logo">
+        </div>
+        <h1 class="header center white-text">GloSC</h1>
+        <div class="row center">
+          <h4 class="header col s12 light">Global SteamController</h5>
+        </div>
+        <div class="row center">
+          <div class="col s12 m4">
+            <a href="https://github.com/Alia5/GloSC" id="download-button" class="btn-large waves-effect waves-light light-blue darken-4">View on GitHub</a>
+          </div>
+          <div class="col s12 m4">
+            <a href="https://github.com/Alia5/GloSC/releases" id="download-button" class="btn-large waves-effect waves-light light-blue darken-2">Download latest release</a>
+          </div>
+          <div class="col s12 m4">
+            <a href="https://github.com/Alia5/GloSC/zipball/master" id="download-button" class="btn-large waves-effect waves-light  light-blue darken-4">Download sourcecode .zip</a>
+          </div>
+        </div>
+        <br><br>
 
-<p>GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
-All complete with <strong>per application bindings and working rumble emulation.</strong></p>
+      </div>
+    </div>
+    <div class="parallax"><img src="background1.png" alt="Unsplashed background img 1"></div>
+  </div>
 
-<p>GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!</p>
 
-<p>It is <strong>the tool</strong> to enjoy any Game that has trouble with Steam and add extra functionality to your SteamController</p>
+  <div class="container">
+    <div class="section">
 
-<pre><code></code></pre>
-<h2>
-<a id="faq--troubleshooting" class="anchor" href="#faq--troubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FAQ / Troubleshooting</h2>
 
-<ul>
-<li><p><strong>Q: The overlay isn't showing up!</strong>
-A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
-   This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
-   Try running your games as borderless window</p></li>
-<li><p><strong>Q: Audio turns off when using this</strong>
-A: ViGEm emulates a full X360-controller incl. peripherals
-Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches</p></li>
-<li><p><strong>Q: Hitting the Steam Button + RT to take a screenshot doesn't work</strong>
-A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image</p></li>
-<li><p><strong>Q: UWP Games don't launch in foreground</strong>
-A: For some reason trying to launch them in foreground stops them fron launching entirely
-   For now use alt+tab via Steam-chords
-   This is currently beeing investigated</p></li>
+    <div class="row center">
+    <h5 class="center">Tool for using the SteamController as systemwide XInput controller alongside a global overlay</p>
+    </div>
+    <div class="row center">
+    <p>GloSC allows you to use your SteamController as a <strong>systemwide XInput-controller</strong> alongside a systemwide (borderless window) Steam overlay</p>
 
-<pre><code></code></pre>
-<p>It is built using <a href="https://www.qt.io/">Qt 5.7</a> and uses <a href="http://www.sfml-dev.org/">SFML</a> for drawing the overlay</p>
+    <p>All complete with <strong>per application bindings and working rumble emulation.</strong></p>
 
-<p>The systemwide Xbox-Controller works via <a href="https://github.com/nefarius/ViGEm">ViGEm</a></p>
+    <p>GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!</p>
 
-<p>GloSC consists of:</p>
+    <p>It is <strong>the tool</strong> to enjoy any Game that has trouble with Steam and/or <i>add extra functionality</i> to your SteamController</p>
+    </div>
 
-<ul>
-<li>A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam</li>
-<li>The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays</li>
-<li>The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation</li>
-</ul>
 
-<p>Like my stuff? Consider donating to my <a href="https://www.paypal.me/Flatspotpics">PayPal</a></p>
+    </div>
+  </div>
 
-<p><em>Work in progress</em></p>
 
-<h2>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+  <div class="parallax-container valign-wrapper">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <div class="row center">
+          <h3 class="header col s12 light"><strong>Troubleshooting</strong></h3>
+        </div>
+      </div>
+    </div>
+    <div class="parallax"><img src="background2.png" alt="Unsplashed background img 2"></div>
+  </div>
 
-<pre><code>Copyright 2016 Peter Repukat - FlatspotSoftware
+  <div class="container">
+    <div class="section">
 
+      <div class="row">
+        <div class="col s12 m4">
+          <p><strong>Q: The overlay isn't showing up!</strong></p>
+          <blockquote>
+          <p class="light">A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
+             This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
+             Try running your games as borderless window</p>
+          </blockquote>
+        </div>
+        <div class="col s12 m4">
+          <p><strong>Q: Audio turns off when using this</strong></p>
+          <blockquote>
+          <p class="light">A: ViGEm emulates a full X360-controller incl. peripherals
+          Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches</p>
+          </blockquote>
+        </div>
+        <div class="col s12 m4">
+          <p><strong>Q: Multiple different controllers are not working</strong></p>
+          <blockquote>
+          <p class="light">A: Will probably be fixed in the long run, for now we have to wait for a new ViGEm release.</p>
+          </blockquote>
+        </div>
+        <div class="col s12 m4">
+          <p><strong>Q: Hitting the Steam Button + RT to take a screenshot doesn't work</strong></p>
+          <blockquote>
+          <p class="light">A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image</p>
+          </blockquote>
+        </div>
+        <div class="col s12 m4">
+          <p><strong>Q: UWP Games don't launch in foreground</strong></p>
+          <blockquote>
+          <p class="light">A: For some reason trying to launch them in foreground stops them fron launching entirely
+             For now use alt+tab via Steam-chords
+             This is currently beeing investigated</p>
+          </blockquote>
+        </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="parallax-container valign-wrapper">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <div class="row center">
+          <h5 class="header col s12 light"></h5>
+        </div>
+      </div>
+    </div>
+    <div class="parallax"><img src="background3.png" alt="Unsplashed background img 3"></div>
+  </div>
+
+  <footer class="page-footer light-blue darken-4">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text">License</h5>
+          <p class="grey-text text-lighten-4" style="font-size: 75%">
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
+<br />
 http://www.apache.org/licenses/LICENSE-2.0
-
+<br />
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
-</code></pre>
+limitations under the License.</p>
+        </div>
+        <div class="col l3 s12">
+         <!-- <h5 class="white-text">Settings</h5>
+          <ul>
+            <li><a class="white-text" href="#!">Link 1</a></li>
+            <li><a class="white-text" href="#!">Link 2</a></li>
+            <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li>
+          </ul> -->
+        </div>
+        <div class="col l3 s12">
+          <h5 class="white-text">Connect</h5>
+          <ul>
+            <li><a class="white-text" href="https://twitter.com/flatspotpics">Twitter</a></li>
+            <li><a class="white-text" href="https://www.paypal.me/Flatspotpics">Donate</a></li>
+          <!--  <li><a class="white-text" href="#!">Link 3</a></li>
+            <li><a class="white-text" href="#!">Link 4</a></li> -->
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+      Copyright &copy; 2017 Peter Repukat - FlatspotSoftware
+      </div>
+    </div>
+  </footer>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/Alia5/GloSC">GloSC</a> is maintained by <a href="https://github.com/Alia5">Alia5</a>.</span>
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
 
-    </section>
-
-  
   </body>
 </html>
