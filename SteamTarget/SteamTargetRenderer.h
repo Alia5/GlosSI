@@ -76,11 +76,11 @@ private:
 
 	HMODULE hmodGameOverlayRenderer;
 #ifdef _AMD64_
-	uint64_t *overlayPtr = NULL;
+	uint64_t *overlayPtr = nullptr;
 #else
-	uint32_t *overlayPtr = NULL;
+	uint32_t *overlayPtr = nullptr;
 #endif
-	HWND hwForeGroundWindow = NULL;
+	HWND hwForeGroundWindow = nullptr;
 	bool bNeedFocusSwitch = false;
 
 	VirtualControllerThread controllerThread;
