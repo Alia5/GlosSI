@@ -105,6 +105,8 @@ void GloSC::updateTargetsToNewVersion()
 
 void GloSC::animate(int to)
 {
+	if (to == width())
+		return;
 	QPropertyAnimation* anim = new QPropertyAnimation(this, "size");
 	if (to > width())
 	{
@@ -133,7 +135,7 @@ void GloSC::animate(int to)
 		this->setMinimumWidth(to);
 
 		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui.pbCreateNew, "size");
-		buttonAnim->setEasingCurve(QEasingCurve::OutExpo);
+		buttonAnim->setEasingCurve(QEasingCurve::InExpo);
 		buttonAnim->setDuration(360);
 		buttonAnim->setStartValue(QSize(ui.pbCreateNew->width(), ui.pbCreateNew->height()));
 		buttonAnim->setEndValue(QSize(small_x_create, ui.pbCreateNew->height()));
@@ -148,6 +150,16 @@ void GloSC::animate(int to)
 
 void GloSC::on_pbCreateNew_clicked()
 {
+	ui.leName->setText("");
+
+	ui.cbOverlay->setChecked(true);
+	ui.cbControllers->setChecked(true);
+	ui.cbHookSteam->setChecked(true);
+
+	ui.cbLaunchGame->setChecked(false);
+	ui.lePath->setText("");
+	ui.cbCloseWhenDone->setChecked(false);
+
 	animate(wide_x);
 }
 
