@@ -103,6 +103,54 @@ void GloSC::updateTargetsToNewVersion()
 }
 
 
+void GloSC::animate(int to)
+{
+	QPropertyAnimation* anim = new QPropertyAnimation(this, "size");
+	if (to > width())
+	{
+		anim->setEasingCurve(QEasingCurve::InOutExpo);
+		connect(anim, &QPropertyAnimation::finished, this, [this, to]()
+		{
+			this->setMinimumWidth(to);
+		});
+		this->setMaximumWidth(to);
+
+		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui.pbCreateNew, "size");
+		buttonAnim->setEasingCurve(QEasingCurve::InOutExpo);
+		buttonAnim->setDuration(360);
+		buttonAnim->setStartValue(QSize(ui.pbCreateNew->width(), ui.pbCreateNew->height()));
+		buttonAnim->setEndValue(QSize(wide_x_create, ui.pbCreateNew->height()));
+		buttonAnim->start(QPropertyAnimation::DeleteWhenStopped);
+
+	}
+	else
+	{
+		anim->setEasingCurve(QEasingCurve::InExpo);
+		connect(anim, &QPropertyAnimation::finished, this, [this, to]()
+		{
+			this->setMaximumWidth(to);
+		});
+		this->setMinimumWidth(to);
+
+		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui.pbCreateNew, "size");
+		buttonAnim->setEasingCurve(QEasingCurve::OutExpo);
+		buttonAnim->setDuration(360);
+		buttonAnim->setStartValue(QSize(ui.pbCreateNew->width(), ui.pbCreateNew->height()));
+		buttonAnim->setEndValue(QSize(small_x_create, ui.pbCreateNew->height()));
+		buttonAnim->start(QPropertyAnimation::DeleteWhenStopped);
+
+	}
+	anim->setDuration(360);
+	anim->setStartValue(QSize(this->width(), this->height()));
+	anim->setEndValue(QSize(to, this->height()));
+	anim->start(QPropertyAnimation::DeleteWhenStopped);
+}
+
+void GloSC::on_pbCreateNew_clicked()
+{
+	animate(wide_x);
+}
+
 void GloSC::on_pbSave_clicked()
 {
 	QString name = ui.leName->text();
@@ -161,6 +209,7 @@ void GloSC::on_pbSave_clicked()
 
 	updateEntryList();
 
+	animate(small_x);
 }
 
 
@@ -182,11 +231,12 @@ void GloSC::on_pbDelete_clicked()
 		dir.removeRecursively();
 	}
 	updateEntryList();
+
+	animate(small_x);
 }
 
 void GloSC::on_pbAddToSteam_clicked()
 {
-
 	if (ui.lwInstances->count() <= 0)
 	{
 		QMessageBox::information(this, "GloSC", "No shortcuts! Create some shortcuts first for them to be added to Steam!", QMessageBox::Ok);
@@ -301,6 +351,7 @@ void GloSC::on_pbAddToSteam_clicked()
 	shortcutsFile.close();
 	QMessageBox::information(this, "GloSC", "Shortcuts were added! Restart Steam for changes to take effect!", QMessageBox::Ok);
 
+	animate(small_x);
 }
 
 void GloSC::on_pbSearchPath_clicked()
@@ -451,5 +502,29 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	settings.endGroup();
 
+}
 
+void GloSC::on_lwInstances_itemSelectionChanged()
+{
+	if (width() != wide_x)
+	{
+		animate(wide_x);
+	} else {
+		//ui.configBox->setGraphicsEffect(&opEff);
+		//QPropertyAnimation* anim = new QPropertyAnimation(&opEff, "opacity");
+		//anim->setEasingCurve(QEasingCurve::OutExpo);
+		//anim->setDuration(160);
+		//anim->setStartValue(1.f);
+		//anim->setEndValue(0.f);
+		//connect(anim, &QPropertyAnimation::finished, this, [this]()
+		//{
+		//	QPropertyAnimation* anim2 = new QPropertyAnimation(&opEff, "opacity");
+		//	anim2->setEasingCurve(QEasingCurve::InExpo);
+		//	anim2->setDuration(160);
+		//	anim2->setStartValue(0.f);
+		//	anim2->setEndValue(1.f);
+		//	anim2->start(QPropertyAnimation::DeleteWhenStopped);
+		//});
+		//anim->start(QPropertyAnimation::DeleteWhenStopped);
+	}
 }

@@ -12,7 +12,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>711</width>
+    <width>302</width>
     <height>386</height>
    </size>
   </property>
@@ -58,14 +58,14 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>150</x>
        <y>330</y>
-       <width>261</width>
+       <width>121</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Add to Steam</string>
+      <string>Add all to Steam</string>
      </property>
      <property name="autoDefault">
       <bool>false</bool>
@@ -77,8 +77,21 @@
       <bool>false</bool>
      </property>
     </widget>
+    <widget class="QPushButton" name="pbCreateNew">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>330</y>
+       <width>131</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Create New</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_2">
+   <widget class="QGroupBox" name="configBox">
     <property name="geometry">
      <rect>
       <x>309</x>
@@ -193,8 +206,11 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">font: 87 8pt &quot;Arial Black&quot;;</string>
+     </property>
      <property name="text">
-      <string>Save / Create</string>
+      <string>Save</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_3">
@@ -266,6 +282,9 @@ Enforces bindings reliably by hooking into Steam
      </property>
     </widget>
    </widget>
+   <zorder>groupBox</zorder>
+   <zorder>configBox</zorder>
+   <zorder>verticalGroupBox</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

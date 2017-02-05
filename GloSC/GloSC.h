@@ -28,6 +28,10 @@ limitations under the License.
 
 #include <Windows.h>
 #include <appmodel.h>
+#include <QTimer>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
+
 
 #include "UWPPair.h"
 #include "UWPSelectDialog.h"
@@ -51,13 +55,25 @@ private:
 
 	const unsigned int GLOSC_VERSION = 0x00000113;
 
+	int wide_x = 711;
+	int small_x = 302;
+
+	int wide_x_create = 261;
+	int small_x_create = 131;
+
+	QGraphicsOpacityEffect opEff;
+
+	void animate(int to);
+
 private slots:
+	void on_pbCreateNew_clicked();
 	void on_pbSave_clicked();
 	void on_pbDelete_clicked();
 	void on_pbAddToSteam_clicked();
 	void on_pbSearchPath_clicked();
 	void on_pbUWP_clicked();
 	void on_lwInstances_currentRowChanged(int row);
+	void on_lwInstances_itemSelectionChanged();
 
 
 };
