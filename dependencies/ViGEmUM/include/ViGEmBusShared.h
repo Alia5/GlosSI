@@ -24,6 +24,7 @@ SOFTWARE.
 
 
 // {96E42B22-F5E9-42F8-B043-ED0F932F014F}
+// ReSharper disable once CppMissingIncludeGuard
 DEFINE_GUID(GUID_DEVINTERFACE_BUSENUM_VIGEM,
     0x96E42B22, 0xF5E9, 0x42F8, 0xB0, 0x43, 0xED, 0x0F, 0x93, 0x2F, 0x01, 0x4F);
 
@@ -36,6 +37,17 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
     0xA8BA2D1F, 0x894F, 0x464A, 0xB0, 0xCE, 0x7A, 0x0C, 0x8F, 0xD6, 0x5D, 0xF1);
 
 #pragma once
+
+//
+// Common version for user-mode library and driver compatibility
+// 
+// On initialization, the user-mode library has this number embedded
+// and sends it to the bus on its enumeration. The bus compares this
+// number to the one it was compiled with. If they match, the bus
+// access is permitted and success reported. If they mismatch, an
+// error is reported and the user-mode library skips this instance.
+// 
+#define VIGEM_COMMON_VERSION            0x0001
 
 #define FILE_DEVICE_BUSENUM             FILE_DEVICE_BUS_EXTENDER
 #define BUSENUM_IOCTL(_index_)          CTL_CODE(FILE_DEVICE_BUSENUM, _index_, METHOD_BUFFERED, FILE_READ_DATA)
@@ -50,6 +62,7 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 // 
 #define IOCTL_VIGEM_PLUGIN_TARGET       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x000)
 #define IOCTL_VIGEM_UNPLUG_TARGET       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x001)
+#define IOCTL_VIGEM_CHECK_VERSION       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x002)
 
 #define IOCTL_XUSB_REQUEST_NOTIFICATION BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x200)
 #define IOCTL_XUSB_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x201)
@@ -58,8 +71,6 @@ DEFINE_GUID(GUID_DEVCLASS_VIGEM_RAWPDO,
 #define IOCTL_XGIP_SUBMIT_REPORT        BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x204)
 #define IOCTL_XGIP_SUBMIT_INTERRUPT     BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x205)
 
-#define VIGEM_COMMON_VERSION                0x01
-#define VIGEM_INTERFACE_STANDARD_VERSION    0x02
 
 //
 //  Data structure used in PlugIn and UnPlug ioctls
@@ -557,4 +568,22 @@ VOID FORCEINLINE XGIP_SUBMIT_INTERRUPT_INIT(
     Report->SerialNo = SerialNo;
 }
 
+typedef struct _VIGEM_CHECK_VERSION
+{
+    IN ULONG Size;
+
+    IN ULONG Version;
+
+} VIGEM_CHECK_VERSION, *PVIGEM_CHECK_VERSION;
+
+VOID FORCEINLINE VIGEM_CHECK_VERSION_INIT(
+    _Out_ PVIGEM_CHECK_VERSION CheckVersion,
+    _In_ ULONG Version
+)
+{
+    RtlZeroMemory(CheckVersion, sizeof(VIGEM_CHECK_VERSION));
+
+    CheckVersion->Size = sizeof(VIGEM_CHECK_VERSION);
+    CheckVersion->Version = Version;
+}
 

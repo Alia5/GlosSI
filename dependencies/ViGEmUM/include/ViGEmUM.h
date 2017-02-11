@@ -23,12 +23,14 @@ SOFTWARE.
 */
 
 
+// ReSharper disable CppMissingIncludeGuard
 #ifdef _MSC_VER
+// ReSharper restore CppMissingIncludeGuard
 #pragma once
 #endif
 
 #include <initguid.h>
-#include <public.h>
+#include <ViGEmBusShared.h>
 
 #ifdef VIGEM_EXPORTS
 #define VIGEM_API __declspec(dllexport)
@@ -36,28 +38,30 @@ SOFTWARE.
 #define VIGEM_API __declspec(dllimport)
 #endif
 
-#define VIGEM_TARGETS_MAX   4
+#define VIGEM_TARGETS_MAX   0xFF
 
 typedef enum _VIGEM_ERRORS
 {
-    VIGEM_ERROR_NONE = 0x0000,
-    VIGEM_ERROR_BUS_NOT_FOUND,
-    VIGEM_ERROR_NO_FREE_SLOT,
-    VIGEM_ERROR_INVALID_TARGET,
-    VIGEM_ERROR_REMOVAL_FAILED,
-    VIGEM_ERROR_ALREADY_CONNECTED,
-    VIGEM_ERROR_TARGET_UNINITIALIZED,
-    VIGEM_ERROR_TARGET_NOT_PLUGGED_IN
+    VIGEM_ERROR_NONE = 0x20000000,
+    VIGEM_ERROR_BUS_NOT_FOUND = 0xE0000001,
+    VIGEM_ERROR_NO_FREE_SLOT = 0xE0000002,
+    VIGEM_ERROR_INVALID_TARGET = 0xE0000003,
+    VIGEM_ERROR_REMOVAL_FAILED = 0xE0000004,
+    VIGEM_ERROR_ALREADY_CONNECTED = 0xE0000005,
+    VIGEM_ERROR_TARGET_UNINITIALIZED = 0xE0000006,
+    VIGEM_ERROR_TARGET_NOT_PLUGGED_IN = 0xE0000007,
+    VIGEM_ERROR_BUS_VERSION_MISMATCH = 0xE0000008,
+    VIGEM_ERROR_BUS_ACCESS_FAILED = 0xE0000009
 } VIGEM_ERROR;
 
 #define VIGEM_SUCCESS(_val_) (_val_ == VIGEM_ERROR_NONE)
 
 typedef enum _VIGEM_TARGET_STATE
 {
-    VigemTargetNew,
-    VigemTargetInitialized,
-    VigemTargetConnected,
-    VigemTargetDisconnected
+    VIGEM_TARGET_NEW,
+    VIGEM_TARGET_INITIALIZED,
+    VIGEM_TARGET_CONNECTED,
+    VIGEM_TARGET_DISCONNECTED
 } VIGEM_TARGET_STATE, *PVIGEM_TARGET_STATE;
 
 //
@@ -66,9 +70,10 @@ typedef enum _VIGEM_TARGET_STATE
 typedef struct _VIGEM_TARGET
 {
     IN ULONG Size;
-    IN USHORT Version;
     IN ULONG SerialNo;
     IN VIGEM_TARGET_STATE State;
+    IN USHORT VendorId;
+    IN USHORT ProductId;
 } VIGEM_TARGET, *PVIGEM_TARGET;
 
 //
@@ -81,8 +86,7 @@ VOID FORCEINLINE VIGEM_TARGET_INIT(
     RtlZeroMemory(Target, sizeof(VIGEM_TARGET));
 
     Target->Size = sizeof(VIGEM_TARGET);
-    Target->Version = VIGEM_COMMON_VERSION;
-    Target->State = VigemTargetInitialized;
+    Target->State = VIGEM_TARGET_INITIALIZED;
 }
 
 typedef VOID(CALLBACK* PVIGEM_XUSB_NOTIFICATION)(
@@ -133,6 +137,14 @@ extern "C"
     VIGEM_API VIGEM_ERROR vigem_xgip_submit_report(
         _In_ VIGEM_TARGET Target,
         _In_ XGIP_REPORT Report);
+
+    VIGEM_API VOID vigem_target_set_vid(
+        _Out_ PVIGEM_TARGET Target,
+        _In_ USHORT VendorId);
+
+    VIGEM_API VOID vigem_target_set_pid(
+        _Out_ PVIGEM_TARGET Target,
+        _In_ USHORT ProductId);
 
 #ifdef __cplusplus
 }
