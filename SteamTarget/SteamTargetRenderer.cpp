@@ -15,6 +15,8 @@ limitations under the License.
 */
 #include "SteamTargetRenderer.h"
 
+std::atomic<bool> SteamTargetRenderer::overlayOpen = false;
+HHOOK SteamTargetRenderer::hook = nullptr;
 
 SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -61,10 +63,23 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		controllerThread.run();
 
 	QTimer::singleShot(2000, this, &SteamTargetRenderer::launchApp); // lets steam do its thing
+
+	if (hmodGameOverlayRenderer != nullptr)
+	{
+		//Hook MessageQueue to detect if overlay gets opened / closed
+		//Steam Posts a Message with 0x14FA / 0x14F7 when the overlay gets opened / closed
+		hook = SetWindowsHookEx(WH_GETMESSAGE, HookCallback, nullptr, GetCurrentThreadId());
+	}
 }
 
 SteamTargetRenderer::~SteamTargetRenderer()
 {	
+
+	if (hmodGameOverlayRenderer != nullptr)
+	{
+		UnhookWindowsHookEx(hook);
+	}
+
 	renderThread.join();
 	if (controllerThread.isRunning())
 		controllerThread.stop();
@@ -81,13 +96,13 @@ void SteamTargetRenderer::stop()
 	QApplication::exit(0);
 }
 
+
 void SteamTargetRenderer::RunSfWindowLoop()
 {
 	if (!bRunLoop)
 		return;
 	sfWindow.setActive(true);
 
-	sf::Clock reCheckControllerTimer;
 	bool focusSwitchNeeded = true;
 
 	if (bDrawOverlay)
@@ -137,9 +152,8 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 		//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
 		//even if hooking steam, this ensures the overlay stays working
-		if (overlayPtr != NULL)
+		if (hmodGameOverlayRenderer != NULL)
 		{
-			char overlayOpen = *reinterpret_cast<char*>(overlayPtr);
 			if (overlayOpen)
 			{
 				if (!bNeedFocusSwitch)
@@ -196,24 +210,12 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 void SteamTargetRenderer::getSteamOverlay()
 {
-	//TODO: switch to pattern scanning... this is madness.
-#ifdef _AMD64_
-	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer64.dll");
+	hmodGameOverlayRenderer = GetModuleHandle(overlayModuleName);
 
 	if (hmodGameOverlayRenderer != nullptr)
 	{
-		std::cout << "GameOverlayrenderer64.dll found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
-		overlayPtr = reinterpret_cast<uint64_t*>(uint64_t(hmodGameOverlayRenderer) + 0x1365cc);
+		std::cout << overlayModuleName << " found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
 	}
-#else
-	hmodGameOverlayRenderer = GetModuleHandle(L"Gameoverlayrenderer.dll");
-
-	if (hmodGameOverlayRenderer != nullptr)
-	{
-		std::cout << "GameOverlayrenderer.dll found;  Module at: 0x" << hmodGameOverlayRenderer << std::endl;
-		overlayPtr = reinterpret_cast<uint32_t*>(uint32_t(hmodGameOverlayRenderer) + 0xEE828);
-	}
-#endif
 }
 
 
@@ -320,6 +322,25 @@ void SteamTargetRenderer::loadLogo()
 	backgroundSprite.setPosition(sf::Vector2f(winSize.width / 2.f, winSize.height / 2.f));
 }
 
+LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode >= 0)
+	{
+		PMSG msg = reinterpret_cast<PMSG>(lParam);
+		if (msg->message == 0x14FA) //Posted when the overlay gets opened
+		{
+			overlayOpen = true;
+			std::cout << "Overlay Opened!\n";
+		}
+		else if (msg->message == 0x14F7 || msg->message == 512)
+		{
+			overlayOpen = false;
+			std::cout << "Overlay closed!\n";
+		}
+	}
+	return CallNextHookEx(hook, nCode, wParam, lParam);
+}
+
 void SteamTargetRenderer::launchApp()
 {
 	bool launchGame = false;
@@ -423,5 +444,7 @@ void SteamTargetRenderer::checkSharedMem()
 			exit(0);
 		}
 	}
+
+
 }
 

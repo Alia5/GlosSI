@@ -24,6 +24,7 @@ limitations under the License.
 #include <iostream>
 #include <thread>
 
+#include <QApplication>
 #include <QTimer>
 #include <QProcess>
 #include <QBuffer>
@@ -32,10 +33,9 @@ limitations under the License.
 #include <QSettings>
 #include <QCoreApplication>
 #include <QDir>
-
+#include <psapi.h>
 
 #include "VirtualControllerThread.h"
-#include <QApplication>
 
 class SteamTargetRenderer : public QApplication
 {
@@ -51,7 +51,6 @@ public:
 
 
 private:
-
 	void stop();
 	void getSteamOverlay();
 	void RunSfWindowLoop();
@@ -61,7 +60,7 @@ private:
 
 	void loadLogo();
 
-	bool bRunLoop = true;
+	std::atomic<bool> bRunLoop = true;
 
 	bool bDrawDebugEdges = false;
 	bool bDrawOverlay = true;
@@ -74,12 +73,16 @@ private:
 
 	HWND consoleHwnd;
 
-	HMODULE hmodGameOverlayRenderer;
+	HMODULE hmodGameOverlayRenderer = nullptr;
 #ifdef _AMD64_
-	uint64_t *overlayPtr = nullptr;
+	WCHAR* overlayModuleName = L"GameOverlayRenderer64.dll";
 #else
-	uint32_t *overlayPtr = nullptr;
+	WCHAR* overlayModuleName = L"GameOverlayRenderer.dll";
 #endif
+	static std::atomic<bool> overlayOpen;
+	static HHOOK hook;
+	static LRESULT WINAPI HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
+
 	HWND hwForeGroundWindow = nullptr;
 	bool bNeedFocusSwitch = false;
 
