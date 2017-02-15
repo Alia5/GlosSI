@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "VirtualControllerThread.h"
-
-ULONG VirtualControllerThread::ulTargetSerials[XUSER_MAX_COUNT];
+//
 
 VirtualControllerThread::VirtualControllerThread()
 {
@@ -33,7 +32,6 @@ VirtualControllerThread::VirtualControllerThread()
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
 		VIGEM_TARGET_INIT(&vtX360[i]);
-		VirtualControllerThread::ulTargetSerials[i] = NULL;
 	}
 
 }
@@ -62,7 +60,7 @@ void VirtualControllerThread::stop()
 
 void VirtualControllerThread::resetControllers()
 {
-	iRealControllers = getRealControllers();
+	//iRealControllers = getRealControllers();
 }
 
 bool VirtualControllerThread::isRunning()
@@ -73,91 +71,108 @@ bool VirtualControllerThread::isRunning()
 void VirtualControllerThread::controllerLoop()
 {
 	DWORD result;
-	sf::Clock reCheckControllerTimer;
-	int i, j;
+	DWORD result2;
+	sf::Clock testTimer;
+	//int i, j;
 	while (bShouldRun)
 	{
 		sfClock.restart();
 
-		if (reCheckControllerTimer.getElapsedTime().asSeconds() >= 1.f)
+		if (realXGetState == nullptr && testTimer.getElapsedTime().asSeconds() > 1)
 		{
-			iTotalControllers = 0;
-			for (i = 0; i < XUSER_MAX_COUNT; i++)
-			{
-				ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
+			HMODULE xinputmod = nullptr;
 
-				result = XInputGetState(i, &xsState[i]);
+			HANDLE hProcess = GetCurrentProcess();
+			HMODULE hMods[1024];
+			DWORD cbNeeded;
+			EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded);
+			for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+			{
+				TCHAR szModName[MAX_PATH];
+
+				if (GetModuleBaseName(hProcess, hMods[i], szModName,
+					sizeof(szModName) / sizeof(TCHAR)))
+				{
+					std::wstring name(&szModName[0]);
+					auto& f = std::use_facet<std::ctype<wchar_t>>(std::locale());
+					f.tolower(&name[0], &name[0] + name.size());
+					if (name.find(std::wstring(L"xinput")) != std::wstring::npos)
+					{
+						xinputmod = hMods[i];
+						break;
+					}
+				}
+			}
+
+			uint64_t testaddr = reinterpret_cast<uint64_t>(GetProcAddress(xinputmod, "XInputGetState"));
+
+			std::cout << "testaddr: " << std::hex << testaddr << "\n";
+
+			XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(testaddr);
+
+			std::cout << "realXgstate: " << std::hex << realXgstate << "\n";
+			for (int i = 0; i < 5; i++)
+			{
+				valveHookBytes[i] = *reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(*realXgstate) + i);
+			}
+
+			realXGetState = realXgstate;
+		}
+
+		if (realXGetState != nullptr)
+		{
+			if (!checkedControllers)
+			{
+				for (int i = 0; i < XUSER_MAX_COUNT; i++)
+				{
+					XINPUT_STATE state = { 0 };
+					result = XInputGetStateWrapper(i, &state);
+					result2 = callRealXinputGetState(i, &state);
+					if (result != result2)
+						controllerCount++;
+				}
+				std::cout << "ControllerCount: " << std::to_string(controllerCount) << "\n";
+				checkedControllers = true;
+			}
+
+			for (int i = 0; i < controllerCount; i++)
+			{
+				////////
+				ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
+				result = XInputGetStateWrapper(i, &xsState[i]);
 
 				if (result == ERROR_SUCCESS)
 				{
-					iTotalControllers++;
-				}
-				else {
-					break;
-				}
-			}
-			iTotalControllers -= iVirtualControllers;
-			reCheckControllerTimer.restart();
-		}
+					vigem_target_set_vid(&vtX360[i], 0x1234);
+					vigem_target_set_pid(&vtX360[i], 0x0001);
 
-		for (i = iRealControllers; i < iTotalControllers && i < XUSER_MAX_COUNT; i++)
-		{
-			////////
-			ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
-
-
-			result = XInputGetState(i, &xsState[i]);
-
-			if (result == ERROR_SUCCESS)
-			{
-
-				if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &vtX360[i])))
-				{
-					iVirtualControllers++;
-
-					std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
-
-					VirtualControllerThread::ulTargetSerials[i] = vtX360[i].SerialNo;
-
-					vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
-				}
-
-				RtlCopyMemory(&xrReport[i], &xsState[i].Gamepad, sizeof(XUSB_REPORT));
-
-				vigem_xusb_submit_report(vtX360[i], xrReport[i]);
-			}
-			else
-			{
-				if (VIGEM_SUCCESS(vigem_target_unplug(&vtX360[i])))
-				{
-					iVirtualControllers--;
-					iTotalControllers = 0;
-					for (j = 0; j < XUSER_MAX_COUNT; j++)
+					if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &vtX360[i])))
 					{
-						ZeroMemory(&xsState[j], sizeof(XINPUT_STATE));
-
-						result = XInputGetState(j, &xsState[j]);
-
-						if (result == ERROR_SUCCESS)
-						{
-							iTotalControllers++;
-						}
-						else {
-							break;
-						}
+						std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
+						vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
 					}
-					iTotalControllers -= iVirtualControllers;
-					std::cout << "Unplugged controller " << vtX360[i].SerialNo << std::endl;
-					VirtualControllerThread::ulTargetSerials[i] = NULL;
+
+					vigem_xusb_submit_report(vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&xsState[i].Gamepad));
+				}
+				else
+				{
+					if (VIGEM_SUCCESS(vigem_target_unplug(&vtX360[i])))
+					{
+						std::cout << "Unplugged controller " << vtX360[i].SerialNo << std::endl;
+					}
 				}
 			}
 		}
+
+
 
 		tickTime = sfClock.getElapsedTime().asMicroseconds();
 		if (tickTime < delay)
 		{
 			std::this_thread::sleep_for(std::chrono::microseconds(delay - tickTime));
 		}
+
+		//std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 }
 
@@ -194,14 +209,46 @@ void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR Larg
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
-	vibration.wRightMotorSpeed = SmallMotor * 0xff;
+	vibration.wRightMotorSpeed = SmallMotor * 0xff; //Yeah yeah I do know about bitshifting and the multiplication not being 100% correct...
 
 
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	{
-		if (VirtualControllerThread::ulTargetSerials[i] == Target.SerialNo)
-		{
-			XInputSetState(i, &vibration);
-		}
-	}
+	//for (int i = 0; i < XUSER_MAX_COUNT; i++)
+	//{
+	//	if (VirtualControllerThread::ulTargetSerials[i] == Target.SerialNo)
+	//	{
+			XInputSetState(Target.SerialNo-1, &vibration);
+	//	}
+	//}
 }
+
+DWORD VirtualControllerThread::XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState)
+{
+	return XInputGetState(dwUserIndex, pState);
+}
+
+DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
+{
+	DWORD ret;
+	DWORD dwOldProtect, dwBkup;
+
+	BYTE* Address = reinterpret_cast<BYTE*>(realXGetState);
+	VirtualProtect(Address, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+	for (DWORD i = 0; i < 5; i++)
+	{
+		*(Address + i) = realBytes[i];
+	}
+	VirtualProtect(Address, 4, dwOldProtect, &dwBkup);
+
+	ret = realXGetState(dwUserIndex, pState);
+
+	VirtualProtect(Address, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
+	for (int i = 0; i < 5; i++)
+	{
+		*(Address + i) = valveHookBytes[i];
+	}
+	VirtualProtect(Address, 5, dwOldProtect, &dwBkup);
+
+	return ret;
+}
+
+

@@ -17,14 +17,17 @@ limitations under the License.
 
 #include <thread>
 #include <chrono>
-#include <Xinput.h>
-#include <ViGEmUM.h>
+#include <iostream>
+#include <atomic>
+#include <vector>
 
 #include <Windows.h>
+#include <psapi.h>
 
-#include <SFML\System.hpp>
+#include <SFML/System.hpp>
 
-#include <iostream>
+#include <Xinput.h>
+#include <ViGEmUM.h>
 
 class VirtualControllerThread
 {
@@ -41,16 +44,30 @@ public:
 
 private:
 
-	bool bShouldRun = false;
+	std::atomic<bool> bShouldRun = false;
 
-	int iRealControllers = 0;
-	int iTotalControllers = 0;
+
+	typedef DWORD(WINAPI* XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE* pState);
+
+	uint8_t valveHookBytes[5];
+	uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
+	//uint8_t realBytes[5] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x90 };
+
+	XInputGetState_t x_get_state = &XInputGetState;
+
+	XInputGetState_t realXGetState = nullptr;
+
+	//int iRealControllers = 0;
+	//int iTotalControllers = 0;
 	int iVirtualControllers = 0;
+	int controllerCount = 0;
 
-	static ULONG ulTargetSerials[XUSER_MAX_COUNT];
+	bool checkedControllers = false;
+
+	//static std::vector<ULONG> ulTargetSerials;
+
 	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
 	XINPUT_STATE xsState[XUSER_MAX_COUNT];
-	XUSB_REPORT xrReport[XUSER_MAX_COUNT];
 
 	std::thread controllerThread;
 
@@ -63,6 +80,10 @@ private:
 	int getRealControllers();
 
 	static void controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
+
+	static DWORD XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState);
+
+	DWORD callRealXinputGetState(DWORD dwUserIndex, XINPUT_STATE* pState);
 
 };
 
