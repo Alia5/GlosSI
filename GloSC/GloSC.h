@@ -53,7 +53,7 @@ private:
 
 	QList<UWPPair> uwpPairs;
 
-	const unsigned int GLOSC_VERSION = 0x00000113;
+	const unsigned int GLOSC_VERSION = 0x00000114;
 
 	int wide_x = 711;
 	int small_x = 302;
@@ -66,6 +66,7 @@ private:
 	void animate(int to);
 
 private slots:
+	void on_cbUseDesktop_toggled(bool checked);
 	void on_pbCreateNew_clicked();
 	void on_pbSave_clicked();
 	void on_pbDelete_clicked();

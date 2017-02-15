@@ -54,6 +54,7 @@ void GloSC::writeIni(QString entryName)
 
 	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
+	settings.setValue("bUseDesktopConfig", 0 + ui.cbUseDesktop->isChecked());
 	settings.setValue("bHookSteam", 0 + ui.cbHookSteam->isChecked());
 	settings.setValue("version", GLOSC_VERSION);
 
@@ -146,6 +147,12 @@ void GloSC::animate(int to)
 	anim->setStartValue(QSize(this->width(), this->height()));
 	anim->setEndValue(QSize(to, this->height()));
 	anim->start(QPropertyAnimation::DeleteWhenStopped);
+}
+
+void GloSC::on_cbUseDesktop_toggled(bool checked)
+{
+	ui.cbHookSteam->setEnabled(!checked);
+	ui.cbHookSteam->setChecked(!checked);
 }
 
 void GloSC::on_pbCreateNew_clicked()
@@ -498,7 +505,17 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	ui.cbOverlay->setChecked(settings.value("bEnableOverlay").toBool());
 	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
-	ui.cbHookSteam->setChecked(settings.value("bHookSteam").toBool());
+	ui.cbUseDesktop->setChecked(settings.value("bUseDesktopConfig").toBool());
+	if (ui.cbUseDesktop->isChecked())
+	{
+		ui.cbHookSteam->setChecked(false);
+		ui.cbHookSteam->setEnabled(false);
+	}
+	else
+	{
+		ui.cbHookSteam->setEnabled(true);
+		ui.cbHookSteam->setChecked(settings.value("bHookSteam").toBool());
+	}
 
 	settings.endGroup();
 

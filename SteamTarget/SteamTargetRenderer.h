@@ -62,6 +62,7 @@ private:
 
 	std::atomic<bool> bRunLoop = true;
 
+	bool bUseDesktopConfig = false;
 	bool bDrawDebugEdges = false;
 	bool bDrawOverlay = true;
 	bool bVsync = false;

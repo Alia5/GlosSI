@@ -107,7 +107,7 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>231</y>
+       <y>251</y>
        <width>261</width>
        <height>20</height>
       </rect>
@@ -117,7 +117,7 @@
      <property name="geometry">
       <rect>
        <x>344</x>
-       <y>230</y>
+       <y>250</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -130,7 +130,7 @@
      <property name="geometry">
       <rect>
        <x>300</x>
-       <y>230</y>
+       <y>250</y>
        <width>41</width>
        <height>23</height>
       </rect>
@@ -143,7 +143,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>70</y>
+       <y>60</y>
        <width>371</width>
        <height>17</height>
       </rect>
@@ -159,7 +159,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>100</y>
+       <y>90</y>
        <width>371</width>
        <height>17</height>
       </rect>
@@ -175,7 +175,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>210</y>
+       <y>230</y>
        <width>371</width>
        <height>17</height>
       </rect>
@@ -188,7 +188,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>231</y>
+       <y>251</y>
        <width>31</width>
        <height>20</height>
       </rect>
@@ -253,9 +253,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>260</y>
+       <y>280</y>
        <width>371</width>
-       <height>51</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
@@ -267,24 +267,34 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>140</y>
+       <y>170</y>
        <width>371</width>
-       <height>51</height>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
       <string>Hook Steam
-Enforces bindings reliably by hooking into Steam
-</string>
+Enforces bindings reliably by hooking into Steam</string>
      </property>
      <property name="checked">
       <bool>true</bool>
      </property>
     </widget>
+    <widget class="QCheckBox" name="cbUseDesktop">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>130</y>
+       <width>371</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Use Desktop-Config
+Disables hooking, per application bindings won't work</string>
+     </property>
+    </widget>
    </widget>
-   <zorder>groupBox</zorder>
-   <zorder>configBox</zorder>
-   <zorder>verticalGroupBox</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

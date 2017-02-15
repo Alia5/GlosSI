@@ -38,6 +38,9 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		}else if (childkey == "bHookSteam") {
 			bHookSteam = settings.value(childkey).toBool();
 		}
+		else if (childkey == "bUseDesktopConfig") {
+			bUseDesktopConfig = settings.value(childkey).toBool();
+		}
 	}
 	settings.endGroup();
 
@@ -57,7 +60,7 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
 									  //QT Windows cause trouble with the overlay, so we cannot use them
 
-	ShowWindow(consoleHwnd, SW_HIDE);
+	//ShowWindow(consoleHwnd, SW_HIDE);
 
 	if (bEnableControllers)
 		controllerThread.run();
@@ -70,6 +73,19 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		//Steam Posts a Message with 0x14FA / 0x14F7 when the overlay gets opened / closed
 		hook = SetWindowsHookEx(WH_GETMESSAGE, HookCallback, nullptr, GetCurrentThreadId());
 	}
+
+
+	if (bUseDesktopConfig)
+	{
+		bHookSteam = false;
+		QTimer::singleShot(1000, this, []()
+		{
+			HWND taskbar = FindWindow(L"Shell_TrayWnd", nullptr);
+			SetFocus(taskbar);
+			SetForegroundWindow(taskbar);
+		});
+	}
+
 }
 
 SteamTargetRenderer::~SteamTargetRenderer()
@@ -128,6 +144,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		if (bDrawDebugEdges)
 			drawDebugEdges();
 
+
 		//This ensures that we stay in game binding, even if focused application changes! (Why does this work? Well, i dunno... ask Valve...)
 		//Only works with a console window
 		//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
@@ -142,11 +159,14 @@ void SteamTargetRenderer::RunSfWindowLoop()
 				hookBindings(); //cleanup - unhooking / unloading of dll is managed by the GloSC gamelauncher rather than here
 
 			focusSwitchNeeded = false;
-			SetFocus(consoleHwnd);
-			sf::Clock clock;
-			while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+			if (!bUseDesktopConfig)
 			{
-				Sleep(1);
+				SetFocus(consoleHwnd);
+				sf::Clock clock;
+				while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+				{
+					Sleep(1);
+				}
 			}
 		}
 
@@ -169,12 +189,16 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
-					//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
-					SetFocus(consoleHwnd);
-					sf::Clock clock;
-					while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+
+					if (!bUseDesktopConfig)
 					{
-						Sleep(1);
+						//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
+						SetFocus(consoleHwnd);
+						sf::Clock clock;
+						while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
+						{
+							Sleep(1);
+						}
 					}
 
 					//Move the mouse cursor inside the overlaywindow
