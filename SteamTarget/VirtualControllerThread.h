@@ -49,7 +49,14 @@ private:
 
 	static const uint8_t opPatchLenght = 5;
 	uint8_t valveHookBytes[5];
+
+	// First 5 bytes are the same for XInput1_4.dll and XInput9_1_0.dll (on AMD64 at least, didn't check yet for x86, there is no ViGEm build for Win7 anway...)
+	// So no change has to be made for Win7 Targets
+#ifdef _AMD64_
 	const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
+#else
+	const uint8_t realBytes[5] = { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
+#endif
 	//uint8_t realBytes[5] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x90 };
 
 	int controllerCount = 0;
