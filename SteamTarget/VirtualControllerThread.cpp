@@ -18,8 +18,6 @@ limitations under the License.
 
 VirtualControllerThread::VirtualControllerThread()
 {
-	resetControllers();
-
 	if (!VIGEM_SUCCESS(vigem_init()))
 	{
 		std::cout << "Error initializing ViGem!" << std::endl;
@@ -27,13 +25,11 @@ VirtualControllerThread::VirtualControllerThread()
 		bShouldRun = false;
 	}
 
-
 	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
 		VIGEM_TARGET_INIT(&vtX360[i]);
 	}
-
 }
 
 
@@ -58,10 +54,6 @@ void VirtualControllerThread::stop()
 	}
 }
 
-void VirtualControllerThread::resetControllers()
-{
-	//iRealControllers = getRealControllers();
-}
 
 bool VirtualControllerThread::isRunning()
 {
@@ -73,12 +65,15 @@ void VirtualControllerThread::controllerLoop()
 	DWORD result;
 	DWORD result2;
 	sf::Clock testTimer;
-	//int i, j;
 	while (bShouldRun)
 	{
 		sfClock.restart();
 
-		if (realXGetState == nullptr && testTimer.getElapsedTime().asSeconds() > 1)
+		// We have to retrieve the XInputGetState function by loading it via GetProcAdress
+		// otherwise the M$ compiler calls to a jumptable, jumping to the real function
+		// We can't have this if we wan't to dynamically unpatch and repatch Valve's XInput hook
+		// Also wait a second, jut to be sure Steam has done it's hooking thing...
+		if (XGetState == nullptr && testTimer.getElapsedTime().asSeconds() > 1)
 		{
 			HMODULE xinputmod = nullptr;
 
@@ -104,11 +99,7 @@ void VirtualControllerThread::controllerLoop()
 				}
 			}
 
-			uint64_t testaddr = reinterpret_cast<uint64_t>(GetProcAddress(xinputmod, "XInputGetState"));
-
-			std::cout << "testaddr: " << std::hex << testaddr << "\n";
-
-			XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(testaddr);
+			XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(GetProcAddress(xinputmod, "XInputGetState"));
 
 			std::cout << "realXgstate: " << std::hex << realXgstate << "\n";
 			for (int i = 0; i < 5; i++)
@@ -116,43 +107,46 @@ void VirtualControllerThread::controllerLoop()
 				valveHookBytes[i] = *reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(*realXgstate) + i);
 			}
 
-			realXGetState = realXgstate;
+			XGetState = realXgstate;
+			controllerCount = 1;
 		}
 
-		if (realXGetState != nullptr)
+		if (XGetState != nullptr)
 		{
-			if (!checkedControllers)
-			{
-				for (int i = 0; i < XUSER_MAX_COUNT; i++)
-				{
-					XINPUT_STATE state = { 0 };
-					result = XInputGetStateWrapper(i, &state);
-					result2 = callRealXinputGetState(i, &state);
-					if (result != result2)
-						controllerCount++;
-				}
-				std::cout << "ControllerCount: " << std::to_string(controllerCount) << "\n";
-				checkedControllers = true;
-			}
-
-			for (int i = 0; i < controllerCount; i++)
+			for (int i = 0; i < XUSER_MAX_COUNT; i++)
 			{
 				////////
-				ZeroMemory(&xsState[i], sizeof(XINPUT_STATE));
-				result = XInputGetStateWrapper(i, &xsState[i]);
+				XINPUT_STATE state = { 0 };
+				result = XInputGetStateWrapper(i, &state);
+				XINPUT_STATE state2 = { 0 };
+				result2 = callRealXinputGetState(i, &state2);
 
 				if (result == ERROR_SUCCESS)
 				{
-					vigem_target_set_vid(&vtX360[i], 0x1234);
-					vigem_target_set_pid(&vtX360[i], 0x0001);
-
-					if (VIGEM_SUCCESS(vigem_target_plugin(Xbox360Wired, &vtX360[i])))
+					if (result2 != ERROR_SUCCESS)
 					{
-						std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
-						vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
+						// By using VID and PID of Valve's SteamController, Steam doesn't give us ANOTHER "fake" XInput device
+						// Leading to endless pain and suffering. 
+						// Or really, leading to pluggin in one virtual controller after another and mirroring inputs
+						// Also annoying the shit out of the user when they open the overlay as steam prompts to setup new XInput devices
+						// Also avoiding any fake inputs from Valve's default controllerprofile
+						// -> Leading to endless pain and suffering
+						vigem_target_set_vid(&vtX360[i], 0x28de); //Valve SteamController VID
+						vigem_target_set_pid(&vtX360[i], 0x1102); //Valve SteamController PID
+
+						int vigem_res = vigem_target_plugin(Xbox360Wired, &vtX360[i]);
+						if (vigem_res == VIGEM_ERROR_TARGET_UNINITIALIZED)
+						{
+							VIGEM_TARGET_INIT(&vtX360[i]);
+						}
+						if (vigem_res == VIGEM_ERROR_NONE)
+						{
+							std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
+							vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
+						}
 					}
 
-					vigem_xusb_submit_report(vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&xsState[i].Gamepad));
+					vigem_xusb_submit_report(vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
 				}
 				else
 				{
@@ -164,44 +158,13 @@ void VirtualControllerThread::controllerLoop()
 			}
 		}
 
-
-
 		tickTime = sfClock.getElapsedTime().asMicroseconds();
 		if (tickTime < delay)
 		{
 			std::this_thread::sleep_for(std::chrono::microseconds(delay - tickTime));
 		}
 
-		//std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
-}
-
-int VirtualControllerThread::getRealControllers()
-{
-	int realControllers = 0;
-	UINT numDevices = NULL;
-
-	GetRawInputDeviceList(NULL, &numDevices, sizeof(RAWINPUTDEVICELIST));
-
-	PRAWINPUTDEVICELIST rawInputDeviceList;
-	rawInputDeviceList = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * numDevices);
-	GetRawInputDeviceList(rawInputDeviceList, &numDevices, sizeof(RAWINPUTDEVICELIST));
-
-	for (unsigned int i = 0; i < numDevices; i++)
-	{
-		RID_DEVICE_INFO devInfo;
-		devInfo.cbSize = sizeof(RID_DEVICE_INFO);
-		GetRawInputDeviceInfo(rawInputDeviceList[i].hDevice, RIDI_DEVICEINFO, &devInfo, (PUINT)&devInfo.cbSize);
-		if (devInfo.hid.dwVendorId == 0x45e && devInfo.hid.dwProductId == 0x28e)
-		{
-			realControllers++;
-		}
-
-	}
-
-	free(rawInputDeviceList);
-	std::cout << "Detected " << realControllers << " real connected X360 Controllers" << std::endl;
-	return realControllers;
 }
 
 void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber)
@@ -211,14 +174,7 @@ void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR Larg
 	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
 	vibration.wRightMotorSpeed = SmallMotor * 0xff; //Yeah yeah I do know about bitshifting and the multiplication not being 100% correct...
 
-
-	//for (int i = 0; i < XUSER_MAX_COUNT; i++)
-	//{
-	//	if (VirtualControllerThread::ulTargetSerials[i] == Target.SerialNo)
-	//	{
-			XInputSetState(Target.SerialNo-1, &vibration);
-	//	}
-	//}
+	XInputSetState(Target.SerialNo-1, &vibration);
 }
 
 DWORD VirtualControllerThread::XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState)
@@ -231,22 +187,22 @@ DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_
 	DWORD ret;
 	DWORD dwOldProtect, dwBkup;
 
-	BYTE* Address = reinterpret_cast<BYTE*>(realXGetState);
-	VirtualProtect(Address, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
-	for (DWORD i = 0; i < 5; i++)
+	BYTE* Address = reinterpret_cast<BYTE*>(XGetState);
+	VirtualProtect(Address, opPatchLenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		//Change permissions of memory..
+	for (DWORD i = 0; i < opPatchLenght; i++)											//unpatch Valve's hook
 	{
 		*(Address + i) = realBytes[i];
 	}
-	VirtualProtect(Address, 4, dwOldProtect, &dwBkup);
+	VirtualProtect(Address, opPatchLenght, dwOldProtect, &dwBkup);						//Revert permission change...
 
-	ret = realXGetState(dwUserIndex, pState);
+	ret = XGetState(dwUserIndex, pState);												//Cal REAL XInputGetState...
 
-	VirtualProtect(Address, 5, PAGE_EXECUTE_READWRITE, &dwOldProtect);
-	for (int i = 0; i < 5; i++)
+	VirtualProtect(Address, opPatchLenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);      //Change permissions of memory..
+	for (int i = 0; i < opPatchLenght; i++)												//repatch Valve's hook
 	{
 		*(Address + i) = valveHookBytes[i];
 	}
-	VirtualProtect(Address, 5, dwOldProtect, &dwBkup);
+	VirtualProtect(Address, opPatchLenght, dwOldProtect, &dwBkup);						//Revert permission change...
 
 	return ret;
 }

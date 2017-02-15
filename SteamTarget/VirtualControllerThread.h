@@ -38,8 +38,6 @@ public:
 	void run();
 	void stop();
 
-	void resetControllers();
-
 	bool isRunning();
 
 private:
@@ -49,25 +47,15 @@ private:
 
 	typedef DWORD(WINAPI* XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE* pState);
 
+	static const uint8_t opPatchLenght = 5;
 	uint8_t valveHookBytes[5];
-	uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
+	const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
 	//uint8_t realBytes[5] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x90 };
 
-	XInputGetState_t x_get_state = &XInputGetState;
-
-	XInputGetState_t realXGetState = nullptr;
-
-	//int iRealControllers = 0;
-	//int iTotalControllers = 0;
-	int iVirtualControllers = 0;
 	int controllerCount = 0;
-
-	bool checkedControllers = false;
-
-	//static std::vector<ULONG> ulTargetSerials;
+	XInputGetState_t XGetState = nullptr;
 
 	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
-	XINPUT_STATE xsState[XUSER_MAX_COUNT];
 
 	std::thread controllerThread;
 
@@ -76,8 +64,6 @@ private:
 	int delay = 1000000 / 200;
 
 	void controllerLoop();
-
-	int getRealControllers();
 
 	static void controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
 
