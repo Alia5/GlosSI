@@ -64,7 +64,7 @@ void VirtualControllerThread::controllerLoop()
 {
 	DWORD result;
 	DWORD result2;
-	sf::Clock testTimer;
+	sf::Clock waitForHookTimer;
 	while (bShouldRun)
 	{
 		sfClock.restart();
@@ -73,7 +73,7 @@ void VirtualControllerThread::controllerLoop()
 		// otherwise the M$ compiler calls to a jumptable, jumping to the real function
 		// We can't have this if we wan't to dynamically unpatch and repatch Valve's XInput hook
 		// Also wait a second, jut to be sure Steam has done it's hooking thing...
-		if (XGetState == nullptr && testTimer.getElapsedTime().asSeconds() > 1)
+		if (XGetState == nullptr && waitForHookTimer.getElapsedTime().asSeconds() > 1)
 		{
 			HMODULE xinputmod = nullptr;
 
