@@ -74,7 +74,7 @@ private:
 
 	static void controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
 
-	static DWORD XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState);
+	static DWORD XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState); //Easier to find in x64dbg...
 
 	DWORD callRealXinputGetState(DWORD dwUserIndex, XINPUT_STATE* pState);
 

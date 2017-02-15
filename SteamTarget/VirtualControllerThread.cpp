@@ -193,11 +193,9 @@ DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_
 	{
 		*(Address + i) = realBytes[i];
 	}
-	//VirtualProtect(Address, opPatchLenght, dwOldProtect, &dwBkup);						//Revert permission change...
 
 	ret = XGetState(dwUserIndex, pState);												//Cal REAL XInputGetState...
 
-	//VirtualProtect(Address, opPatchLenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);      //Change permissions of memory..
 	for (int i = 0; i < opPatchLenght; i++)												//repatch Valve's hook
 	{
 		*(Address + i) = valveHookBytes[i];
