@@ -17,12 +17,15 @@ limitations under the License.
 
 std::atomic<bool> SteamTargetRenderer::overlayOpen = false;
 HHOOK SteamTargetRenderer::hook = nullptr;
+std::atomic<bool> SteamTargetRenderer::bHookSteam = false;
+
 
 SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(argc, argv)
 {
 	getSteamOverlay();
 	loadLogo();
 
+	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
 	settings.beginGroup("BaseConf");
 	const QStringList childKeys = settings.childKeys();
@@ -363,6 +366,28 @@ LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARA
 		}
 	}
 	return CallNextHookEx(hook, nCode, wParam, lParam);
+}
+
+BOOL SteamTargetRenderer::ConsoleCtrlCallback(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_BREAK_EVENT || dwCtrlType == CTRL_C_EVENT)
+	{
+		if (bHookSteam)
+		{
+			QString dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+			dir = dir.mid(0, dir.lastIndexOf("\\"));
+
+			QProcess proc;
+			proc.setNativeArguments(" --eject ");
+			proc.setWorkingDirectory(dir);
+			proc.start("..\\Injector.exe", QIODevice::ReadOnly);
+			proc.waitForStarted();
+			proc.waitForFinished();
+		}
+		return true;
+	}
+
+	return false;
 }
 
 void SteamTargetRenderer::launchApp()

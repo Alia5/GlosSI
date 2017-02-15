@@ -36,6 +36,7 @@ limitations under the License.
 #include <psapi.h>
 
 #include "VirtualControllerThread.h"
+#include <atomic>
 
 class SteamTargetRenderer : public QApplication
 {
@@ -91,12 +92,14 @@ private:
 
 	bool bEnableControllers = true;
 
-	bool bHookSteam = false;
+	static std::atomic<bool> bHookSteam;
 
 	QTimer updateTimer;
 
 	std::unique_ptr<sf::Texture> spriteTexture;
 	sf::Sprite backgroundSprite;
+
+	static BOOL WINAPI ConsoleCtrlCallback(_In_ DWORD dwCtrlType);
 
 	const QString LaunchGame = "LaunchGame";
 	const QString LaunchedProcessFinished = "LaunchedProcessFinished";
