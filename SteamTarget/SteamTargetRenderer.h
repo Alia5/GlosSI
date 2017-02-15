@@ -61,6 +61,12 @@ private:
 
 	void loadLogo();
 
+	static LRESULT WINAPI HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
+
+	static void unhookBindings();
+
+	static BOOL WINAPI ConsoleCtrlCallback(_In_ DWORD dwCtrlType);
+
 	std::atomic<bool> bRunLoop = true;
 
 	bool bUseDesktopConfig = false;
@@ -83,7 +89,6 @@ private:
 #endif
 	static std::atomic<bool> overlayOpen;
 	static HHOOK hook;
-	static LRESULT WINAPI HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 
 	HWND hwForeGroundWindow = nullptr;
 	bool bNeedFocusSwitch = false;
@@ -98,8 +103,6 @@ private:
 
 	std::unique_ptr<sf::Texture> spriteTexture;
 	sf::Sprite backgroundSprite;
-
-	static BOOL WINAPI ConsoleCtrlCallback(_In_ DWORD dwCtrlType);
 
 	const QString LaunchGame = "LaunchGame";
 	const QString LaunchedProcessFinished = "LaunchedProcessFinished";

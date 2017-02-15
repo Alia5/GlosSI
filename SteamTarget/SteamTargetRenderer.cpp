@@ -112,6 +112,7 @@ void SteamTargetRenderer::run()
 void SteamTargetRenderer::stop()
 {
 	bRunLoop = false;
+	unhookBindings();
 	QApplication::exit(0);
 }
 
@@ -368,22 +369,27 @@ LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARA
 	return CallNextHookEx(hook, nCode, wParam, lParam);
 }
 
+void SteamTargetRenderer::unhookBindings()
+{
+	if (bHookSteam)
+	{
+		QString dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
+		dir = dir.mid(0, dir.lastIndexOf("\\"));
+
+		QProcess proc;
+		proc.setNativeArguments(" --eject ");
+		proc.setWorkingDirectory(dir);
+		proc.start("..\\Injector.exe", QIODevice::ReadOnly);
+		proc.waitForStarted();
+		proc.waitForFinished();
+	}
+}
+
 BOOL SteamTargetRenderer::ConsoleCtrlCallback(DWORD dwCtrlType)
 {
 	if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_BREAK_EVENT || dwCtrlType == CTRL_C_EVENT)
 	{
-		if (bHookSteam)
-		{
-			QString dir = QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
-			dir = dir.mid(0, dir.lastIndexOf("\\"));
-
-			QProcess proc;
-			proc.setNativeArguments(" --eject ");
-			proc.setWorkingDirectory(dir);
-			proc.start("..\\Injector.exe", QIODevice::ReadOnly);
-			proc.waitForStarted();
-			proc.waitForFinished();
-		}
+		unhookBindings();
 		return true;
 	}
 
