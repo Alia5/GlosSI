@@ -2,7 +2,7 @@
 
 # GloSC
 
-GlosSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
+GloSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
 
 All complete with **per application bindings and working rumble emulation.**
 
