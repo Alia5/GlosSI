@@ -2,7 +2,7 @@
 
 # GloSC
 
-GloSC or Global SteamController is a small set of tools that allows you to use your SteamController as a systemwide XInput-controller alongside a systemwide (borderless window) Steam overlay
+GloSC or Global SteamController is a small set of tools that allows you to use your SteamController as a system wide XInput-controller alongside a system wide (borderless window) Steam overlay
 
 All complete with **per application bindings and working rumble emulation.**
 
@@ -38,28 +38,28 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
 
 * **Q: UWP Games don't launch in foreground**
 
-  A: For some reason trying to launch them in foreground stops them fron launching entirely
+  A: For some reason trying to launch them in foreground stops them from launching entirely
   
      For now use alt+tab via Steam-chords
      
-     This is currently beeing investigated
+     This is currently being investigated
 ```
 ```
 
 It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
-The systemwide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
+The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
 GloSC consists of:
  
  * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
  * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
- * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for systemwide Controller emulation
+ * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 
  
 Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
-GloSC got mentioned from Valve in the [Steam client beta changelog on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
+GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
 
 
 ## License
