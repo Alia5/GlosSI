@@ -59,6 +59,8 @@ GloSC consists of:
  
 Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
+GloSC got mentioned from Valve in the [Steam client beta changelog on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
+
 
 ## License
 
