@@ -61,6 +61,7 @@ Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consi
 
 GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
 
+You can learn more about how GloSC works [here](https://behind.flatspot.pictures/third-party-steam-controller-software-part2-my-take-on-it/)
 
 ## License
 
