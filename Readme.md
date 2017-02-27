@@ -63,6 +63,9 @@ GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of
 
 You can learn more about how GloSC works [here](https://behind.flatspot.pictures/third-party-steam-controller-software-part2-my-take-on-it/)
 
+For Building / Manual installation refer to the [build guide](https://github.com/Alia5/GloSC/blob/master/Build_Install.md)
+
+
 ## License
 
 ```
