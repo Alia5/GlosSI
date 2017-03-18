@@ -1,0 +1,11 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+build:
+  verbosity: minimal
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: Ec0RLkIirpuLD2eNfFlN51Jsxv737ZVX9kcwNlxSBd8A/eTn/uYvpN/nAMctsHUq
+  on:
+    branch: master
