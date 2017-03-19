@@ -21,7 +21,7 @@ build:
   verbosity: normal
 
 after_build:
-  - 7z a GloSC_%platform%.zip TargetConfig.ini
+  - 7z a GloSC_%platform%.zip *
 
 artifacts:
   - path: GLoSC_$(platform).zip
