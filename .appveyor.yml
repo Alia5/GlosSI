@@ -12,16 +12,23 @@ environment:
 
     - platform: x86
       QTDIR: C:\Qt\5.7\msvc2015
+      OUTNAME: Win32
 
     - platform: x64
       QTDIR: C:\Qt\5.7\msvc2015_64
+      OUTNAME: x64
 
 build:
   project: GLoSC.sln
   verbosity: normal
 
 after_build:
-  - 7z a GloSC_%platform%.zip *
+  - "7z a GloSC_%platform%.zip
+      TargetConfig.ini
+      %APPVEYOR_BUILD_FOLDER%\build\%OUTNAME%\%configuration%\*
+      %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*
+      %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-$(platform)\bin
+      %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\$(platform)\bin"
 
 artifacts:
   - path: GLoSC_$(platform).zip
