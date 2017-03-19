@@ -20,14 +20,21 @@ build:
   project: GLoSC.sln
   verbosity: normal
 
+after_build:
+  - 7z a GloSC_%platform%.zip TargetConfig.ini
+
 artifacts:
-  - TargetConfig.ini
+  - path: GLoSC_$(platform).zip
+    name: GLoSC_$(platform)
 
 deploy:
 
   - provider: GitHub
+    description: 'Would be nice to auto-generate this...'
+    artifact: /GLoSC_x..\.zip/
     auth_token:
       secure: Ec0RLkIirpuLD2eNfFlN51Jsxv737ZVX9kcwNlxSBd8A/eTn/uYvpN/nAMctsHUq
+    force_update: true
     on:
       appveyor_repo_tag: true
 
