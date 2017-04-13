@@ -1,47 +1,36 @@
-version: 1.0.1.{build}
-
+version: 1.2.0.{build}
 pull_requests:
   do_not_increment_build_number: true
-
 branches:
-  except:
-    - gh-pages
-
+  only:
+  - master
+configuration: Release
+platform:
+- x86
+- x64
 environment:
   matrix:
-
-    - platform: x86
-      QTDIR: C:\Qt\5.7\msvc2015
-      OUTNAME: Win32
-
-    - platform: x64
-      QTDIR: C:\Qt\5.7\msvc2015_64
-      OUTNAME: x64
-
+  - platform: x86
+    QTDIR: C:\Qt\5.7\msvc2015
+    OUTNAME: Win32
+  - platform: x64
+    QTDIR: C:\Qt\5.7\msvc2015_64
+    OUTNAME: x64
 build:
-  project: GLoSC.sln
+  project: GloSC.sln
   verbosity: normal
-
 after_build:
-  - "7z a GloSC_%platform%.zip
-      TargetConfig.ini
-      %APPVEYOR_BUILD_FOLDER%\build\%OUTNAME%\%configuration%\*
-      %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*
-      %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-$(platform)\bin
-      %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\$(platform)\bin"
-
+- cmd: 7z a GloSC_%platform%.zip TargetConfig.ini %APPVEYOR_BUILD_FOLDER%\\build\%OUTNAME%\%configuration%\* %APPVEYOR_BUILD_FOLDER%\\build\Win32Only\%configuration%\* %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-$(platform)\\bin %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\$(platform)\\bin
 artifacts:
-  - path: GLoSC_$(platform).zip
-    name: GLoSC_$(platform)
-
+- path: GloSC_$(platform).zip
+  name: GloSC_$(platform)
 deploy:
-
-  - provider: GitHub
-    description: 'Would be nice to auto-generate this...'
-    artifact: /GLoSC_x..\.zip/
-    auth_token:
-      secure: Ec0RLkIirpuLD2eNfFlN51Jsxv737ZVX9kcwNlxSBd8A/eTn/uYvpN/nAMctsHUq
-    force_update: true
-    on:
-      appveyor_repo_tag: true
-
+- provider: GitHub
+  auth_token:
+    secure: IUk+TRaAfx7h7g+Ci3/srkt/ATkKp/Df6zSo1Fcf3OfW4yL0bPlKWbkVoDJZFRHdWK9yJsG+6dBUDYB7OePiINMc97nfr8EwfEU8ULmOp0o=
+  artifact: /GLoSC_x..\.zip/
+  draft: true
+  prerelease: true
+  force_update: true
+  on:
+    branch: master
