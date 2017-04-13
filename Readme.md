@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/ph7g8xcct9hab6fp?svg=true)](https://ci.appveyor.com/project/Alia5/glosc) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 ![GloSC logo](https://github.com/Alia5/GloSC/blob/master/GloSC_Icon_small.png?raw=true "GloSC logo")
 
 # GloSC
