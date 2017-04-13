@@ -5,9 +5,6 @@ branches:
   only:
   - master
 configuration: Release
-platform:
-- x86
-- x64
 environment:
   matrix:
   - platform: x86
@@ -20,15 +17,19 @@ build:
   project: GloSC.sln
   verbosity: normal
 after_build:
-- cmd: 7z a GloSC_%platform%.zip TargetConfig.ini %APPVEYOR_BUILD_FOLDER%\\build\%OUTNAME%\%configuration%\* %APPVEYOR_BUILD_FOLDER%\\build\Win32Only\%configuration%\* %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-$(platform)\\bin %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\$(platform)\\bin
+- cmd: >-
+    7z a GloSC_%platform%.zip TargetConfig.ini License.txt qt-license.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%\build\%OUTNAME%\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-graphics-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\%platform%\ViGEmUM.dll redist\*.exe %QTDIR%\bin\Qt5Core.dll %QTDIR%\bin\Qt5Gui.dll %QTDIR%\bin\Qt5Widgets.dll %QTDIR%\plugins\platforms\qwindows.dll
+
+
+    7z rn GloSC_%platform%.zip qwindows.dll platforms\qwindows.dll
 artifacts:
 - path: GloSC_$(platform).zip
   name: GloSC_$(platform)
 deploy:
 - provider: GitHub
   auth_token:
-    secure: IUk+TRaAfx7h7g+Ci3/srkt/ATkKp/Df6zSo1Fcf3OfW4yL0bPlKWbkVoDJZFRHdWK9yJsG+6dBUDYB7OePiINMc97nfr8EwfEU8ULmOp0o=
-  artifact: /GLoSC_x..\.zip/
+    secure: HdTPh2HVHhlpsjWkSIT89w+4KyDeB9CVCb/FFlzZpYdUTtUqLSAJ5/nOw29be0PG
+  artifact: /GloSC_x..\.zip/
   draft: true
   prerelease: true
   force_update: true
