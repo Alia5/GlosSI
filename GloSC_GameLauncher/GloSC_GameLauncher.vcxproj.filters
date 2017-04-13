@@ -71,5 +71,11 @@
     <ClInclude Include="GeneratedFiles\ui_GloSC_GameLauncher.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GloSC_GameLauncher.rc" />
   </ItemGroup>
 </Project>
