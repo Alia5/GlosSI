@@ -55,9 +55,9 @@ private:
 	void stop();
 	void getSteamOverlay();
 	void RunSfWindowLoop();
-	void makeSfWindowTransparent(sf::RenderWindow& window);
+	static void makeSfWindowTransparent(sf::RenderWindow& window);
 	void drawDebugEdges();
-	void hookBindings();
+	void hookBindings() const;
 
 	void loadLogo();
 

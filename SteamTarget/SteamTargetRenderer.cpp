@@ -280,7 +280,7 @@ void SteamTargetRenderer::drawDebugEdges()
 
 }
 
-void SteamTargetRenderer::hookBindings()
+void SteamTargetRenderer::hookBindings() const
 {
 	std::cout << "Hooking Steam..." << std::endl;
 

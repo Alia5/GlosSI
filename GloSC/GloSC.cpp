@@ -31,7 +31,7 @@ GloSC::GloSC(QWidget *parent)
 
 }
 
-void GloSC::updateEntryList()
+void GloSC::updateEntryList() const
 {
 	ui.lwInstances->clear();
 
@@ -47,7 +47,7 @@ void GloSC::updateEntryList()
 
 }
 
-void GloSC::writeIni(QString entryName)
+void GloSC::writeIni(QString entryName) const
 {
 	QSettings settings("./targets/" + entryName + ".ini", QSettings::IniFormat);
 
@@ -142,7 +142,7 @@ void GloSC::animate(int to)
 	anim->start(QPropertyAnimation::DeleteWhenStopped);
 }
 
-void GloSC::on_cbUseDesktop_toggled(bool checked)
+void GloSC::on_cbUseDesktop_toggled(bool checked) const
 {
 	ui.cbHookSteam->setEnabled(!checked);
 	ui.cbHookSteam->setChecked(!checked);
@@ -443,7 +443,7 @@ void GloSC::on_pbUWP_clicked()
 
 }
 
-void GloSC::on_lwInstances_currentRowChanged(int row)
+void GloSC::on_lwInstances_currentRowChanged(int row) const
 {
 	if (row < 0)
 		return;

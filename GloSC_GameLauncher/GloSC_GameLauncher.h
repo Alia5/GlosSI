@@ -74,9 +74,9 @@ private:
 
 	void launchGame(QString type, QString path, QStringList args);
 
-	HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
+	static HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
-	bool IsProcessRunning(DWORD pid);
+	static bool IsProcessRunning(DWORD pid);
 
 	void unhookBindings();
 

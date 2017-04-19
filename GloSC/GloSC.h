@@ -46,8 +46,8 @@ public:
 private:
     Ui::GloSCClass ui;
 
-	void updateEntryList();
-	void writeIni(QString entryName);
+	void updateEntryList() const;
+	void writeIni(QString entryName) const;
 
 	void updateTargetsToNewVersion();
 
@@ -66,14 +66,14 @@ private:
 	void animate(int to);
 
 private slots:
-	void on_cbUseDesktop_toggled(bool checked);
+	void on_cbUseDesktop_toggled(bool checked) const;
 	void on_pbCreateNew_clicked();
 	void on_pbSave_clicked();
 	void on_pbDelete_clicked();
 	void on_pbAddToSteam_clicked();
 	void on_pbSearchPath_clicked();
 	void on_pbUWP_clicked();
-	void on_lwInstances_currentRowChanged(int row);
+	void on_lwInstances_currentRowChanged(int row) const;
 	void on_lwInstances_itemSelectionChanged();
 
 
