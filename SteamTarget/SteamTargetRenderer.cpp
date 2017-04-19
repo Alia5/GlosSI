@@ -384,7 +384,7 @@ void SteamTargetRenderer::unhookBindings()
 		QProcess proc;
 		proc.setNativeArguments(" --eject ");
 		proc.setWorkingDirectory(dir);
-		proc.start("..\\Injector.exe", QIODevice::ReadOnly);
+		proc.start("./Injector.exe", QIODevice::ReadOnly);
 		proc.waitForStarted();
 		proc.waitForFinished();
 	}

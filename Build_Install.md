@@ -30,7 +30,5 @@ Afterwards create your shortcuts with GloSC and you are ready to go.
 
 ### Notes:
 
-The SteamTarget checks for the Injector, as well as the hooking dll, one directory up.
-
 The GloSC_GameLauncher must be running from that directory, as Admin, to make double sure Steam does get unhooked after closing a shortcut
 
