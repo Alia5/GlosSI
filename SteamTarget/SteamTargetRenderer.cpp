@@ -403,6 +403,8 @@ BOOL SteamTargetRenderer::ConsoleCtrlCallback(DWORD dwCtrlType)
 
 void SteamTargetRenderer::launchApp()
 {
+	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+
 	bool launchGame = false;
 	bool closeWhenDone = false;
 	QString type = "Win32";
