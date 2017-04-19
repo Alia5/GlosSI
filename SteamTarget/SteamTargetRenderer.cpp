@@ -488,16 +488,10 @@ void SteamTargetRenderer::checkSharedMem()
 		sharedMemInstance.unlock();
 		sharedMemInstance.detach();
 
-		int close_index = stringList.indexOf(LaunchedProcessFinished)+1;
+		int close_index = stringList.indexOf(LaunchedProcessFinished) + 1;
 
 		if (close_index > 0 && stringList.at(close_index).toInt() == 1)
-		{
 			bRunLoop = false;
-			renderThread.join();
-			if (controllerThread.isRunning())
-				controllerThread.stop();
-			exit(0);
-		}
 	}
 
 
