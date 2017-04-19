@@ -75,7 +75,18 @@ void GloSC_GameLauncher::checkSharedMem()
 	{
 		if (stringList.at(i + 1) != "" && stringList.at(i + 2) != "")
 		{
-			launchGame(stringList.at(i + 1), stringList.at(i + 2));
+			QStringList args;
+			QRegularExpression re("([^\\s\"']+)|\"([^\"]*)\"|'([^']*)'");
+			QRegularExpressionMatchIterator ri = re.globalMatch(stringList.at(i + 3));
+			while (ri.hasNext())
+			{
+				QRegularExpressionMatch match = ri.next();
+				int mi = 1;
+				while (match.captured(mi).isEmpty())
+					mi++;
+				args += match.captured(mi);
+			}
+			launchGame(stringList.at(i + 1), stringList.at(i + 2), args);
 			stringList = defaultSharedMemData;
 		}
 	}
@@ -117,7 +128,7 @@ void GloSC_GameLauncher::checkSharedMem()
 	}
 }
 
-void GloSC_GameLauncher::launchGame(QString type, QString path)
+void GloSC_GameLauncher::launchGame(QString type, QString path, QStringList args)
 {
 
 		if (type == LGT_Win32)
@@ -125,11 +136,11 @@ void GloSC_GameLauncher::launchGame(QString type, QString path)
 			QProcess app;
 			if (path.contains("\\"))
 			{
-				app.startDetached(path, QStringList(), path.mid(0, path.lastIndexOf("\\")), &pid);
+				app.startDetached(path, args, path.mid(0, path.lastIndexOf("\\")), &pid);
 			}
 			else
 			{
-				app.startDetached(path, QStringList(), path.mid(0, path.lastIndexOf("/")), &pid);
+				app.startDetached(path, args, path.mid(0, path.lastIndexOf("/")), &pid);
 
 			}
 		} else if (type == LGT_UWP) {

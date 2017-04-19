@@ -26,7 +26,12 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 	loadLogo();
 
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
-	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
+	if (this->arguments().size() == 1)
+	{
+		std::cerr << "Target configuration file must be specified" << std::endl;
+		QApplication::exit(1);
+	}
+	QSettings settings(this->arguments().at(1), QSettings::IniFormat);
 	settings.beginGroup("BaseConf");
 	const QStringList childKeys = settings.childKeys();
 	for (auto &childkey : childKeys)
@@ -38,7 +43,7 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 			bDrawOverlay = settings.value(childkey).toBool();
 		} else if (childkey == "bEnableControllers") {
 			bEnableControllers = settings.value(childkey).toBool();
-		}else if (childkey == "bHookSteam") {
+		} else if (childkey == "bHookSteam") {
 			bHookSteam = settings.value(childkey).toBool();
 		}
 		else if (childkey == "bUseDesktopConfig") {
@@ -126,11 +131,9 @@ void SteamTargetRenderer::RunSfWindowLoop()
 	bool focusSwitchNeeded = true;
 
 	if (bDrawOverlay)
-	{
 		SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
-	} else {
+	else
 		ShowWindow(consoleHwnd, SW_SHOW);
-	}
 	
 
 	while (sfWindow.isOpen() && bRunLoop)
@@ -287,7 +290,7 @@ void SteamTargetRenderer::hookBindings()
 	QProcess proc;
 	proc.setNativeArguments(" --inject ");
 	proc.setWorkingDirectory(dir);
-	proc.start("..\\Injector.exe", QIODevice::ReadOnly);
+	proc.start("./Injector.exe", QIODevice::ReadOnly);
 	proc.waitForStarted();
 	proc.waitForFinished();
 
@@ -402,24 +405,22 @@ void SteamTargetRenderer::launchApp()
 	bool closeWhenDone = false;
 	QString type = "Win32";
 	QString path = "";
-	QSettings settings(".\\TargetConfig.ini", QSettings::IniFormat);
+	QString args;
+	QSettings settings(this->arguments().at(1), QSettings::IniFormat);
 	settings.beginGroup("LaunchGame");
 	const QStringList childKeys = settings.childKeys();
 	for (auto &childkey : childKeys)
 	{
 		if (childkey == "bLaunchGame")
-		{
 			launchGame = settings.value(childkey).toBool();
-		}
-		else if (childkey == "Type") {
+		else if (childkey == "Type")
 			type = settings.value(childkey).toString();
-		}
-		else if (childkey == "Path") {
+		else if (childkey == "Path")
 			path = settings.value(childkey).toString();
-		}
-		else if (childkey == "bCloseWhenDone") {
+		else if (childkey == "Args")
+			args = settings.value(childkey).toString();
+		else if (childkey == "bCloseWhenDone")
 			closeWhenDone = settings.value("bCloseWhenDone").toBool();
-		}
 	}
 	settings.endGroup();
 
@@ -445,7 +446,7 @@ void SteamTargetRenderer::launchApp()
 			int lgt_index = stringList.indexOf(LaunchGame);
 			stringList.replace(lgt_index + 1, type);
 			stringList.replace(lgt_index + 2, path);
-
+            stringList.replace(lgt_index + 3, args);
 
 
 			buffer.open(QBuffer::ReadWrite);

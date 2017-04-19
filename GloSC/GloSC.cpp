@@ -18,6 +18,7 @@ limitations under the License.
 GloSC::GloSC(QWidget *parent)
 	: QMainWindow(parent)
 {
+	QDir::setCurrent(QCoreApplication::applicationDirPath());
 	ui.setupUi(this);
 
 	updateEntryList();
@@ -26,7 +27,7 @@ GloSC::GloSC(QWidget *parent)
 	//Launch the gamelauncher here, just to be safe
 	//Don't need to check if the process already exists as it does it itself
 	QProcess proc;
-	proc.startDetached("GloSC_Gamelauncher.exe", QStringList(), QDir::toNativeSeparators(QApplication::applicationDirPath()), nullptr);
+	proc.startDetached("GloSC_Gamelauncher.exe", QStringList(), QApplication::applicationDirPath(), nullptr);
 
 }
 
@@ -34,13 +35,13 @@ void GloSC::updateEntryList()
 {
 	ui.lwInstances->clear();
 
-	QDir dir(".\\");
-	QStringList dirNames = dir.entryList(QDir::Dirs);
+	QDir dir("./targets");
+	QStringList fileNames = dir.entryList(QDir::Files);
 
-	for (auto &dirName : dirNames)
+	for (auto &fileName : fileNames)
 	{
-		if (dirName != "." && dirName != ".." && dirName != "platforms")
-			ui.lwInstances->addItem(dirName);
+		if (fileName.endsWith(".ini"))
+			ui.lwInstances->addItem(fileName.left(fileName.length() - 4));
 	}
 
 
@@ -48,7 +49,7 @@ void GloSC::updateEntryList()
 
 void GloSC::writeIni(QString entryName)
 {
-	QSettings settings(entryName + "\\TargetConfig.ini", QSettings::IniFormat);
+	QSettings settings("./targets/" + entryName + ".ini", QSettings::IniFormat);
 
 	settings.beginGroup("BaseConf");
 
@@ -64,16 +65,12 @@ void GloSC::writeIni(QString entryName)
 	settings.beginGroup("LaunchGame");
 
 	settings.setValue("bLaunchGame", 0 + ui.cbLaunchGame->isChecked());
-	if (ui.cbLaunchGame->isChecked())
-	{
-		settings.setValue("Path", ui.lePath->text());
-		if (ui.lePath->text().contains("\\") || ui.lePath->text().contains("/"))
-		{
-			settings.setValue("Type", "Win32");
-		} else {
-			settings.setValue("Type", "UWP");
-		}
-	}
+	settings.setValue("Path", ui.lePath->text());
+	settings.setValue("Args", ui.leArguments->text());
+	if (ui.lePath->text().contains("\\") || ui.lePath->text().contains("/"))
+		settings.setValue("Type", "Win32");
+	else
+		settings.setValue("Type", "UWP");
 
 	settings.setValue("bCloseWhenDone", 0 + ui.cbCloseWhenDone->isChecked());
 
@@ -89,17 +86,13 @@ void GloSC::updateTargetsToNewVersion()
 		on_lwInstances_currentRowChanged(i);
 		QString name = ui.leName->text();
 
-		QSettings settings(name + "\\TargetConfig.ini", QSettings::IniFormat);
+		QSettings settings("./targets/" + name + ".ini", QSettings::IniFormat);
 		settings.beginGroup("BaseConf");
 		unsigned int version = settings.value("version").toInt();
 		settings.endGroup();
 
 		if (version < GLOSC_VERSION)
-		{
-			QFile file(name + "\\" + name + ".exe");
-			file.remove();
 			on_pbSave_clicked();
-		}
 	}
 }
 
@@ -165,6 +158,7 @@ void GloSC::on_pbCreateNew_clicked()
 
 	ui.cbLaunchGame->setChecked(false);
 	ui.lePath->setText("");
+	ui.leArguments->setText("");
 	ui.cbCloseWhenDone->setChecked(false);
 
 	animate(wide_x);
@@ -182,47 +176,9 @@ void GloSC::on_pbSave_clicked()
 	if (temp.remove(" ") == "")
 		return;
 
-	QDir dir(name);
+	QDir dir("targets");
 	if (!dir.exists())
 		dir.mkdir(".");
-
-#ifdef NDEBUG
-	QString fileNames[] = {
-		"Qt5Core.dll",
-		"Qt5Gui.dll",
-		"Qt5Widgets.dll",
-		"sfml-system-2.dll",
-		"sfml-window-2.dll",
-		"sfml-graphics-2.dll",
-		"ViGEmUM.dll",
-		"TargetConfig.ini" };
-#else
-	QString fileNames[] = {
-		"Qt5Cored.dll",
-		"Qt5Guid.dll",
-		"Qt5Widgetsd.dll",
-		"sfml-system-d-2.dll",
-		"sfml-window-d-2.dll",
-		"sfml-graphics-d-2.dll",
-		"ViGEmUM.dll",
-		"TargetConfig.ini"
-};
-#endif
-
-	for (auto &fileName : fileNames)
-	{
-		QFile::copy(fileName, dir.path() + "\\" + fileName);
-	}
-	QDir platformdir(name + "\\platforms");
-	if (!platformdir.exists())
-		platformdir.mkdir(".");
-
-	QFile file(dir.path() + "\\" + name + ".exe");
-	file.remove();
-
-
-	QFile::copy("platforms\\qwindows.dll", dir.path() + "\\" + "platforms\\qwindows.dll");
-	QFile::copy("SteamTarget.exe", dir.path() + "\\" + name + ".exe");
 
 	writeIni(name);
 
@@ -235,19 +191,15 @@ void GloSC::on_pbSave_clicked()
 void GloSC::on_pbDelete_clicked()
 {
 	QString name = ui.leName->text();
-	name.remove("\\");
-	name.remove("/");
-	name.remove(":");
-	name.remove(".");
 
 	QString temp = name;
 	if (temp.remove(" ") == "")
 		return;
 
-	QDir dir(name);
-	if (dir.exists())
+	QFile file("./targets/" + name + ".ini");
+	if (file.exists())
 	{
-		dir.removeRecursively();
+		file.remove();
 	}
 	updateEntryList();
 
@@ -290,11 +242,11 @@ void GloSC::on_pbAddToSteam_clicked()
 	int shortcutCount = QString(temp).toInt();
 
 	QString itemName;
-	QString appDir = QDir::toNativeSeparators(QCoreApplication::applicationFilePath().mid(0, QCoreApplication::applicationFilePath().lastIndexOf("/")));
+	QDir appDir = QDir::current();
 	for (int i = 0; i < ui.lwInstances->count(); i++)
 	{
 		itemName = ui.lwInstances->item(i)->text();
-		if (!shortcutsFileBytes.contains(QString(appDir + "\\" + itemName + "\\" + itemName + ".exe").toStdString().c_str()))
+		if (!shortcutsFileBytes.contains(("\"" + QDir::toNativeSeparators(appDir.absoluteFilePath("SteamTarget.exe")) + "\"" + " \"./targets/" + itemName + ".ini\"").toStdString().c_str()))
 		{
 			shortcutsFileBytes.chop(2); //chop of end bytes
 			shortcutCount++;
@@ -310,12 +262,12 @@ void GloSC::on_pbAddToSteam_clicked()
 			shortcutsFileBytes.append('\x01');
 			shortcutsFileBytes.append("exe");
 			shortcutsFileBytes.append('\x00');
-			shortcutsFileBytes.append(QString("\"" + appDir + "\\" + itemName + "\\" + itemName + ".exe\""));
+			shortcutsFileBytes.append("\"" + QDir::toNativeSeparators(appDir.absoluteFilePath("SteamTarget.exe")) + "\"" + " \"./targets/" + itemName + ".ini\"");
 			shortcutsFileBytes.append('\x00');
 			shortcutsFileBytes.append('\x01');
 			shortcutsFileBytes.append("StartDir");
 			shortcutsFileBytes.append('\x00');
-			shortcutsFileBytes.append(QString("\"" + appDir + "\\" + itemName + "\\" + "\""));
+			shortcutsFileBytes.append("\"" + QDir::toNativeSeparators(appDir.absolutePath()) + "\"");
 			shortcutsFileBytes.append('\x00');
 			shortcutsFileBytes.append('\x01');
 			shortcutsFileBytes.append("icon");
@@ -376,16 +328,14 @@ void GloSC::on_pbAddToSteam_clicked()
 void GloSC::on_pbSearchPath_clicked()
 {
 	QString filePath = QFileDialog::getOpenFileName(this, "Select Game", "", "*.exe");
-	ui.lePath->setText(filePath);
-	if (filePath.length() > 0)
+	if (!filePath.isEmpty())
 	{
-		QString name;
-		if (filePath.contains("\\"))
-			name = filePath.mid(filePath.lastIndexOf("\\") + 1, -1);
-		else
-			name = filePath.mid(filePath.lastIndexOf("/") + 1, -1);
+		QFileInfo fileInfo(filePath);
+		ui.lePath->setText(fileInfo.filePath());
+		QString name = fileInfo.fileName();
 		name.chop(4);
 		ui.leName->setText(name);
+		ui.cbLaunchGame->setChecked(true);
 	}
 }
 
@@ -488,6 +438,7 @@ void GloSC::on_pbUWP_clicked()
 	{
 		ui.lePath->setText(uwpPairs.at(selection).AppUMId);
 		ui.leName->setText(uwpPairs.at(selection).AppName);
+		ui.cbLaunchGame->setChecked(true);
 	}
 
 }
@@ -499,7 +450,7 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 	QString entryName = ui.lwInstances->item(row)->text();
 	ui.leName->setText(entryName);
 
-	QSettings settings(entryName + "\\TargetConfig.ini", QSettings::IniFormat);
+	QSettings settings("./targets/" + entryName + ".ini", QSettings::IniFormat);
 
 	settings.beginGroup("BaseConf");
 
@@ -523,10 +474,8 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 	settings.beginGroup("LaunchGame");
 
 	ui.cbLaunchGame->setChecked(settings.value("bLaunchGame").toBool());
-	if (ui.cbLaunchGame->isChecked())
-	{
-		ui.lePath->setText(settings.value("Path").toString());
-	}
+	ui.lePath->setText(settings.value("Path").toString());
+	ui.leArguments->setText(settings.value("Args").toString());
 	ui.cbCloseWhenDone->setChecked(settings.value("bCloseWhenDone").toBool());
 
 	settings.endGroup();
