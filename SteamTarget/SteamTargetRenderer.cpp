@@ -28,7 +28,8 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	if (this->arguments().size() == 1)
 	{
-		std::cerr << "Target configuration file must be specified" << std::endl;
+		std::cerr << "Target configuration file must be specified!" << std::endl;
+		MessageBoxW(NULL, L"Target configuration file must be specified!", L"GloSC-SteamTarget", MB_OK);
 		QApplication::exit(1);
 	}
 	QSettings settings(this->arguments().at(1), QSettings::IniFormat);
@@ -67,8 +68,9 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 	sfWindow.setActive(false);
 	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
 									  //QT Windows cause trouble with the overlay, so we cannot use them
-
-	//ShowWindow(consoleHwnd, SW_HIDE);
+#ifndef DEBUG
+	ShowWindow(consoleHwnd, SW_HIDE);
+#endif // DEBUG
 
 	if (bEnableControllers)
 		controllerThread.run();
