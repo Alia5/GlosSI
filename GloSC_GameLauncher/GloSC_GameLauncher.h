@@ -28,6 +28,7 @@ limitations under the License.
 
 #include <QTimer>
 #include <QSharedmemory>
+#include <QRegularExpression>
 #include <QBuffer>
 #include <qprocess.h>
 
@@ -36,16 +37,16 @@ limitations under the License.
 
 class GloSC_GameLauncher : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    GloSC_GameLauncher(QWidget *parent = Q_NULLPTR);
+	GloSC_GameLauncher(QWidget *parent = Q_NULLPTR);
 
 public slots:
 	void isAboutToBeKilled();
 
 private:
-    Ui::GloSC_GameLauncherClass ui;
+	Ui::GloSC_GameLauncherClass ui;
 
 	const QString LaunchGame = "LaunchGame";
 	const QString LGT_UWP = "UWP";
@@ -54,6 +55,7 @@ private:
 	const QString IsSteamHooked = "IsSteamHooked";
 	const QStringList defaultSharedMemData = QStringList()
 		<< LaunchGame
+		<< ""
 		<< ""
 		<< ""
 		<< LaunchedProcessFinished
@@ -70,7 +72,7 @@ private:
 
 	bool bHookedSteam = false;
 
-	void launchGame(QString type, QString path);
+	void launchGame(QString type, QString path, QStringList args);
 
 	HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
