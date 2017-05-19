@@ -8,10 +8,10 @@ configuration: Release
 environment:
   matrix:
   - platform: x86
-    QTDIR: C:\Qt\5.7\msvc2015
+    QTDIR: C:\Qt\5.9\msvc2017
     OUTNAME: Win32
   - platform: x64
-    QTDIR: C:\Qt\5.7\msvc2015_64
+    QTDIR: C:\Qt\5.9\msvc2017_64
     OUTNAME: x64
 build:
   project: GloSC.sln
