@@ -4,6 +4,7 @@ pull_requests:
 branches:
   only:
   - master
+image: Visual Studio 2017
 configuration: Release
 environment:
   matrix:
