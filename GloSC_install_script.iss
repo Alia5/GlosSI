@@ -41,23 +41,22 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "build\x64\Release\GloSC.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\x64\Release\GloSC_GameLauncher.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\x64\Release\SteamTarget.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dependencies\SFML-2.4.1-x64\bin\sfml-system-2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dependencies\SFML-2.4.1-x64\bin\sfml-window-2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dependencies\SFML-2.4.1-x64\bin\sfml-graphics-2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dependencies\SFML-2.4.2-x64\bin\sfml-system-2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dependencies\SFML-2.4.2-x64\bin\sfml-window-2.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dependencies\SFML-2.4.2-x64\bin\sfml-graphics-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\ViGEmUM\x64\ViGEmUM.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "License.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.7\msvc2015_64\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.7\msvc2015_64\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.7\msvc2015_64\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.9\msvc2017_64\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.9\msvc2017_64\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.9\msvc2017_64\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\Win32Only\Release\EnforceBindingDLL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\Win32Only\Release\Injector.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qt-license.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Readme.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.7\msvc2015_64\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: "C:\Qt\5.9\msvc2017_64\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
 Source: "redist\vc_redist_x64.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\vc_redist_x86.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "redist\ViGEm_Setup_1.0.0.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

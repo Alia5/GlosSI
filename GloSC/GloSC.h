@@ -53,7 +53,7 @@ private:
 
 	QList<UWPPair> uwpPairs;
 
-	const unsigned int GLOSC_VERSION = 0x00000121;
+	const unsigned int GLOSC_VERSION = 0x00000122;
 
 	int wide_x = 711;
 	int small_x = 302;
