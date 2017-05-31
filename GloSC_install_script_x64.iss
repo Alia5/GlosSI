@@ -68,7 +68,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "{app}\redist\vc_redist_x64.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
 Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
-Filename: "{app}\redist\devcon_x64.exe"; Parameters: "install ""{app}\redist\ViGEm\ViGEmBus.inf"" Root\ViGEmBus"; Description: "Installing ViGEm Driver"; Flags: runascurrentuser
+Filename: "{app}\redist\devcon_x64.exe"; Parameters: " install ""{app}\redist\ViGEm\ViGEmBus.inf"" Root\ViGEmBus "; Description: "Installing ViGEm Driver"; Flags: runascurrentuser
 Filename: "{sys}\schtasks.exe"; Parameters: "/create /f /tn ""GloSC_GameLauncher"" /tr ""{app}\{#GloSCLauncherName}"" /sc onlogon /rl highest"; Description: "Registering Autostarts"; Flags: runascurrentuser
 Filename: "{app}\{#GloSCLauncherName}"; Description: "Running GameLauncher"; Flags: nowait
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
