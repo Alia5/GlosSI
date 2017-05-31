@@ -1,4 +1,4 @@
-version: 1.2.1.{build}
+version: 1.2.2.{build}
 pull_requests:
   do_not_increment_build_number: true
 branches:
@@ -19,7 +19,7 @@ build:
   verbosity: normal
 after_build:
 - cmd: >-
-    7z a GloSC_%platform%.zip TargetConfig.ini License.txt qt-license.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%\build\%OUTNAME%\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.1-%platform%\bin\sfml-graphics-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\%platform%\ViGEmUM.dll redist\*.exe %QTDIR%\bin\Qt5Core.dll %QTDIR%\bin\Qt5Gui.dll %QTDIR%\bin\Qt5Widgets.dll %QTDIR%\plugins\platforms\qwindows.dll
+    7z a GloSC_%platform%.zip TargetConfig.ini License.txt qt-license.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%\build\%OUTNAME%\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32Only\%configuration%\*.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-%platform%\bin\sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-%platform%\bin\sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-%platform%\bin\sfml-graphics-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\ViGEmUM\%platform%\ViGEmUM.dll redist\* %QTDIR%\bin\Qt5Core.dll %QTDIR%\bin\Qt5Gui.dll %QTDIR%\bin\Qt5Widgets.dll %QTDIR%\plugins\platforms\qwindows.dll
 
 
     7z rn GloSC_%platform%.zip qwindows.dll platforms\qwindows.dll
