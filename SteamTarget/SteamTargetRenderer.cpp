@@ -76,9 +76,9 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		sfWindow.setActive(false);
 		consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
 										  //QT Windows cause trouble with the overlay, so we cannot use them
-#ifndef DEBUG
+#ifdef NDEBUG
 		ShowWindow(consoleHwnd, SW_HIDE);
-#endif // DEBUG
+#endif // NDEBUG
 
 		if (bEnableControllers)
 			controllerThread.run();
