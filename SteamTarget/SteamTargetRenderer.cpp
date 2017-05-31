@@ -30,70 +30,79 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 	{
 		std::cerr << "Target configuration file must be specified!" << std::endl;
 		MessageBoxW(NULL, L"Target configuration file must be specified!", L"GloSC-SteamTarget", MB_OK);
-		QApplication::exit(1);
-	}
-	QSettings settings(this->arguments().at(1), QSettings::IniFormat);
-	settings.beginGroup("BaseConf");
-	const QStringList childKeys = settings.childKeys();
-	for (auto &childkey : childKeys)
-	{
-		if (childkey == "bDrawDebugEdges")
+
+		QTimer::singleShot(0, this, []()
 		{
-			bDrawDebugEdges = settings.value(childkey).toBool();
-		} else if (childkey == "bEnableOverlay") {
-			bDrawOverlay = settings.value(childkey).toBool();
-		} else if (childkey == "bEnableControllers") {
-			bEnableControllers = settings.value(childkey).toBool();
-		} else if (childkey == "bHookSteam") {
-			bHookSteam = settings.value(childkey).toBool();
+			QApplication::exit(1);
+		}); //call after ctor
+
+	} else {
+		QSettings settings(this->arguments().at(1), QSettings::IniFormat);
+		settings.beginGroup("BaseConf");
+		const QStringList childKeys = settings.childKeys();
+		for (auto &childkey : childKeys)
+		{
+			if (childkey == "bDrawDebugEdges")
+			{
+				bDrawDebugEdges = settings.value(childkey).toBool();
+			}
+			else if (childkey == "bEnableOverlay") {
+				bDrawOverlay = settings.value(childkey).toBool();
+			}
+			else if (childkey == "bEnableControllers") {
+				bEnableControllers = settings.value(childkey).toBool();
+			}
+			else if (childkey == "bHookSteam") {
+				bHookSteam = settings.value(childkey).toBool();
+			}
+			else if (childkey == "bUseDesktopConfig") {
+				bUseDesktopConfig = settings.value(childkey).toBool();
+			}
 		}
-		else if (childkey == "bUseDesktopConfig") {
-			bUseDesktopConfig = settings.value(childkey).toBool();
-		}
-	}
-	settings.endGroup();
+		settings.endGroup();
 
 #ifndef NDEBUG
-	bDrawDebugEdges = true;
+		bDrawDebugEdges = true;
 #endif // NDEBUG
-	sfCshape = sf::CircleShape(100.f);
-	sfCshape.setFillColor(sf::Color(128, 128, 128, 128));
-	sfCshape.setOrigin(sf::Vector2f(100, 100));
-	sf::VideoMode mode = sf::VideoMode::getDesktopMode();
-	sfWindow.create(sf::VideoMode(mode.width-16, mode.height-32), "GloSC_OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
-	sfWindow.setFramerateLimit(iRefreshRate);
-	sfWindow.setPosition(sf::Vector2i(0, 0));
-	makeSfWindowTransparent(sfWindow);
+		sfCshape = sf::CircleShape(100.f);
+		sfCshape.setFillColor(sf::Color(128, 128, 128, 128));
+		sfCshape.setOrigin(sf::Vector2f(100, 100));
+		sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+		sfWindow.create(sf::VideoMode(mode.width - 16, mode.height - 32), "GloSC_OverlayWindow"); //Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
+		sfWindow.setFramerateLimit(iRefreshRate);
+		sfWindow.setPosition(sf::Vector2i(0, 0));
+		makeSfWindowTransparent(sfWindow);
 
-	sfWindow.setActive(false);
-	consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
-									  //QT Windows cause trouble with the overlay, so we cannot use them
+		sfWindow.setActive(false);
+		consoleHwnd = GetConsoleWindow(); //We need a console for a dirty hack to make sure we stay in game bindings
+										  //QT Windows cause trouble with the overlay, so we cannot use them
 #ifndef DEBUG
-	ShowWindow(consoleHwnd, SW_HIDE);
+		ShowWindow(consoleHwnd, SW_HIDE);
 #endif // DEBUG
 
-	if (bEnableControllers)
-		controllerThread.run();
+		if (bEnableControllers)
+			controllerThread.run();
 
-	QTimer::singleShot(2000, this, &SteamTargetRenderer::launchApp); // lets steam do its thing
+		QTimer::singleShot(2000, this, &SteamTargetRenderer::launchApp); // lets steam do its thing
 
-	if (hmodGameOverlayRenderer != nullptr)
-	{
-		//Hook MessageQueue to detect if overlay gets opened / closed
-		//Steam Posts a Message with 0x14FA / 0x14F7 when the overlay gets opened / closed
-		hook = SetWindowsHookEx(WH_GETMESSAGE, HookCallback, nullptr, GetCurrentThreadId());
-	}
-
-
-	if (bUseDesktopConfig)
-	{
-		bHookSteam = false;
-		QTimer::singleShot(1000, this, []()
+		if (hmodGameOverlayRenderer != nullptr)
 		{
-			HWND taskbar = FindWindow(L"Shell_TrayWnd", nullptr);
-			SetFocus(taskbar);
-			SetForegroundWindow(taskbar);
-		});
+			//Hook MessageQueue to detect if overlay gets opened / closed
+			//Steam Posts a Message with 0x14FA / 0x14F7 when the overlay gets opened / closed
+			hook = SetWindowsHookEx(WH_GETMESSAGE, HookCallback, nullptr, GetCurrentThreadId());
+		}
+
+
+		if (bUseDesktopConfig)
+		{
+			bHookSteam = false;
+			QTimer::singleShot(1000, this, []()
+			{
+				HWND taskbar = FindWindow(L"Shell_TrayWnd", nullptr);
+				SetFocus(taskbar);
+				SetForegroundWindow(taskbar);
+			});
+		}
 	}
 
 }

@@ -35,7 +35,8 @@ VirtualControllerThread::VirtualControllerThread()
 
 VirtualControllerThread::~VirtualControllerThread()
 {
-	controllerThread.join();
+	if (controllerThread.joinable())
+		controllerThread.join();
 	vigem_shutdown();
 }
 
