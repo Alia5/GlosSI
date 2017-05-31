@@ -459,7 +459,7 @@ void SteamTargetRenderer::launchApp()
 			int lgt_index = stringList.indexOf(LaunchGame);
 			stringList.replace(lgt_index + 1, type);
 			stringList.replace(lgt_index + 2, path);
-            stringList.replace(lgt_index + 3, args);
+			stringList.replace(lgt_index + 3, args);
 
 
 			buffer.open(QBuffer::ReadWrite);
