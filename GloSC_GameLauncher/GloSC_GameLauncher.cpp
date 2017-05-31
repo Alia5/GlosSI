@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "GloSC_GameLauncher.h"
+#include <qapplication.h>
 
 GloSC_GameLauncher::GloSC_GameLauncher(QWidget *parent)
 	: QMainWindow(parent)
