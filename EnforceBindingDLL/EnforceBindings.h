@@ -26,10 +26,8 @@ class EnforceBindings
 {
 public:
 
-
 	static void patchBytes();
 	static void Unpatch();
-
 
 private:
 

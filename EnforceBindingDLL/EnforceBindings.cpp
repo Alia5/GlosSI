@@ -24,16 +24,35 @@ const int32_t desktopBindingsID = 413080; //desktop_config appid
 const int32_t bigPictureBindingsID = 413090; //big_picture_config appid
 const int32_t steamChordBindingsID = 443510; //steam_chord_config appid
 int32_t enforceBindingsID = 413080;
-char originalBytes[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook
+
+
+char originalBytesOld[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (OLD)
 /* == 
 mov eax, dword ptr ss : [ebp + 0xc]						//appId of bindings to be switched gets moved into eax register
 push edi												//part of original steam code
 mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
 cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
 */
-char mask[] = "xxxxxxxxxxxx";											   //mask for searching 
+char maskOld[] = "xxxxxxxxxxxx";											   //mask for searching 
+int32_t sigLenOld = 12;
 
-__declspec(naked) void enforceBindingsHookFn()
+
+char originalBytes[] = "\x8B\x45\x0C\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (NEW)
+/* ==
+mov eax,dword ptr ss:[ebp + 0xC] //appId of bindings to be switched gets moved into eax register
+cmp eax,6C476						//part of original steam code - checks if bindings to be set are steamchord bindings
+*/
+char mask[] = "xxxxxxxx";											   //mask for searching 
+int32_t sigLen = 8;
+
+
+bool patchedOld = false;
+
+
+//////////////////////////////////  CODE  ///////////////////////////////////////////
+
+
+__declspec(naked) void enforceBindingsHookFnOld()
 {
 	__asm
 	{
@@ -67,15 +86,54 @@ __declspec(naked) void enforceBindingsHookFn()
 //\\\
 
 
+__declspec(naked) void enforceBindingsHookFn()
+{
+	__asm
+	{
+		mov eax, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
+		mov currentBindings, eax								//move into "currentBindings" variable
+	}
+
+	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
+		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
+		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
+	{
+		enforceBindingsID = currentBindings;
+	}
+
+	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
+	{
+		__asm
+		{
+			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
+		}
+	}
+
+	__asm
+	{
+		cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
+		jmp[JMPBack]											//jump back and continiue with original steam function 
+	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
+}
+//\\\
+
+
 void EnforceBindings::patchBytes()
 {
-	address = FindPattern("steamclient.dll", originalBytes, mask);
-	if (address == NULL)
+	address = FindPattern("steamclient.dll", originalBytesOld, maskOld);
+	if (address != NULL)
 	{
-		return;
+		patchedOld = true;
+		JMPBack = address + sigLenOld;			//12 size of pattern/mask == patched instructions
+		PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFnOld, sigLenOld);
+	} else {
+		address = FindPattern("steamclient.dll", originalBytes, mask);
+		if (address != NULL)
+		{
+			JMPBack = address + sigLen;			//8 size of pattern/mask == patched instructions
+			PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, sigLen);
+		}
 	}
-	JMPBack = address + 12;			//12 size of pattern/mask == patched instructions
-	PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, 12);
 }
 
 void EnforceBindings::Unpatch()
@@ -83,14 +141,17 @@ void EnforceBindings::Unpatch()
 	if (address == NULL)
 	{
 		return;
+	} else {
+		if (patchedOld)
+		{
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytesOld, sigLenOld);
+		} 
+		else
+		{
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytes, sigLen);
+		}
 	}
-	RestoreBytes((BYTE*)address, (BYTE*)originalBytes, 12);
 }
-
-
-
-
-
 
 
 //places a jmp instruction to a __declspec(naked) function on a given adress
