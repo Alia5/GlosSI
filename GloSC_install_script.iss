@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "GloSC"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "Peter Repukat - FlatspotSoftware"
 #define MyAppURL "htpp://github.com/Alia5/GloSC"
 #define MyAppExeName "GloSC.exe"
@@ -55,8 +55,10 @@ Source: "qt-license.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Readme.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.9\msvc2017_64\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
-Source: "redist\vc_redist_x64.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "redist\vc_redist_x86.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "redist\vc_redist_x64.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
+Source: "redist\vc_redist_x86.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
+Source: "redist\ViGEm\x86\*"; DestDir: "{app}\redist\ViGEm"; Flags: ignoreversion
+Source: "redist\ViGEm\x64\*"; DestDir: "{app}\redist\ViGEm"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -64,9 +66,9 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\vc_redist_x64.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
-Filename: "{app}\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
-Filename: "{app}\ViGEm_Setup_1.0.0.exe"; Description: "Installing ViGEm-driver"; Flags: runascurrentuser
+Filename: "{app}\redist\vc_redist_x64.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
+Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
+Filename: "{app}\redist\devcon_x64.exe"; Parameters: "install ""{app}\redist\ViGEm\ViGEmBus.inf"" Root\ViGEmBus"; Description: "Installing ViGEm Driver"; Flags: runascurrentuser
 Filename: "{sys}\schtasks.exe"; Parameters: "/create /f /tn ""GloSC_GameLauncher"" /tr ""{app}\{#GloSCLauncherName}"" /sc onlogon /rl highest"; Description: "Registering Autostarts"; Flags: runascurrentuser
 Filename: "{app}\{#GloSCLauncherName}"; Description: "Running GameLauncher"; Flags: nowait
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
@@ -80,6 +82,7 @@ Type: files; Name: "{app}"
 
 
 [UninstallRun]
+Filename: "{app}\redist\devcon_x64.exe"; Parameters: "remove Root\ViGEmBus"; Flags: runascurrentuser
 Filename: "{sys}\taskkill.exe"; Parameters: "/T /F /IM {#GloSCLauncherName}";
 Filename: "{sys}\schtasks.exe"; Parameters: "/delete /f /tn ""GloSC_GameLauncher"""; Flags: runascurrentuser
 
