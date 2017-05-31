@@ -12,6 +12,8 @@ GloSC can also launch any of your favorite Games and directly add them to Steam,
 
 It is **the tool** to enjoy any Game that has trouble with Steam and/or *add extra functionality* to your SteamController
 
+Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
+
 ```
 ```
 
@@ -29,6 +31,10 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
   A: ViGEm emulates a full X360-controller incl. peripherals
   
   Go to your windows sound mixer and reset you default playback device - It should be fixed, even for the next shortcut launches
+
+* **Q: GloSC always creates four controllers**
+
+  A: Enable Xbox360 controller rebinding in Steam!
 
 * **Q: Multiple different controllers are not working**
 
@@ -48,17 +54,22 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
 ```
 ```
 
-It is built using [Qt 5.7](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
+It is built using [Qt 5.9](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
 The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
-GloSC consists of:
+Appveyor builds fail since they have not yet made QT5.9 available on their platform!
+
+---
+
+**GloSC consists of:**
  
  * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
  * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 
- 
+---
+
 Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
 GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)

@@ -1,8 +1,8 @@
 # Building GloSC
 
 **Build requirements:**
-- M$ Visual Studio (2015)
-- [Qt 5.7](http://info.qt.io/download-qt-for-application-development) (x86/x64)
+- M$ Visual Studio (2017)
+- [Qt 5.9](http://info.qt.io/download-qt-for-application-development) (x86/x64)
 - [Qt Visual Studio Tools](https://marketplace.visualstudio.com/items?itemName=TheQtCompany.QtVisualStudioTools)
 - [ViGEm](https://github.com/nefarius/ViGEm)
 
