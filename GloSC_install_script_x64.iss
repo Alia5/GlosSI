@@ -57,8 +57,10 @@ Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.9\msvc2017_64\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
 Source: "redist\vc_redist_x64.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
 Source: "redist\vc_redist_x86.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
-Source: "redist\ViGEm\x86\*"; DestDir: "{app}\redist\ViGEm"; Flags: ignoreversion
-Source: "redist\ViGEm\x64\*"; DestDir: "{app}\redist\ViGEm"; Flags: ignoreversion
+Source: "redist\ViGEm\x86\*"; DestDir: "{app}\redist\ViGEm\x86"; Flags: ignoreversion
+Source: "redist\ViGEm\x64\*"; DestDir: "{app}\redist\ViGEm\x64"; Flags: ignoreversion
+Source: "redist\devcon_x86.exe*"; DestDir: "{app}\redist"; Flags: ignoreversion
+Source: "redist\devcon_x64.exe*"; DestDir: "{app}\redist"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
