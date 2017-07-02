@@ -51,7 +51,9 @@ typedef enum _VIGEM_ERRORS
     VIGEM_ERROR_TARGET_UNINITIALIZED = 0xE0000006,
     VIGEM_ERROR_TARGET_NOT_PLUGGED_IN = 0xE0000007,
     VIGEM_ERROR_BUS_VERSION_MISMATCH = 0xE0000008,
-    VIGEM_ERROR_BUS_ACCESS_FAILED = 0xE0000009
+    VIGEM_ERROR_BUS_ACCESS_FAILED = 0xE0000009,
+    VIGEM_ERROR_CALLBACK_ALREADY_REGISTERED = 0xE0000010,
+    VIGEM_ERROR_CALLBACK_NOT_FOUND = 0xE0000011
 } VIGEM_ERROR;
 
 #define VIGEM_SUCCESS(_val_) (_val_ == VIGEM_ERROR_NONE)
@@ -122,9 +124,15 @@ extern "C"
         _In_ PVIGEM_XUSB_NOTIFICATION Notification,
         _In_ VIGEM_TARGET Target);
 
+    VIGEM_API VIGEM_ERROR vigem_unregister_xusb_notification(
+        _In_ PVIGEM_XUSB_NOTIFICATION Notification);
+
     VIGEM_API VIGEM_ERROR vigem_register_ds4_notification(
         _In_ PVIGEM_DS4_NOTIFICATION Notification,
         _In_ VIGEM_TARGET Target);
+
+    VIGEM_API VIGEM_ERROR vigem_unregister_ds4_notification(
+        _In_ PVIGEM_DS4_NOTIFICATION Notification);
 
     VIGEM_API VIGEM_ERROR vigem_xusb_submit_report(
         _In_ VIGEM_TARGET Target,
