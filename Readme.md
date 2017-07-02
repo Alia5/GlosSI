@@ -34,7 +34,11 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 
 * **Q: GloSC always creates four controllers**
 
-  A: Enable Xbox360 controller rebinding in Steam!
+  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
+  
+* **Q: Some games (Gears of War 4, Forza Horizons 3) have odd double inputs with the bumper buttons and sticks**
+
+  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
 
 * **Q: Multiple different controllers are not working**
 
