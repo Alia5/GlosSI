@@ -62,8 +62,6 @@ It is built using [Qt 5.9](https://www.qt.io/) and uses [SFML](http://www.sfml-d
 
 The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
-Appveyor builds fail since they have not yet made QT5.9 available on their platform!
-
 ---
 
 **GloSC consists of:**
