@@ -26,33 +26,47 @@ const int32_t steamChordBindingsID = 443510; //steam_chord_config appid
 int32_t enforceBindingsID = 413080;
 
 
-char originalBytesOld[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (OLD)
+char originalBytes_V0[] = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V0)
 /* == 
 mov eax, dword ptr ss : [ebp + 0xc]						//appId of bindings to be switched gets moved into eax register
 push edi												//part of original steam code
 mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
 cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
 */
-char maskOld[] = "xxxxxxxxxxxx";											   //mask for searching 
-int32_t sigLenOld = 12;
+char mask_V0[] = "xxxxxxxxxxxx";											   //mask for searching 
+int32_t sigLen_V0 = 12;
 
 
-char originalBytes[] = "\x8B\x45\x0C\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (NEW)
+char originalBytes_V1[] = "\x8B\x45\x0C\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V1)
 /* ==
-mov eax,dword ptr ss:[ebp + 0xC] //appId of bindings to be switched gets moved into eax register
+mov eax,dword ptr ss:[ebp + 0xC]	//appId of bindings to be switched gets moved into eax register
 cmp eax,6C476						//part of original steam code - checks if bindings to be set are steamchord bindings
 */
-char mask[] = "xxxxxxxx";											   //mask for searching 
-int32_t sigLen = 8;
+char mask_V1[] = "xxxxxxxx";											   //mask for searching 
+int32_t sigLen_V1 = 8;
 
 
-bool patchedOld = false;
+
+
+char originalBytes_V2[] = "\x8B\x4D\x0C\x53\x8D\x9f\x2a\x03\x00\x00\x8D\x1C\x9E\x81\xF9\x76\xc4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V2)
+/* ==
+mov ecx,dword ptr ss:[ebp+C]			//appId of bindings to be switched gets moved into ecx register
+push ebx								//part of original steam code
+lea ebx,dword ptr ds:[edi+32A]			//part of original steam code
+lea ebx,dword ptr ds:[esi+ebx*4]		//part of original steam code
+cmp ecx,6C476							//part of original steam code - checks if bindings to be set are steamchord bindings
+ */
+char mask_V2[] = "xxxxxxxxxxxxxxxxxxx";											   //mask for searching 
+int32_t sigLen_V2 = 19;
+
+
+int patchversion = 0;
 
 
 //////////////////////////////////  CODE  ///////////////////////////////////////////
 
 
-__declspec(naked) void enforceBindingsHookFnOld()
+__declspec(naked) void enforceBindingsHookFn_V0()
 {
 	__asm
 	{
@@ -86,7 +100,7 @@ __declspec(naked) void enforceBindingsHookFnOld()
 //\\\
 
 
-__declspec(naked) void enforceBindingsHookFn()
+__declspec(naked) void enforceBindingsHookFn_V1()
 {
 	__asm
 	{
@@ -117,21 +131,64 @@ __declspec(naked) void enforceBindingsHookFn()
 }
 //\\\
 
+__declspec(naked) void enforceBindingsHookFn_V2()
+{
+	__asm
+	{
+		mov ecx, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
+		mov currentBindings, ecx								//move into "currentBindings" variable
+	}
+
+	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
+		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
+		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
+	{
+		enforceBindingsID = currentBindings;
+	}
+
+	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
+	{
+		__asm
+		{
+			mov ecx, enforceBindingsID							//move appid of bindings to enforce into eax register
+		}
+	}
+
+	__asm
+	{
+		push ebx												//part of original steam code
+		lea ebx, dword ptr ds : [edi + 0x32A]					//part of original steam code
+		lea ebx, dword ptr ds : [esi + ebx * 0x4]				//part of original steam code
+		cmp ecx, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
+		jmp[JMPBack]											//jump back and continiue with original steam function 
+	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
+}
+//\\\
+
 
 void EnforceBindings::patchBytes()
 {
-	address = FindPattern("steamclient.dll", originalBytesOld, maskOld);
+	address = FindPattern("steamclient.dll", originalBytes_V0, mask_V0);
 	if (address != NULL)
 	{
-		patchedOld = true;
-		JMPBack = address + sigLenOld;			//12 size of pattern/mask == patched instructions
-		PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFnOld, sigLenOld);
+		patchversion = 0;
+		JMPBack = address + sigLen_V0;			//12 size of pattern/mask == patched instructions
+		PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn_V0, sigLen_V0);
 	} else {
-		address = FindPattern("steamclient.dll", originalBytes, mask);
+		patchversion = 1;
+		address = FindPattern("steamclient.dll", originalBytes_V1, mask_V1);
 		if (address != NULL)
 		{
-			JMPBack = address + sigLen;			//8 size of pattern/mask == patched instructions
-			PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn, sigLen);
+			JMPBack = address + sigLen_V1;			//8 size of pattern/mask == patched instructions
+			PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn_V1, sigLen_V1);
+		} else {
+			patchversion = 2;
+			address = FindPattern("steamclient.dll", originalBytes_V2, mask_V2);
+			if (address != NULL)
+			{
+				JMPBack = address + sigLen_V2;			//8 size of pattern/mask == patched instructions
+				PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn_V2, sigLen_V2);
+			}
 		}
 	}
 }
@@ -142,14 +199,19 @@ void EnforceBindings::Unpatch()
 	{
 		return;
 	} else {
-		if (patchedOld)
+		switch (patchversion)
 		{
-			RestoreBytes((BYTE*)address, (BYTE*)originalBytesOld, sigLenOld);
-		} 
-		else
-		{
-			RestoreBytes((BYTE*)address, (BYTE*)originalBytes, sigLen);
+		case 0:
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytes_V0, sigLen_V0);
+			break;
+		case 1:
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytes_V1, sigLen_V1);
+			break;
+		case 2: 
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytes_V2, sigLen_V2);
+			break;
 		}
+
 	}
 }
 
