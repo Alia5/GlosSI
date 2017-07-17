@@ -59,6 +59,15 @@ cmp ecx,6C476							//part of original steam code - checks if bindings to be set
 char mask_V2[] = "xxxxxxxxxxxxxxxxxxx";											   //mask for searching 
 int32_t sigLen_V2 = 19;
 
+char originalBytes_V3[] = "\x8D\x8e\x38\x0c\x00\x00\x8B\x45\x0C"; //original assembly code of steamclient.dll that we want to hook (V2)
+/* ==
+lea ecx,dword ptr ds:[esi+C38]			 //part of original steam code
+mov eax,dword ptr ss:[ebp+C]			//appId of bindings to be switched gets moved into ecx register
+ */
+char mask_V3[] = "xxxxxxxxx";											   //mask for searching 
+int32_t sigLen_V3 = 9;
+
+
 
 int patchversion = 0;
 
@@ -165,6 +174,37 @@ __declspec(naked) void enforceBindingsHookFn_V2()
 }
 //\\\
 
+__declspec(naked) void enforceBindingsHookFn_V3()
+{
+	__asm
+	{
+		lea ecx, dword ptr ds : [esi + 0xC38]
+		mov eax, dword ptr ss : [ebp + 0xC]						//part of original steam code - appId of bindings to be switched gets moved into eax register
+		mov currentBindings, eax								//move into "currentBindings" variable
+	}
+
+	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
+		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
+		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
+	{
+		enforceBindingsID = currentBindings;
+	}
+
+	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
+	{
+		__asm
+		{
+			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
+		}
+	}
+
+	__asm
+	{
+		jmp[JMPBack]											//jump back and continiue with original steam function 
+	}															
+}
+//\\\
+
 
 void EnforceBindings::patchBytes()
 {
@@ -188,6 +228,16 @@ void EnforceBindings::patchBytes()
 			{
 				JMPBack = address + sigLen_V2;			//8 size of pattern/mask == patched instructions
 				PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn_V2, sigLen_V2);
+			} 
+			else
+			{
+				patchversion = 3;
+				address = FindPattern("steamclient.dll", originalBytes_V3, mask_V3);
+				if (address != NULL)
+				{
+					JMPBack = address + sigLen_V3;			//8 size of pattern/mask == patched instructions
+					PlaceJMP((BYTE*)address, (DWORD)enforceBindingsHookFn_V3, sigLen_V3);
+				}
 			}
 		}
 	}
@@ -210,7 +260,11 @@ void EnforceBindings::Unpatch()
 		case 2: 
 			RestoreBytes((BYTE*)address, (BYTE*)originalBytes_V2, sigLen_V2);
 			break;
+		case 3:
+			RestoreBytes((BYTE*)address, (BYTE*)originalBytes_V3, sigLen_V3);
+			break;
 		}
+
 
 	}
 }
