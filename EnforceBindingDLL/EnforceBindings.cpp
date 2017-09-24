@@ -26,82 +26,27 @@ const int32_t bigPictureBindingsID = 413090; //big_picture_config appid
 const int32_t steamChordBindingsID = 443510; //steam_chord_config appid
 int32_t enforceBindingsID = 413080;
 
-
-std::string originalBytes_V0 = "\x8B\x45\x0c\x57\x8B\x7D\x08\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V0)
-/* == 
-mov eax, dword ptr ss : [ebp + 0xc]						//appId of bindings to be switched gets moved into eax register
-push edi												//part of original steam code
-mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
-cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
-*/
-std::string mask_V0 = "xxxxxxxxxxxx";											   //mask for searching 
-
-
-std::string originalBytes_V1 = "\x8B\x45\x0C\x3D\x76\xC4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V1)
-/* ==
-mov eax,dword ptr ss:[ebp + 0xC]	//appId of bindings to be switched gets moved into eax register
-cmp eax,6C476						//part of original steam code - checks if bindings to be set are steamchord bindings
-*/
-std::string mask_V1 = "xxxxxxxx";											   //mask for searching 
-
-
-
-
-std::string originalBytes_V2 = "\x8B\x4D\x0C\x53\x8D\x9f\x2a\x03\x00\x00\x8D\x1C\x9E\x81\xF9\x76\xc4\x06\x00"; //original assembly code of steamclient.dll that we want to hook (V2)
-/* ==
-mov ecx,dword ptr ss:[ebp+C]			//appId of bindings to be switched gets moved into ecx register
-push ebx								//part of original steam code
-lea ebx,dword ptr ds:[edi+32A]			//part of original steam code
-lea ebx,dword ptr ds:[esi+ebx*4]		//part of original steam code
-cmp ecx,6C476							//part of original steam code - checks if bindings to be set are steamchord bindings
- */
-std::string mask_V2 = "xxxxxxxxxxxxxxxxxxx";											   //mask for searching 
-int32_t sigLen_V2 = 19;
-
-std::string originalBytes_V3 = "\x8D\x8e\x38\x0c\x00\x00\x8B\x45\x0C"; //original assembly code of steamclient.dll that we want to hook (V2)
-/* ==
-lea ecx,dword ptr ds:[esi+C38]			 //part of original steam code
-mov eax,dword ptr ss:[ebp+C]			//appId of bindings to be switched gets moved into ecx register
- */
-std::string mask_V3 = "xxxxxxxxx";											   //mask for searching 
-
-std::string originalBytes_V4 = "\x8B\x45\x0C\x89\x45\xF4\x8D\x45\xF0\x50\x89\x7D\xF0"; //original assembly code of steamclient.dll that we want to hook (V2)
-/* == 
-mov eax,dword ptr ss:[ebp+C]									//appId of bindings to be switched gets moved into eax register
-mov dword ptr ss:[ebp-C],eax
-lea eax,dword ptr ss:[ebp-10]
-push eax
-mov dword ptr ss:[ebp-10],edi
-*/
-std::string mask_V4 = "xxxxxxxxxxxxx";											   //mask for searching 
-
-int patchversion = 0;
-
-std::vector<std::string> masks = { 
-	mask_V0,
-	mask_V1,
-	mask_V2,
-	mask_V3,
-	mask_V4 
-};
-
-std::vector<std::string> sig_bytes = { 
-	originalBytes_V0,
-	originalBytes_V1,
-	originalBytes_V2,
-	originalBytes_V3,
-	originalBytes_V4
-};
-
+std::string fun_prolog = "\x55\x8B\xEC\x83\xEC\x10";
 
 //////////////////////////////////  CODE  ///////////////////////////////////////////
-
-__declspec(naked) void enforceBindingsHookFn_V0()
+__declspec(naked) void generalized_hookFn()
 {
+	//excute original function prolog
 	__asm
 	{
-		mov eax, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
-		mov currentBindings, eax								//move into "currentBindings" variable
+		push ebp
+		mov ebp, esp
+		sub esp, 0x10
+	}
+
+
+	//our hook code...
+	__asm
+	{
+		push eax												//save eax
+		mov eax, dword ptr ss : [ebp + 0xC]						//move second function argument (bindings to set) in eax
+		mov currentBindings, eax								//move bindings to set in variable
+		pop eax													//restore eax
 	}
 
 	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
@@ -119,169 +64,24 @@ __declspec(naked) void enforceBindingsHookFn_V0()
 		}
 	}
 
-	__asm
-	{
-		push edi												//part of original steam code
-		mov edi, dword ptr ss : [ebp + 0x8]						//part of original steam code
-		cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
-		jmp[JMPBack]											//jump back and continiue with original steam function 
-	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
-}
-//\\\
 
-
-__declspec(naked) void enforceBindingsHookFn_V1()
-{
-	__asm
-	{
-		mov eax, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
-		mov currentBindings, eax								//move into "currentBindings" variable
-	}
-
-	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
-		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
-		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
-	{
-		enforceBindingsID = currentBindings;
-	}
-
-	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
-	{
-		__asm
-		{
-			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
-		}
-	}
-
-	__asm
-	{
-		cmp eax, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
-		jmp[JMPBack]											//jump back and continiue with original steam function 
-	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
-}
-//\\\
-
-__declspec(naked) void enforceBindingsHookFn_V2()
-{
-	__asm
-	{
-		mov ecx, dword ptr ss : [ebp + 0xc]						//part of original steam code - appId of bindings to be switched gets moved into eax register
-		mov currentBindings, ecx								//move into "currentBindings" variable
-	}
-
-	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
-		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
-		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
-	{
-		enforceBindingsID = currentBindings;
-	}
-
-	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
-	{
-		__asm
-		{
-			mov ecx, enforceBindingsID							//move appid of bindings to enforce into eax register
-		}
-	}
-
-	__asm
-	{
-		push ebx												//part of original steam code
-		lea ebx, dword ptr ds : [edi + 0x32A]					//part of original steam code
-		lea ebx, dword ptr ds : [esi + ebx * 0x4]				//part of original steam code
-		cmp ecx, 0x6C476										//part of original steam code - checks if bindings to be set are steamchord bindings
-		jmp[JMPBack]											//jump back and continiue with original steam function 
-	}															//note: zero flag doesn't get altered by jmp instruction, previous compare still works fine
-}
-//\\\
-
-__declspec(naked) void enforceBindingsHookFn_V3()
-{
-	__asm
-	{
-		lea ecx, dword ptr ds : [esi + 0xC38]
-		mov eax, dword ptr ss : [ebp + 0xC]						//part of original steam code - appId of bindings to be switched gets moved into eax register
-		mov currentBindings, eax								//move into "currentBindings" variable
-	}
-
-	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
-		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
-		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
-	{
-		enforceBindingsID = currentBindings;
-	}
-
-	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
-	{
-		__asm
-		{
-			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
-		}
-	}
-
+	//jump back
 	__asm
 	{
 		jmp[JMPBack]											//jump back and continiue with original steam function 
-	}															
+	}
+
 }
-//\\\
-
-
-__declspec(naked) void enforceBindingsHookFn_V4()
-{
-	__asm
-	{
-		mov eax, dword ptr ss : [ebp+0xC]					 //appId of bindings to be switched gets moved into ecx register
-		mov currentBindings, eax								//move into "currentBindings" variable
-	}
-
-	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
-		&& currentBindings != bigPictureBindingsID				//they have to be our game bindings
-		&& currentBindings != steamChordBindingsID)				//we can grab them here, because bindings switch right after we have injected and the target changes focused window
-	{
-		enforceBindingsID = currentBindings;
-	}
-
-	if (currentBindings == desktopBindingsID)					//if steam wants to set desktop-bindings
-	{
-		__asm
-		{
-			mov eax, enforceBindingsID							//move appid of bindings to enforce into ecx register
-		}
-	}
-
-	__asm
-	{
-		mov dword ptr ss : [ebp - 0xC], eax
-		lea eax, dword ptr ss : [ebp - 0x10]
-		push eax
-		mov dword ptr ss : [ebp - 0x10], edi
-		jmp[JMPBack]											//jump back and continiue with original steam function 
-	}
-}
-//\\\
-
-std::vector<void(*)()> hook_funs = {
-	enforceBindingsHookFn_V0,
-	enforceBindingsHookFn_V1,
-	enforceBindingsHookFn_V2,
-	enforceBindingsHookFn_V3,
-	enforceBindingsHookFn_V4,
-};
 
 
 void EnforceBindings::patchBytes()
 {
-	for (int i = 0; i < sig_bytes.size(); i++)
+	address = FindHookFunctionAdress();
+	
+	if (address != NULL)
 	{
-		address = FindPattern("steamclient.dll", sig_bytes[i].c_str(), masks[i].c_str());
-		if (address != NULL)
-		{
-			patchversion = i;
-			JMPBack = address + sig_bytes[i].length();
-			PlaceJMP((BYTE*)address, (DWORD)hook_funs[i], sig_bytes[i].length());
-			return;
-		}
+		JMPBack = address + fun_prolog.length();
+		PlaceJMP((BYTE*)address, (DWORD)generalized_hookFn, fun_prolog.length());
 	}
 }
 
@@ -289,7 +89,7 @@ void EnforceBindings::Unpatch()
 {
 	if (address != NULL)
 	{
-		RestoreBytes((BYTE*)address, (BYTE*)sig_bytes[patchversion].c_str(), sig_bytes[patchversion].length());
+		RestoreBytes((BYTE*)address, (BYTE*)fun_prolog.c_str(), fun_prolog.length());
 	}
 }
 
@@ -355,5 +155,55 @@ DWORD EnforceBindings::FindPattern(char * module, const char * pattern, const ch
 
 	}
 
+	return NULL;
+}
+
+
+/*
+ * Search for address of functrion we want to hook
+ * 
+ * In the function we want to hook the appID of the Chord bindings get referenced,
+ * it takes 3 arguments (we can get that from the function prolog)
+ * and it is the only one that does both. (in steamclient.dll)
+ * 
+ * We search for the constant appID of SteamChard bindings
+ * move a bit upward and search for the correct function prolog (which will get patched in our hook function)
+ * 
+ */
+DWORD EnforceBindings::FindHookFunctionAdress()
+{
+	MODULEINFO mInfo = GetModInfo("steamclient.dll");
+	DWORD baseAddr = (DWORD)mInfo.lpBaseOfDll;
+	DWORD size = mInfo.SizeOfImage;
+
+	char pattern[4];
+	pattern[3] = (steamChordBindingsID >> 24) & 0xFF;
+	pattern[2] = (steamChordBindingsID >> 16) & 0xFF;
+	pattern[1] = (steamChordBindingsID >> 8) & 0xFF;
+	pattern[0] = steamChordBindingsID & 0xFF;
+
+	for (DWORD i = 0; i < size - 4; i++)
+	{
+		bool found = true;
+		for (DWORD j = 0; j < 4; j++)
+			found &= pattern[j] == *(char*)(baseAddr + j + i);
+
+		if (found)
+		{
+			DWORD addr = baseAddr + i;
+			DWORD funStartSearchOffset = addr - 256;
+
+			for (DWORD k = 0; k < 256; k++)
+			{
+				bool found2 = true;
+				for (DWORD l = 0; l < fun_prolog.length(); l++)
+					found2 &= fun_prolog[l] == *(char*)(funStartSearchOffset + l + k);
+
+				if (found2)
+					return funStartSearchOffset + k;
+
+			}
+		}
+	}
 	return NULL;
 }
