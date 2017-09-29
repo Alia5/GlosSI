@@ -71,7 +71,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\dependencies\VigemClient\;..\dependencies\SFML-2.4.2-x64\lib;$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Xinput.lib;dwmapi.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;Qt5Guid.lib;Qt5Widgetsd.lib;vigemclient_x64-d.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;XInput9_1_0.lib;Qt5Cored.lib;dwmapi.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;Qt5Guid.lib;Qt5Widgetsd.lib;vigemclient_x64-d.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -88,7 +88,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\dependencies\VigemClient\;..\dependencies\SFML-2.4.2-x86\lib;$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Xinput.lib;dwmapi.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;Qt5Guid.lib;Qt5Widgetsd.lib;vigemclient_x86-d.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Xinput9_1_0.lib;dwmapi.lib;sfml-system-d.lib;sfml-window-d.lib;sfml-graphics-d.lib;Qt5Guid.lib;Qt5Widgetsd.lib;vigemclient_x86-d.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -106,7 +106,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\dependencies\VigemClient\;..\dependencies\SFML-2.4.2-x64\lib;$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;xinput.lib;dwmapi.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;Qt5Gui.lib;Qt5Widgets.lib;vigemclient_x64.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;xinput9_1_0.lib;dwmapi.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;Qt5Gui.lib;Qt5Widgets.lib;vigemclient_x64.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>
@@ -127,7 +127,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\dependencies\VigemClient\;..\dependencies\SFML-2.4.2-x86\lib;$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;xinput.lib;dwmapi.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;Qt5Gui.lib;Qt5Widgets.lib;vigemclient_x86.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;xinput9_1_0.lib;dwmapi.lib;sfml-system.lib;sfml-window.lib;sfml-graphics.lib;Qt5Gui.lib;Qt5Widgets.lib;vigemclient_x86.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

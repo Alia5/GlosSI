@@ -18,7 +18,6 @@ limitations under the License.
 
 VirtualControllerThread::VirtualControllerThread()
 {
-
 	driver = vigem_alloc();
 
 	if (!VIGEM_SUCCESS(vigem_connect(driver)))
@@ -32,6 +31,8 @@ VirtualControllerThread::VirtualControllerThread()
 	{
 		vtX360[i] = vigem_target_x360_alloc();
 	}
+
+	seven = IsWindows7OrGreater() != IsWindows8OrGreater();
 }
 
 
@@ -126,7 +127,7 @@ void VirtualControllerThread::controllerLoop()
 
 				if (result == ERROR_SUCCESS)
 				{
-					if (result2 != ERROR_SUCCESS)
+					if ( (result2 != ERROR_SUCCESS) == seven )
 					{
 						// By using VID and PID of Valve's SteamController, Steam doesn't give us ANOTHER "fake" XInput device
 						// Leading to endless pain and suffering. 
@@ -149,7 +150,8 @@ void VirtualControllerThread::controllerLoop()
 						}
 					}
 
-					vigem_target_x360_update(driver, vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+					if (vtX360[i] != nullptr)
+						vigem_target_x360_update(driver, vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
 				}
 				else
 				{

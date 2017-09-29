@@ -80,6 +80,7 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 		ShowWindow(consoleHwnd, SW_HIDE);
 #endif // NDEBUG
 
+
 		if (bEnableControllers)
 			controllerThread.run();
 
