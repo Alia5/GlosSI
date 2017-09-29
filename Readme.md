@@ -34,10 +34,6 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 
   A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
 
-* **Q: Multiple different controllers are not working**
-
-  A: Will probably be fixed in the long run, for now we have to wait for a new ViGEm release.
-
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
 
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
