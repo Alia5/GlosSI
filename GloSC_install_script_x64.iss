@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "GloSC"
-#define MyAppVersion "1.2.2"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Peter Repukat - FlatspotSoftware"
 #define MyAppURL "htpp://github.com/Alia5/GloSC"
 #define MyAppExeName "GloSC.exe"
@@ -44,7 +44,6 @@ Source: "build\x64\Release\SteamTarget.exe"; DestDir: "{app}"; Flags: ignorevers
 Source: "dependencies\SFML-2.4.2-x64\bin\sfml-system-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\SFML-2.4.2-x64\bin\sfml-window-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\SFML-2.4.2-x64\bin\sfml-graphics-2.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dependencies\ViGEmUM\x64\ViGEmUM.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "License.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.9\msvc2017_64\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.9\msvc2017_64\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
