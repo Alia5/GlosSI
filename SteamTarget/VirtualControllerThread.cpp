@@ -18,17 +18,19 @@ limitations under the License.
 
 VirtualControllerThread::VirtualControllerThread()
 {
-	if (!VIGEM_SUCCESS(vigem_init()))
+
+	driver = vigem_alloc();
+
+	if (!VIGEM_SUCCESS(vigem_connect(driver)))
 	{
 		std::cout << "Error initializing ViGem!" << std::endl;
 		MessageBoxW(NULL, L"Error initializing ViGem!", L"GloSC-SteamTarget", MB_OK);
 		bShouldRun = false;
 	}
 
-	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
-		VIGEM_TARGET_INIT(&vtX360[i]);
+		vtX360[i] = vigem_target_x360_alloc();
 	}
 }
 
@@ -37,7 +39,7 @@ VirtualControllerThread::~VirtualControllerThread()
 {
 	if (controllerThread.joinable())
 		controllerThread.join();
-	vigem_shutdown();
+	vigem_disconnect(driver);
 }
 
 void VirtualControllerThread::run()
@@ -51,7 +53,7 @@ void VirtualControllerThread::stop()
 	bShouldRun = false;
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
-		vigem_target_unplug(&vtX360[i]);
+		vigem_target_remove(driver, vtX360[i]);
 	}
 }
 
@@ -132,28 +134,28 @@ void VirtualControllerThread::controllerLoop()
 						// Also annoying the shit out of the user when they open the overlay as steam prompts to setup new XInput devices
 						// Also avoiding any fake inputs from Valve's default controllerprofile
 						// -> Leading to endless pain and suffering
-						vigem_target_set_vid(&vtX360[i], 0x28de); //Valve SteamController VID
-						vigem_target_set_pid(&vtX360[i], 0x1102); //Valve SteamController PID
+						vigem_target_set_vid(vtX360[i], 0x28de); //Valve SteamController VID
+						vigem_target_set_pid(vtX360[i], 0x1102); //Valve SteamController PID
 
-						int vigem_res = vigem_target_plugin(Xbox360Wired, &vtX360[i]);
+						int vigem_res = vigem_target_add(driver, vtX360[i]);
 						if (vigem_res == VIGEM_ERROR_TARGET_UNINITIALIZED)
 						{
-							VIGEM_TARGET_INIT(&vtX360[i]);
+							vtX360[i] = vigem_target_x360_alloc();
 						}
 						if (vigem_res == VIGEM_ERROR_NONE)
 						{
-							std::cout << "Plugged in controller " << vtX360[i].SerialNo << std::endl;
-							vigem_register_xusb_notification(reinterpret_cast<PVIGEM_XUSB_NOTIFICATION>(&VirtualControllerThread::controllerCallback), vtX360[i]);
+							std::cout << "Plugged in controller " << vigem_target_get_index(vtX360[i]) << std::endl;
+							vigem_target_x360_register_notification(driver, vtX360[i], reinterpret_cast<PVIGEM_X360_NOTIFICATION>(&VirtualControllerThread::controllerCallback));
 						}
 					}
 
-					vigem_xusb_submit_report(vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+					vigem_target_x360_update(driver, vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
 				}
 				else
 				{
-					if (VIGEM_SUCCESS(vigem_target_unplug(&vtX360[i])))
+					if (VIGEM_SUCCESS(vigem_target_remove(driver, vtX360[i])))
 					{
-						std::cout << "Unplugged controller " << vtX360[i].SerialNo << std::endl;
+						std::cout << "Unplugged controller " << vigem_target_get_index(vtX360[i]) << std::endl;
 					}
 				}
 			}
@@ -168,14 +170,14 @@ void VirtualControllerThread::controllerLoop()
 	}
 }
 
-void VirtualControllerThread::controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber)
+void VirtualControllerThread::controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber)
 {
 	XINPUT_VIBRATION vibration;
 	ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
 	vibration.wLeftMotorSpeed = LargeMotor * 0xff; //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
 	vibration.wRightMotorSpeed = SmallMotor * 0xff; //Yeah yeah I do know about bitshifting and the multiplication not being 100% correct...
 
-	XInputSetState(Target.SerialNo-1, &vibration);
+	XInputSetState(vigem_target_get_index(Target)-1, &vibration);
 }
 
 DWORD VirtualControllerThread::XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState)

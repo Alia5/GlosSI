@@ -27,7 +27,7 @@ limitations under the License.
 #include <SFML/System.hpp>
 
 #include <Xinput.h>
-#include <ViGEmUM.h>
+#include <ViGEmClient.h>
 
 class VirtualControllerThread
 {
@@ -62,7 +62,8 @@ private:
 	int controllerCount = 0;
 	XInputGetState_t XGetState = nullptr;
 
-	VIGEM_TARGET vtX360[XUSER_MAX_COUNT];
+	PVIGEM_CLIENT driver;
+	PVIGEM_TARGET vtX360[XUSER_MAX_COUNT];
 
 	std::thread controllerThread;
 
@@ -72,7 +73,7 @@ private:
 
 	void controllerLoop();
 
-	static void controllerCallback(VIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
+	static void controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
 
 	static DWORD XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState); //Easier to find in x64dbg...
 
