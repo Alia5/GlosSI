@@ -42,11 +42,9 @@ __declspec(naked) void generalized_hookFn()
 
 	//our hook code...
 	__asm
-	{
-		push eax												//save eax
+	{										
 		mov eax, dword ptr ss : [ebp + 0xC]						//move second function argument (bindings to set) in eax
 		mov currentBindings, eax								//move bindings to set in variable
-		pop eax													//restore eax
 	}
 
 	if (currentBindings != desktopBindingsID					//if the current bindings aren't desktop, big picture, or steam-chord bindings
@@ -61,6 +59,7 @@ __declspec(naked) void generalized_hookFn()
 		__asm
 		{
 			mov eax, enforceBindingsID							//move appid of bindings to enforce into eax register
+			mov dword ptr ss : [ebp + 0xC], eax				//patch function argument
 		}
 	}
 
