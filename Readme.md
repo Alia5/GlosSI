@@ -45,6 +45,12 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
      For now use alt+tab via Steam-chords
      
      This is currently being investigated
+     
+     
+----
+
+Join the GloSC discord here: https://discord.gg/T9b4D5y
+
 ```
 ```
 
