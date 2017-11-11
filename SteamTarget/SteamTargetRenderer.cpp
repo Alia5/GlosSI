@@ -140,7 +140,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		return;
 	sfWindow.setActive(true);
 
-	bool focusSwitchNeeded = true;
+	bool hasJustLaunched = true;
 
 	if (bDrawOverlay)
 		SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
@@ -163,34 +163,16 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		if (bDrawDebugEdges)
 			drawDebugEdges();
 
-
-		//This ensures that we stay in game binding, even if focused application changes! (Why does this work? Well, i dunno... ask Valve...)
-		//Only works with a console window
-		//Causes trouble as soon as there is more than the consoleWindow and the overlayWindow
-		//This is trying to avoid hooking Steam.exe
-		//----
-		//alternatively / additionaly, we can just hook steam and make our lives so much easier
 		//we inject and hook here to spare IPC and let the dll grab the steam appID of the launched process when the config switches (config switches w/ focus)
-		if (focusSwitchNeeded)
+		if (hasJustLaunched)
 		{
-
 			if (bHookSteam)
 				hookBindings(); //cleanup - unhooking / unloading of dll is managed by the GloSC gamelauncher rather than here
-
-			focusSwitchNeeded = false;
-			if (!bUseDesktopConfig)
-			{
-				SetFocus(consoleHwnd);
-				sf::Clock clock;
-				while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
-				{
-					Sleep(1);
-				}
-			}
+			hasJustLaunched = false;
 		}
 
-		//Dirty hack to make the steamoverlay work properly and still keep Apps Controllerconfig when closing overlay.
-		//even if hooking steam, this ensures the overlay stays working
+		
+		//Window focus trickery
 		if (hmodGameOverlayRenderer != NULL)
 		{
 			if (overlayOpen)
@@ -208,17 +190,12 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 					//Actually activate the overlaywindow
 					SetFocus(sfWindow.getSystemHandle());
-
-					if (!bUseDesktopConfig)
+					sf::Clock clock;
+					while (!SetForegroundWindow(sfWindow.getSystemHandle()) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
 					{
-						//by activating the consolewindow **and bringing it to the foreground** we can trick steam so the controller stays in game bindings
-						SetFocus(consoleHwnd);
-						sf::Clock clock;
-						while (!SetForegroundWindow(consoleHwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
-						{
-							Sleep(1);
-						}
+						Sleep(1);
 					}
+					//TODO: FIXME: There's a method using Winnhooks
 
 					//Move the mouse cursor inside the overlaywindow
 					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
@@ -242,6 +219,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					{
 						Sleep(1);
 					}
+					//TODO: FIXME: There's a method using Winnhooks
 					bNeedFocusSwitch = false;
 				}
 			}
@@ -365,6 +343,7 @@ void SteamTargetRenderer::loadLogo()
 	backgroundSprite.setPosition(sf::Vector2f(winSize.width / 2.f, winSize.height / 2.f));
 }
 
+//WinHook Callback to check if the overlay is opened/closed
 LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode >= 0)
