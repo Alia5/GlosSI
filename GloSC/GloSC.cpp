@@ -359,7 +359,7 @@ void GloSC::on_pbUWP_clicked()
 	delete settings;
 
 
-	QProgressDialog progDialog("Scanning UWP apps...", "Cancel", 0, packages.size(), this);
+	QProgressDialog progDialog("Searching for UWP apps...", "Cancel", 0, packages.size(), this);
 	progDialog.setWindowModality(Qt::WindowModal);
 
 	QList<UWPPair> pairs;
