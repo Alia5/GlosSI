@@ -38,13 +38,13 @@ limitations under the License.
 
 class GloSC : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    GloSC(QWidget *parent = Q_NULLPTR);
+	GloSC(QWidget *parent = Q_NULLPTR);
 
 private:
-    Ui::GloSCClass ui;
+	Ui::GloSCClass ui;
 
 	void updateEntryList() const;
 	void writeIni(QString entryName) const;
@@ -53,7 +53,7 @@ private:
 
 	QList<UWPPair> uwpPairs;
 
-	const unsigned int GLOSC_VERSION = 0x00000122;
+	const unsigned int GLOSC_VERSION = 0x00000140; //Version Number in as bytes, just remove the dots.
 
 	int wide_x = 711;
 	int small_x = 302;

@@ -220,6 +220,7 @@ void GloSC::on_pbAddToSteam_clicked()
 
 	QFile shortcutsFile(steamPath + "/userdata/" + activeUser + "/config/shortcuts.vdf");
 
+	//TODO: FIXME: If User has no shortcuts file, create one!
 	if (!shortcutsFile.exists())
 	{
 		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!\nSteam must be running for it to be detected", QMessageBox::Ok);
@@ -341,6 +342,7 @@ void GloSC::on_pbSearchPath_clicked()
 
 void GloSC::on_pbUWP_clicked()
 {
+	//TODO: FIXME: Make Async
 	QSettings *settings = new QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat);
 
 	QStringList childs = settings->childGroups();
@@ -488,21 +490,21 @@ void GloSC::on_lwInstances_itemSelectionChanged()
 	{
 		animate(wide_x);
 	} else {
-		//ui.configBox->setGraphicsEffect(&opEff);
-		//QPropertyAnimation* anim = new QPropertyAnimation(&opEff, "opacity");
-		//anim->setEasingCurve(QEasingCurve::OutExpo);
-		//anim->setDuration(160);
-		//anim->setStartValue(1.f);
-		//anim->setEndValue(0.f);
-		//connect(anim, &QPropertyAnimation::finished, this, [this]()
-		//{
-		//	QPropertyAnimation* anim2 = new QPropertyAnimation(&opEff, "opacity");
-		//	anim2->setEasingCurve(QEasingCurve::InExpo);
-		//	anim2->setDuration(160);
-		//	anim2->setStartValue(0.f);
-		//	anim2->setEndValue(1.f);
-		//	anim2->start(QPropertyAnimation::DeleteWhenStopped);
-		//});
-		//anim->start(QPropertyAnimation::DeleteWhenStopped);
+		ui.configBox->setGraphicsEffect(&opEff);
+		QPropertyAnimation* anim = new QPropertyAnimation(&opEff, "opacity");
+		anim->setEasingCurve(QEasingCurve::OutExpo);
+		anim->setDuration(160);
+		anim->setStartValue(1.f);
+		anim->setEndValue(0.f);
+		connect(anim, &QPropertyAnimation::finished, this, [this]()
+		{
+			QPropertyAnimation* anim2 = new QPropertyAnimation(&opEff, "opacity");
+			anim2->setEasingCurve(QEasingCurve::InExpo);
+			anim2->setDuration(160);
+			anim2->setStartValue(0.f);
+			anim2->setEndValue(1.f);
+			anim2->start(QPropertyAnimation::DeleteWhenStopped);
+		});
+		anim->start(QPropertyAnimation::DeleteWhenStopped);
 	}
 }
