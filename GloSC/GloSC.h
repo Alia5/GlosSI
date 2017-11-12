@@ -43,8 +43,6 @@ class GloSC : public QMainWindow
 public:
 	GloSC(QWidget *parent = Q_NULLPTR);
 
-	bool hook_steam_ = true;
-
 private:
 	Ui::GloSCClass ui;
 
@@ -67,16 +65,17 @@ private:
 
 	void animate(int to);
 
+	bool hook_steam_ = true;
 
 private slots:
-	void on_cbUseDesktop_toggled(bool checked) const;
+	void on_cbUseDesktop_toggled(bool checked);
 	void on_pbCreateNew_clicked();
 	void on_pbSave_clicked();
 	void on_pbDelete_clicked();
 	void on_pbAddToSteam_clicked();
 	void on_pbSearchPath_clicked();
 	void on_pbUWP_clicked();
-	void on_lwInstances_currentRowChanged(int row) const;
+	void on_lwInstances_currentRowChanged(int row);
 	void on_lwInstances_itemSelectionChanged();
 
 
