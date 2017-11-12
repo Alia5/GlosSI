@@ -1,5 +1,21 @@
 <RCC>
-    <qresource prefix="/GloSC">
-        <file>Resources/GloSC_Icon.png</file>
-    </qresource>
+  <qresource prefix="/GloSC">
+    <file>Resources/GloSC_Icon.png</file>
+  </qresource>
+  <qresource prefix="/Tutorial">
+    <file>tut-assets/Tut0.png</file>
+    <file>tut-assets/Tut1.png</file>
+    <file>tut-assets/Tut2.png</file>
+    <file>tut-assets/Tut3.png</file>
+    <file>tut-assets/Tut4.png</file>
+    <file>tut-assets/Tut5.png</file>
+    <file>tut-assets/Tut6.png</file>
+    <file>tut-assets/Tut7.png</file>
+    <file>tut-assets/Tut8.png</file>
+    <file>tut-assets/Tut9.png</file>
+    <file>tut-assets/Tut10.png</file>
+    <file>tut-assets/Tut11.png</file>
+    <file>tut-assets/Tut12.png</file>
+    <file>tut-assets/Tut13.png</file>
+  </qresource>
 </RCC>

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "GloSC.h"
+#include <memory>
 
 GloSC::GloSC(QWidget *parent)
 	: QMainWindow(parent)
@@ -31,14 +32,21 @@ GloSC::GloSC(QWidget *parent)
 	QProcess proc;
 	proc.startDetached("GloSC_Gamelauncher.exe", QStringList(), QApplication::applicationDirPath(), nullptr);
 
+	if (first_launch_)
+		showTutorial();
+
 }
 
-void GloSC::updateEntryList() const
+void GloSC::updateEntryList()
 {
 	ui.lwInstances->clear();
 
 	QDir dir("./targets");
 	QStringList fileNames = dir.entryList(QDir::Files);
+
+	if (fileNames.isEmpty())
+		first_launch_ = true;
+	
 
 	for (auto &fileName : fileNames)
 	{
@@ -147,6 +155,70 @@ void GloSC::animate(int to)
 void GloSC::on_cbUseDesktop_toggled(bool checked)
 {
 	hook_steam_ = !checked;
+}
+
+void GloSC::showTutorial()
+{
+
+
+	ui.pbTuorialCreate->setVisible(false);
+	ui.pbTuorialCreate->setEnabled(false);
+	ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 391);
+
+	for (int i = 1; i < 14; i++)
+	{
+		QLabel* label = ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(i)));
+		if (label != nullptr)
+			label->setVisible(false);
+	}
+
+	connect(ui.pbTutorialNext, &QPushButton::clicked, [this]() {
+		current_slide_++;
+
+		if (current_slide_ >= 14)
+		{
+			ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 0);
+			ui.pbTutorialNext->setVisible(false);
+			ui.pbTutorialNext->setEnabled(false);
+			return;
+		}
+
+		ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_ - 1)))->setVisible(false);
+		ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_)))->setVisible(true);
+
+		QString test = QString(":/Tutorial/tut-assets/Tut" + QString::number(current_slide_) + ".png");
+		ui.lTutorialBackground->setPixmap(QPixmap(test));
+
+		if (current_slide_ == 1)
+		{
+			ui.pbTutorialNext->setVisible(false);
+			ui.pbTutorialNext->setEnabled(false);
+			ui.pbTuorialCreate->setVisible(true);
+			ui.pbTuorialCreate->setEnabled(true);
+		}
+		if (current_slide_ == 2)
+			ui.pbTutorialNext->setGeometry(600, ui.pbTutorialNext->y(), ui.pbTutorialNext->width(), ui.pbTutorialNext->height());
+
+		if (current_slide_ == 13)
+		{
+			animate(small_x);
+			ui.pbTutorialNext->setText("Finish");
+			ui.pbTutorialNext->setGeometry(180, 45, ui.pbTutorialNext->width(), ui.pbTutorialNext->height());
+
+		}
+
+	});
+
+	connect(ui.pbTuorialCreate, &QPushButton::clicked, [this]()
+	{
+		ui.pbTuorialCreate->setVisible(false);
+		ui.pbTuorialCreate->setEnabled(false);
+		ui.pbTutorialNext->setVisible(true);
+		ui.pbTutorialNext->setEnabled(true);
+		on_pbCreateNew_clicked();
+		ui.pbTutorialNext->click();
+	});
+
 }
 
 void GloSC::on_pbCreateNew_clicked()

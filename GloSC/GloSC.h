@@ -47,7 +47,7 @@ public:
 private:
 	Ui::GloSCClass ui;
 
-	void updateEntryList() const;
+	void updateEntryList();
 	void writeIni(QString entryName) const;
 
 	void updateTargetsToNewVersion();
@@ -67,6 +67,13 @@ private:
 	void animate(int to);
 
 	bool hook_steam_ = true;
+
+	bool first_launch_ = false;
+
+	void showTutorial();
+
+	int current_slide_ = 0;
+	int last_slide_ = 13;
 
 private slots:
 	void on_cbUseDesktop_toggled(bool checked);
