@@ -169,24 +169,7 @@
      </property>
      <property name="text">
       <string>Use Desktop-Config
-Disables hooking, per application bindings won't work</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="cbHookSteam">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>160</y>
-       <width>371</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Hook Steam
-Enforces bindings reliably by hooking into Steam</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
+Doesn't work if GloSC window is in focus</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="cbLaunchGame">

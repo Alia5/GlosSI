@@ -56,7 +56,7 @@ void GloSC::writeIni(QString entryName) const
 	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
 	settings.setValue("bUseDesktopConfig", 0 + ui.cbUseDesktop->isChecked());
-	settings.setValue("bHookSteam", 0 + ui.cbHookSteam->isChecked());
+	settings.setValue("bHookSteam", hook_steam_);
 	settings.setValue("version", GLOSC_VERSION);
 
 	settings.endGroup();
@@ -142,10 +142,9 @@ void GloSC::animate(int to)
 	anim->start(QPropertyAnimation::DeleteWhenStopped);
 }
 
-void GloSC::on_cbUseDesktop_toggled(bool checked) const
+void GloSC::on_cbUseDesktop_toggled(bool checked)
 {
-	ui.cbHookSteam->setEnabled(!checked);
-	ui.cbHookSteam->setChecked(!checked);
+	hook_steam_ = !checked;
 }
 
 void GloSC::on_pbCreateNew_clicked()
@@ -154,7 +153,7 @@ void GloSC::on_pbCreateNew_clicked()
 
 	ui.cbOverlay->setChecked(true);
 	ui.cbControllers->setChecked(true);
-	ui.cbHookSteam->setChecked(true);
+	hook_steam_ = true;
 
 	ui.cbLaunchGame->setChecked(false);
 	ui.lePath->setText("");
@@ -445,7 +444,7 @@ void GloSC::on_pbUWP_clicked()
 
 }
 
-void GloSC::on_lwInstances_currentRowChanged(int row) const
+void GloSC::on_lwInstances_currentRowChanged(int row)
 {
 	if (row < 0)
 		return;
@@ -461,13 +460,11 @@ void GloSC::on_lwInstances_currentRowChanged(int row) const
 	ui.cbUseDesktop->setChecked(settings.value("bUseDesktopConfig").toBool());
 	if (ui.cbUseDesktop->isChecked())
 	{
-		ui.cbHookSteam->setChecked(false);
-		ui.cbHookSteam->setEnabled(false);
+		hook_steam_ = false;
 	}
 	else
 	{
-		ui.cbHookSteam->setEnabled(true);
-		ui.cbHookSteam->setChecked(settings.value("bHookSteam").toBool());
+		hook_steam_ = true;
 	}
 
 	settings.endGroup();
@@ -489,22 +486,5 @@ void GloSC::on_lwInstances_itemSelectionChanged()
 	if (width() != wide_x)
 	{
 		animate(wide_x);
-	} else {
-		ui.configBox->setGraphicsEffect(&opEff);
-		QPropertyAnimation* anim = new QPropertyAnimation(&opEff, "opacity");
-		anim->setEasingCurve(QEasingCurve::OutExpo);
-		anim->setDuration(160);
-		anim->setStartValue(1.f);
-		anim->setEndValue(0.f);
-		connect(anim, &QPropertyAnimation::finished, this, [this]()
-		{
-			QPropertyAnimation* anim2 = new QPropertyAnimation(&opEff, "opacity");
-			anim2->setEasingCurve(QEasingCurve::InExpo);
-			anim2->setDuration(160);
-			anim2->setStartValue(0.f);
-			anim2->setEndValue(1.f);
-			anim2->start(QPropertyAnimation::DeleteWhenStopped);
-		});
-		anim->start(QPropertyAnimation::DeleteWhenStopped);
-	}
+	} 
 }

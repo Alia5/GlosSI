@@ -43,6 +43,8 @@ class GloSC : public QMainWindow
 public:
 	GloSC(QWidget *parent = Q_NULLPTR);
 
+	bool hook_steam_ = true;
+
 private:
 	Ui::GloSCClass ui;
 
@@ -64,6 +66,7 @@ private:
 	QGraphicsOpacityEffect opEff;
 
 	void animate(int to);
+
 
 private slots:
 	void on_cbUseDesktop_toggled(bool checked) const;
