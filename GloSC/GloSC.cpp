@@ -21,6 +21,8 @@ GloSC::GloSC(QWidget *parent)
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
 	ui.setupUi(this);
 
+	this->setMaximumWidth(small_x);
+
 	updateEntryList();
 	updateTargetsToNewVersion();
 
