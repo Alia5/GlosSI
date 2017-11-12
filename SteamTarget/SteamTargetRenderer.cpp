@@ -145,7 +145,10 @@ void SteamTargetRenderer::RunSfWindowLoop()
 	if (bDrawOverlay)
 		SetWindowPos(sfWindow.getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
 	else
+	{
 		ShowWindow(consoleHwnd, SW_SHOW);
+		sfWindow.setFramerateLimit(1); //Window is not shown anyway,
+	}
 	
 
 	while (sfWindow.isOpen() && bRunLoop)
