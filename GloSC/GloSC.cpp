@@ -343,7 +343,6 @@ void GloSC::on_pbSearchPath_clicked()
 
 void GloSC::on_pbUWP_clicked()
 {
-	//TODO: FIXME: Make Async
 	QSettings *settings = new QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat);
 
 	QStringList childs = settings->childGroups();
@@ -360,6 +359,9 @@ void GloSC::on_pbUWP_clicked()
 	delete settings;
 
 
+	QProgressDialog progDialog("Scanning UWP apps...", "Cancel", 0, packages.size(), this);
+	progDialog.setWindowModality(Qt::WindowModal);
+
 	QList<UWPPair> pairs;
 
 	QString AppName;
@@ -371,6 +373,13 @@ void GloSC::on_pbUWP_clicked()
 
 	for (auto &package : packages)
 	{
+		progDialog.setValue(packages.indexOf(package));
+
+		if (progDialog.wasCanceled())
+		{
+			return;
+		}
+
 		settings = new QSettings("HKEY_CLASSES_ROOT\\"+package, QSettings::NativeFormat);
 
 		AppName = settings->value("Application/ApplicationName").toString();
@@ -432,6 +441,7 @@ void GloSC::on_pbUWP_clicked()
 
 	uwpPairs = pairs;
 
+	progDialog.close();
 
 	UWPSelectDialog dialog(this);
 	dialog.setUWPList(uwpPairs);

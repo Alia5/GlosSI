@@ -31,6 +31,7 @@ limitations under the License.
 #include <QTimer>
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
+#include <QProgressDialog>
 
 
 #include "UWPPair.h"
