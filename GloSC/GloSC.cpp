@@ -224,7 +224,9 @@ void GloSC::on_pbAddToSteam_clicked()
 	//TODO: FIXME: If User has no shortcuts file, create one!
 	if (!shortcutsFile.exists())
 	{
-		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!\nSteam must be running for it to be detected", QMessageBox::Ok);
+		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!\n\
+			Make sure you have at least one non-Steam shortcut for the file to be present\n\
+			Steam must be running for it to be detected", QMessageBox::Ok);
 		return;
 	}
 	if (!shortcutsFile.open(QFile::ReadWrite))
@@ -357,7 +359,6 @@ void GloSC::on_pbUWP_clicked()
 	}
 
 	delete settings;
-
 
 	QProgressDialog progDialog("Searching for UWP apps...", "Cancel", 0, packages.size(), this);
 	progDialog.setWindowModality(Qt::WindowModal);
