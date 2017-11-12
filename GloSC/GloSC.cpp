@@ -163,7 +163,7 @@ void GloSC::showTutorial()
 
 	ui.pbTuorialCreate->setVisible(false);
 	ui.pbTuorialCreate->setEnabled(false);
-	ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 391);
+	ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 386);
 
 	for (int i = 1; i < 14; i++)
 	{
