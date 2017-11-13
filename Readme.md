@@ -51,12 +51,12 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 
 Join the GloSC discord here: https://discord.gg/T9b4D5y
 
-```
-```
+---
 
-It is built using [Qt 5.9](https://www.qt.io/) and uses [SFML](http://www.sfml-dev.org/) for drawing the overlay
+**Cleaning up misconceptions**
 
-The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
+GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
+
 
 ---
 
@@ -75,6 +75,14 @@ GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of
 You can learn more about how GloSC works [here](https://behind.flatspot.pictures/third-party-steam-controller-software-part2-my-take-on-it/)
 
 For Building / Manual installation refer to the [build guide](https://github.com/Alia5/GloSC/blob/master/Build_Install.md)
+
+GloSC is not affiliated with Valve, Steam, or any of their partners.
+
+---
+
+GloSC is built using [Qt 5.9](https://www.qt.io/) and [SFML](http://www.sfml-dev.org/) for drawing the overlay
+
+The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
 
 ## License
