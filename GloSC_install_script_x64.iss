@@ -77,7 +77,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 
 [Registry]
-Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: "GloSC-GameLauncher"; ValueData: """{app}\GloSC_GameLauncher.exe"""; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "GloSC-GameLauncher"; ValueData: """{app}\GloSC_GameLauncher.exe"""; Flags: uninsdeletevalue
 
 [InstallDelete]
 Type: files; Name: "{app}"
