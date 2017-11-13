@@ -182,6 +182,9 @@ HRESULT GloSC_GameLauncher::LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProc
 		return result;
 		*/
 
+
+	CoAllowSetForegroundWindow(spAppActivationManager, NULL); //try running it regardless
+
 	// Launch the app
 	result = spAppActivationManager->ActivateApplication(packageFullName, NULL, AO_NONE, pdwProcessId);
 
