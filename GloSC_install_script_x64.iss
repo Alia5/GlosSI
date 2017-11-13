@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "GloSC"
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "1.4.0"
 #define MyAppPublisher "Peter Repukat - FlatspotSoftware"
 #define MyAppURL "htpp://github.com/Alia5/GloSC"
 #define MyAppExeName "GloSC.exe"
@@ -71,13 +71,13 @@ Filename: "{app}\redist\vc_redist_x64.exe"; Parameters: "/quiet /install"; Descr
 Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
 Filename: "{app}\redist\devcon_x64.exe"; Parameters: " remove Root\ViGEmBus "; Description: "Removing ViGEm Driver..."; Flags: runascurrentuser
 Filename: "{app}\redist\devcon_x64.exe"; Parameters: " install ""{app}\redist\ViGEm\x64\ViGEmBus.inf"" Root\ViGEmBus "; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
-Filename: "{sys}\schtasks.exe"; Parameters: "/create /f /tn ""GloSC_GameLauncher"" /tr ""{app}\{#GloSCLauncherName}"" /sc onlogon /rl highest"; Description: "Registering Autostarts"; Flags: runascurrentuser
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /f /tn ""GloSC_GameLauncher"""; Flags: runascurrentuser
 Filename: "{app}\{#GloSCLauncherName}"; Description: "Running GameLauncher"; Flags: nowait
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
 
 
 [Registry]
-Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueName: "GloSC-GameLauncher"; ValueType: none; Flags: deletevalue;
+Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: "GloSC-GameLauncher"; ValueData: """{app}\GloSC_GameLauncher.exe"""; Flags: uninsdeletevalue
 
 [InstallDelete]
 Type: files; Name: "{app}"
