@@ -14,6 +14,23 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
 
 Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
 
+--- 
+
+**How does it work? / What does it do?**
+
+GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears where you can use the Steam-overlay, as well as get access to touch- and radial-menus and other functionality normally only present in Games
+
+In addition to that, XInput-inputs are redirected to the whole operating system, so that they will work with any game or application
+
+This brings full SteamController functionality to the desktop and any other application the SteamController might not have worked before
+
+---
+
+**Cleaning up misconceptions**
+
+GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
+
+
 ```
 ```
 
@@ -22,7 +39,7 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 * **Q: The overlay isn't showing up!**
 
   A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
-     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, they don't run, strictly speaking, classical borderless window either
+     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, , some Windows bullshit prevents unsigned apps from drawing over them.
      
      Try running your games as borderless window
 
@@ -47,16 +64,10 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
      This is currently being investigated
      
      
-----
+```
+```
 
 Join the GloSC discord here: https://discord.gg/T9b4D5y
-
----
-
-**Cleaning up misconceptions**
-
-GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
-
 
 ---
 
