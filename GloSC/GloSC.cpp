@@ -417,28 +417,24 @@ void GloSC::on_pbSearchPath_clicked()
 
 void GloSC::on_pbUWP_clicked()
 {
-	QSettings *settings = new QSettings("HKEY_CLASSES_ROOT", QSettings::NativeFormat);
+	auto settings = std::make_unique<QSettings>("HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId", QSettings::NativeFormat);
 
 	QStringList childs = settings->childGroups();
 	QStringList packages;
 
 	for (auto& child : childs)
 	{
-		if (child.indexOf("AppX") == 0)
-		{
-			packages << child;
-		}
+		packages << child;
 	}
 
-	delete settings;
 
 	QProgressDialog progDialog("Searching for UWP apps...", "Cancel", 0, packages.size(), this);
 	progDialog.setWindowModality(Qt::WindowModal);
 
 	QList<UWPPair> pairs;
 
-	QString AppName;
-	QString AppUMId;
+	//QString AppName;
+	//QString AppUMId;
 
 	QStringList AppNames;
 	QStringList AppUMIds;
@@ -452,64 +448,92 @@ void GloSC::on_pbUWP_clicked()
 		{
 			return;
 		}
+		settings = std::make_unique<QSettings>("HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\" + package, QSettings::NativeFormat);
 
-		settings = new QSettings("HKEY_CLASSES_ROOT\\"+package, QSettings::NativeFormat);
+		
 
-		AppName = settings->value("Application/ApplicationName").toString();
-		AppUMId = settings->value("Application/AppUserModelID").toString();
-		if (!AppNames.contains(AppName) && !AppUMIds.contains(AppUMId) && AppUMId.size() > 0)
+		for (auto& child : settings->childGroups())
 		{
-
-			AppNames << AppName;
-			AppUMIds << AppUMId;
-
-			if (AppName.size() == 0)
+			if (child == "ActivatableClassId")
 			{
-				AppName = "Unknown";
-			} else if (AppName.at(0) == '@') {
-				QString packageName = AppName.mid(AppName.indexOf('{') + 1, AppName.size() -1);
-				packageName = packageName.mid(0, packageName.indexOf('?'));
-				QStringList cachedNameChildGroups;
-				QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache", QSettings::NativeFormat);
+				auto classIDSettings = std::make_unique<QSettings>(
+					"HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\" + package + "\\" + child,
+					QSettings::NativeFormat);
 
-				cachedNameChildGroups = settings.childGroups();
-
-				for (auto &childGroup : cachedNameChildGroups)
+				if (classIDSettings->childGroups().length() > 0)
 				{
+					QString AppUMId = package + "!" + classIDSettings->childGroups().at(0);
 					
-					if (childGroup.contains(packageName))
+					auto appInfoSettings = std::make_unique<QSettings>(
+						"HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\"
+						+ package + "\\" + child + "\\" + classIDSettings->childGroups().at(0),
+						QSettings::NativeFormat);
+
+
+					QString AppName = appInfoSettings->value("DisplayName").toString();
+
+					if (!AppNames.contains(AppName) && !AppUMIds.contains(AppUMId) && AppUMId.size() > 0)
 					{
-						QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache\\"+ childGroup, QSettings::NativeFormat);
+						if (AppName.size() != 0)
+							AppNames << AppName;
 
-						QStringList allKeys = settings.allKeys();
+						AppUMIds << AppUMId;
 
-						AppName.replace("/", "\\");
-						for (auto &key : allKeys)
+						if (AppName.size() == 0)
 						{
-							if (key.contains(AppName))
+							AppName = "Unknown";
+						}
+						else if (AppName.at(0) == '@') {
+							QString packageName = AppName.mid(AppName.indexOf('{') + 1, AppName.size() - 1);
+							packageName = packageName.mid(0, packageName.indexOf('?'));
+							QStringList cachedNameChildGroups;
+							QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache", QSettings::NativeFormat);
+
+							cachedNameChildGroups = settings.childGroups();
+
+							for (auto &childGroup : cachedNameChildGroups)
 							{
-								AppName = settings.value(key).toString();
-								break;
+
+								if (childGroup.contains(packageName))
+								{
+									QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache\\" + childGroup, QSettings::NativeFormat);
+
+									QStringList allKeys = settings.allKeys();
+
+									AppName.replace("/", "\\");
+									for (auto &key : allKeys)
+									{
+										if (key.contains(AppName))
+										{
+											AppName = settings.value(key).toString();
+											break;
+										}
+									}
+
+									break;
+								}
+							}
+							if (AppName.at(0) == '@') {
+								AppName = "Unknown";
 							}
 						}
 
-						break;
+						UWPPair uwpPair = {
+							AppName,
+							AppUMId,
+						};
+
+						pairs.push_back(uwpPair);
+
 					}
+
+					break;
 				}
-				if (AppName.at(0) == '@') {
-					AppName = "Unknown";
-				}
+				break;
 			}
-
-			UWPPair uwpPair = {
-				AppName,
-				AppUMId,
-			};
-
-			pairs.push_back(uwpPair);
-
 		}
-		delete settings;
+
+
 	}
 
 	uwpPairs = pairs;
