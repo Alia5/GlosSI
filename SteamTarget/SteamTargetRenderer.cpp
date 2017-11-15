@@ -148,6 +148,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 	{
 		ShowWindow(sfWindow.getSystemHandle(), SW_HIDE);
 		sfWindow.setFramerateLimit(1); //Window is not shown anyway,
+		ShowWindow(consoleHwnd, SW_SHOW); //Show the console window so the user sees SOMETHING
 	}
 	
 
