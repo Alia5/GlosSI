@@ -462,8 +462,19 @@ void GloSC::on_pbUWP_clicked()
 
 				if (classIDSettings->childGroups().length() > 0)
 				{
-					QString AppUMId = package + "!" + classIDSettings->childGroups().at(0);
-					
+					QString pkgNameCleaned = package.mid(0, package.indexOf("_"));
+					QStringList tmp = package.split("__");
+					if (tmp.size() > 1)
+					{
+						pkgNameCleaned += "_" + tmp.at(1);
+					} else {
+						pkgNameCleaned += package.mid(package.lastIndexOf("_"), package.size()-1);
+					}
+
+
+
+					QString AppUMId = pkgNameCleaned + "!" + classIDSettings->childGroups().at(0);
+
 					auto appInfoSettings = std::make_unique<QSettings>(
 						"HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\"
 						+ package + "\\" + child + "\\" + classIDSettings->childGroups().at(0),
