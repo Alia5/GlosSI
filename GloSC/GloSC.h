@@ -52,6 +52,8 @@ private:
 
 	void updateTargetsToNewVersion();
 
+	void enableSteamX360Support();
+
 	QList<UWPPair> uwpPairs;
 
 	const unsigned int GLOSC_VERSION = 0x00000140; //Version Number in as bytes, just remove the dots.

@@ -34,7 +34,6 @@ GloSC::GloSC(QWidget *parent)
 
 	if (first_launch_)
 		showTutorial();
-
 }
 
 void GloSC::updateEntryList()
@@ -104,6 +103,67 @@ void GloSC::updateTargetsToNewVersion()
 		if (version < GLOSC_VERSION)
 			on_pbSave_clicked();
 	}
+}
+
+void GloSC::enableSteamX360Support()
+{
+
+	return;
+	//TODO: FIXME: Can't be done while Steam is Open
+	//TODO: FIXME: INFORM USER!
+
+	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
+	QString steamPath = settings.value("SteamPath").toString();
+	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
+
+	QFile configFile(steamPath + "/userdata/" + activeUser + "/config/localconfig.vdf");
+
+	if (!configFile.exists())
+	{
+		return;
+	}
+	if (!configFile.open(QFile::ReadWrite))
+	{
+		return;
+	}
+
+	//just detect already present paths the easy way and hardcode the actual shortcut structure
+	//will prob. come back to bite me, but for now it should be enough
+	QByteArray configFileBytes = configFile.readAll();
+
+	QString searchString = "\"SteamController_XBoxSupport\"";
+	int idx = configFileBytes.indexOf(searchString);
+
+	if (idx < 0)
+	{
+		configFile.close();
+		return;
+	}
+
+	int c_idx = configFileBytes.indexOf("\"0\"", idx + searchString.length());
+	if (c_idx < 0)
+	{
+		configFile.close();
+		return;
+	}
+
+	if (c_idx >= (idx + searchString.length() + 4))
+	{
+		configFile.close();
+		return;
+	}
+
+	configFileBytes = configFileBytes.replace((c_idx + 1), 1, QString("1").toStdString().c_str());
+
+	configFile.close();
+	if (!configFile.open(QFile::ReadWrite | QIODevice::Truncate))
+	{
+		return;
+	}
+
+	configFile.write(configFileBytes);
+
+	configFile.close();
 }
 
 
@@ -397,6 +457,8 @@ void GloSC::on_pbAddToSteam_clicked()
 
 	shortcutsFile.close();
 	QMessageBox::information(this, "GloSC", "Shortcuts were added! Restart Steam for changes to take effect!", QMessageBox::Ok);
+
+	enableSteamX360Support();
 
 	animate(small_x);
 }
