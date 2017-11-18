@@ -452,6 +452,17 @@ void SteamTargetRenderer::launchApp()
 		QSharedMemory sharedMemInstance("GloSC_GameLauncher");
 		if (!sharedMemInstance.create(1024) && sharedMemInstance.error() == QSharedMemory::AlreadyExists)
 		{
+
+			if (type == "UWP")
+			{
+				HWND hwnd = sfWindow.getSystemHandle();
+				SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
+				QTimer::singleShot(5000, [hwnd]()
+				{
+					SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_ASYNCWINDOWPOS);
+				});
+			}
+
 			QBuffer buffer;
 			QDataStream dataStream(&buffer);
 			QStringList stringList;

@@ -54,15 +54,7 @@ GloSC doesn't hook into any of your games, launched programs or any system-compo
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
 
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
-
-* **Q: UWP Games don't launch in foreground**
-
-  A: For some reason trying to launch them in foreground stops them from launching entirely
-  
-     For now use alt+tab via Steam-chords
-     
-     This is currently being investigated
-     
+    
      
 ```
 ```
