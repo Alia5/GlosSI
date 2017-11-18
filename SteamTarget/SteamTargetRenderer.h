@@ -61,11 +61,15 @@ private:
 
 	void loadLogo();
 
+	void moveMouseIntoOverlay();
+
 	static LRESULT WINAPI HookCallback(int nCode, WPARAM wParam, LPARAM lParam);
 
 	static void unhookBindings();
 
 	static BOOL WINAPI ConsoleCtrlCallback(_In_ DWORD dwCtrlType);
+
+	static void stealFocus(HWND hwnd);
 
 	std::atomic<bool> bRunLoop = true;
 

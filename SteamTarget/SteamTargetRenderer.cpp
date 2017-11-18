@@ -177,7 +177,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 
 		
 		//Window focus trickery
-		if (hmodGameOverlayRenderer != NULL)
+		if (hmodGameOverlayRenderer != nullptr)
 		{
 			if (overlayOpen)
 			{
@@ -193,17 +193,11 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					SetWindowLong(sfWindow.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED); //make overlay window clickable
 
 					//Actually activate the overlaywindow
-					SetFocus(sfWindow.getSystemHandle());
-					sf::Clock clock;
-					while (!SetForegroundWindow(sfWindow.getSystemHandle()) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
-					{
-						Sleep(1);
-					}
-					//TODO: FIXME: There's a method using Winnhooks
+					stealFocus(sfWindow.getSystemHandle());
 
 					//Move the mouse cursor inside the overlaywindow
 					//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
-					SetCursorPos(16, 16);
+					moveMouseIntoOverlay();
 				}
 				sfWindow.draw(backgroundSprite);
 			} else {
@@ -217,13 +211,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 					std::cout << "Switching to previously focused window" << std::endl;
 
 					//switch back the the previosly focused window
-					SetFocus(hwForeGroundWindow);
-					sf::Clock clock;
-					while (!SetForegroundWindow(hwForeGroundWindow) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window
-					{
-						Sleep(1);
-					}
-					//TODO: FIXME: There's a method using Winnhooks
+					stealFocus(hwForeGroundWindow);
 					bNeedFocusSwitch = false;
 				}
 			}
@@ -347,6 +335,27 @@ void SteamTargetRenderer::loadLogo()
 	backgroundSprite.setPosition(sf::Vector2f(winSize.width / 2.f, winSize.height / 2.f));
 }
 
+void SteamTargetRenderer::moveMouseIntoOverlay()
+{
+	RECT rect = { 0 };
+	if (GetWindowRect(sfWindow.getSystemHandle(), &rect))
+	{
+		POINT cursorPos = { 0 };
+		GetCursorPos(&cursorPos);
+		if (PtInRect(&rect, cursorPos))
+		{
+			SetCursorPos(cursorPos.x+1, cursorPos.y);
+		}
+		else
+		{
+			SetCursorPos(rect.left + 16, rect.top + 16);
+		}
+	}
+
+
+
+}
+
 //WinHook Callback to check if the overlay is opened/closed
 LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -392,6 +401,23 @@ BOOL SteamTargetRenderer::ConsoleCtrlCallback(DWORD dwCtrlType)
 	}
 
 	return false;
+}
+
+void SteamTargetRenderer::stealFocus(HWND hwnd)
+{
+	DWORD dwCurrentThread = GetCurrentThreadId();
+	DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+
+	AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+
+	// Possible actions you may wan to bring the window into focus.
+	SetForegroundWindow(hwnd);
+	SetCapture(hwnd);
+	SetFocus(hwnd);
+	SetActiveWindow(hwnd);
+	EnableWindow(hwnd, TRUE);
+
+	AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
 }
 
 void SteamTargetRenderer::launchApp()
