@@ -30,6 +30,9 @@ This brings full SteamController functionality to the desktop and any other appl
 
 GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
 
+This is why you also don't need to launch any game using GloSC.
+You can launch any GloSC-Shortcut from Steam and launch any game or application afterwards if the "Start Application" option causes any trouble.
+
 
 ```
 ```
