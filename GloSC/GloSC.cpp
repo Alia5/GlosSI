@@ -105,13 +105,8 @@ void GloSC::updateTargetsToNewVersion()
 	}
 }
 
-void GloSC::enableSteamX360Support()
+void GloSC::check360ControllerRebinding()
 {
-
-	return;
-	//TODO: FIXME: Can't be done while Steam is Open
-	//TODO: FIXME: INFORM USER!
-
 	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
 	QString steamPath = settings.value("SteamPath").toString();
 	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
@@ -147,6 +142,7 @@ void GloSC::enableSteamX360Support()
 		return;
 	}
 
+
 	if (c_idx >= (idx + searchString.length() + 4))
 	{
 		configFile.close();
@@ -155,15 +151,23 @@ void GloSC::enableSteamX360Support()
 
 	configFileBytes = configFileBytes.replace((c_idx + 1), 1, QString("1").toStdString().c_str());
 
-	configFile.close();
-	if (!configFile.open(QFile::ReadWrite | QIODevice::Truncate))
+	if (QMessageBox::information(this, "GloSC", 
+		"For GloSC to function correctly, you have to enable XBox configuration support in Steam!\nEnable now?",
+		QMessageBox::Yes | QMessageBox::No) 
+		
+		== QMessageBox::Yes)
 	{
-		return;
+		configFile.close();
+		if (!configFile.open(QFile::ReadWrite | QIODevice::Truncate))
+		{
+			return;
+		}
+
+		configFile.write(configFileBytes);
+
+		configFile.close();
 	}
 
-	configFile.write(configFileBytes);
-
-	configFile.close();
 }
 
 
@@ -356,9 +360,9 @@ void GloSC::on_pbAddToSteam_clicked()
 	//TODO: FIXME: If User has no shortcuts file, create one!
 	if (!shortcutsFile.exists())
 	{
-		QMessageBox::information(this, "GloSC", "Couldn't detect Steam shortcuts file!\n\
-			Make sure you have at least one non-Steam shortcut for the file to be present\n\
-			Steam must be running for it to be detected", QMessageBox::Ok);
+		QMessageBox::information(this, "GloSC", QString("Couldn't detect Steam shortcuts file!\n")+
+			"Make sure you have at least one non-Steam shortcut for the file to be present\n"+
+			"Steam must be running for it to be detected", QMessageBox::Ok);
 		return;
 	}
 	if (!shortcutsFile.open(QFile::ReadWrite))
@@ -456,11 +460,31 @@ void GloSC::on_pbAddToSteam_clicked()
 	shortcutsFile.write(shortcutsFileBytes);
 
 	shortcutsFile.close();
-	QMessageBox::information(this, "GloSC", "Shortcuts were added! Restart Steam for changes to take effect!", QMessageBox::Ok);
-
-	enableSteamX360Support();
 
 	animate(small_x);
+
+	if( QMessageBox::information(this, "GloSC",
+		"Shortcuts were added!\nRestart Steam for changes to take effect!\nRestart Steam now?",
+		QMessageBox::Yes | QMessageBox::No) 
+		
+		== QMessageBox::Yes)
+	{
+		
+		QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
+		QString steamPath = settings.value("SteamPath").toString() + "/Steam.exe";
+		steamPath = QDir::toNativeSeparators(steamPath);
+
+		QProcess::execute("taskkill.exe /im Steam.exe /f");
+
+		check360ControllerRebinding();
+
+		QProcess::startDetached("explorer.exe", { steamPath });
+
+	} 
+	else
+	{
+		QMessageBox::warning(this, "GloSC", "For GloSC to function correctly, you have to enable XBox configuration support in Steam!", QMessageBox::Ok);
+	}
 }
 
 void GloSC::on_pbSearchPath_clicked()

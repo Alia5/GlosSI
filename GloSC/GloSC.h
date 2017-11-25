@@ -32,6 +32,7 @@ limitations under the License.
 #include <QPropertyAnimation>
 #include <QGraphicsOpacityEffect>
 #include <QProgressDialog>
+#include <QDir>
 
 
 #include "UWPPair.h"
@@ -52,7 +53,7 @@ private:
 
 	void updateTargetsToNewVersion();
 
-	void enableSteamX360Support();
+	void check360ControllerRebinding();
 
 	QList<UWPPair> uwpPairs;
 
