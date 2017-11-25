@@ -58,6 +58,9 @@ You can launch any GloSC-Shortcut from Steam and launch any game or application 
 
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
     
+* **Q: GloSC overlay causes the screen to be black**
+
+  A: If running on mobile, open up Nvidia control panel (right click your Desktop and select it). Manage 3D-settings and have it auto select your graphics processor, if not then maybe try adding an exclusive fix for Steam on program settings tab.        
      
 ```
 ```
