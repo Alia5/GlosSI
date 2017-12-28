@@ -485,6 +485,9 @@ void GloSC::on_pbAddToSteam_clicked()
 	{
 		QMessageBox::warning(this, "GloSC", "For GloSC to function correctly, you have to enable XBox configuration support in Steam!", QMessageBox::Ok);
 	}
+
+	QMessageBox::information(this, "GloSC", "Don't forget to rebind you Controller in Steam!\nIf the controller randomly switches to desktop-configuration, run Steam as admin!", QMessageBox::Ok);
+
 }
 
 void GloSC::on_pbSearchPath_clicked()
