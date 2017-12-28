@@ -56,10 +56,8 @@ Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\Qt\5.9\msvc2017_64\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
 Source: "redist\vc_redist_x64.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
 Source: "redist\vc_redist_x86.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
-Source: "redist\ViGEm\x86\*"; DestDir: "{app}\redist\ViGEm\x86"; Flags: ignoreversion
-Source: "redist\ViGEm\x64\*"; DestDir: "{app}\redist\ViGEm\x64"; Flags: ignoreversion
-Source: "redist\devcon_x86.exe*"; DestDir: "{app}\redist"; Flags: ignoreversion
-Source: "redist\devcon_x64.exe*"; DestDir: "{app}\redist"; Flags: ignoreversion
+Source: "redist\Install_Update_ViGEm.ps1"; DestDir: "{app}\redist"; Flags: ignoreversion
+
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -69,8 +67,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "{app}\redist\vc_redist_x64.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
 Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
-Filename: "{app}\redist\devcon_x64.exe"; Parameters: " remove Root\ViGEmBus "; Description: "Removing ViGEm Driver..."; Flags: runascurrentuser
-Filename: "{app}\redist\devcon_x64.exe"; Parameters: " install ""{app}\redist\ViGEm\x64\ViGEmBus.inf"" Root\ViGEmBus "; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
+Filename: "{win}\sysnative\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "&'{app}\redist\Install_Update_ViGEm.ps1'"; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
 Filename: "{sys}\schtasks.exe"; Parameters: "/delete /f /tn ""GloSC_GameLauncher"""; Flags: runascurrentuser
 Filename: "{app}\{#GloSCLauncherName}"; Description: "Running GameLauncher"; Flags: nowait
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
