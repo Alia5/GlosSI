@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "GloSC"
-#define MyAppVersion "1.4.1"
+#define MyAppVersion "1.4.2"
 #define MyAppPublisher "Peter Repukat - FlatspotSoftware"
 #define MyAppURL "htpp://github.com/Alia5/GloSC"
 #define MyAppExeName "GloSC.exe"
