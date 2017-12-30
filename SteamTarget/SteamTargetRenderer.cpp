@@ -419,6 +419,14 @@ void SteamTargetRenderer::stealFocus(HWND hwnd)
 	EnableWindow(hwnd, TRUE);
 
 	AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
+
+
+	sf::Clock clock;
+	while (!SetForegroundWindow(hwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window 
+	{
+		Sleep(1);
+	}
+
 }
 
 void SteamTargetRenderer::launchApp()
