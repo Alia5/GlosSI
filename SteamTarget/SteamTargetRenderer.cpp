@@ -15,10 +15,8 @@ limitations under the License.
 */
 #include "SteamTargetRenderer.h"
 
-std::atomic<bool> SteamTargetRenderer::overlayOpen = false;
-HHOOK SteamTargetRenderer::hook = nullptr;
-std::atomic<bool> SteamTargetRenderer::bHookSteam = false;
 
+std::atomic<bool> SteamTargetRenderer::bHookSteam = false;
 
 SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -88,9 +86,9 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 
 		if (hmodGameOverlayRenderer != nullptr)
 		{
-			//Hook MessageQueue to detect if overlay gets opened / closed
-			//Steam Posts a Message with 0x14FA / 0x14F7 when the overlay gets opened / closed
-			hook = SetWindowsHookEx(WH_GETMESSAGE, HookCallback, nullptr, GetCurrentThreadId());
+
+			overlayOpen = reinterpret_cast<uint64_t*>(uint64_t(hmodGameOverlayRenderer) + 0x13A63C);
+
 		}
 
 
@@ -110,12 +108,6 @@ SteamTargetRenderer::SteamTargetRenderer(int& argc, char** argv) : QApplication(
 
 SteamTargetRenderer::~SteamTargetRenderer()
 {	
-
-	if (hmodGameOverlayRenderer != nullptr)
-	{
-		UnhookWindowsHookEx(hook);
-	}
-
 	renderThread.join();
 	if (controllerThread.isRunning())
 		controllerThread.stop();
@@ -179,7 +171,7 @@ void SteamTargetRenderer::RunSfWindowLoop()
 		//Window focus trickery
 		if (hmodGameOverlayRenderer != nullptr)
 		{
-			if (overlayOpen)
+			if (*overlayOpen)
 			{
 				if (!bNeedFocusSwitch)
 				{
@@ -354,27 +346,6 @@ void SteamTargetRenderer::moveMouseIntoOverlay()
 
 
 
-}
-
-//WinHook Callback to check if the overlay is opened/closed
-LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
-{
-	if (nCode >= 0)
-	{
-		PMSG msg = reinterpret_cast<PMSG>(lParam);
-		std::cout << "DEBUG: " << "message: " << msg->message << std::endl;
-		if (msg->message == 0x14FA) //Posted when the overlay gets opened
-		{
-			overlayOpen = true;
-			std::cout << "Overlay Opened!\n";
-		}
-		else if (msg->message == 0x14F7 || msg->message == 0x14FD || msg->message == 512 || msg->message == 0x2a3)
-		{
-			overlayOpen = false;
-			std::cout << "Overlay closed!\n";
-		}
-	}
-	return CallNextHookEx(hook, nCode, wParam, lParam);
 }
 
 void SteamTargetRenderer::unhookBindings()

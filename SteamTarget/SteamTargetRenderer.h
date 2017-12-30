@@ -91,8 +91,7 @@ private:
 #else
 	WCHAR* overlayModuleName = L"GameOverlayRenderer.dll";
 #endif
-	static std::atomic<bool> overlayOpen;
-	static HHOOK hook;
+	uint64_t *overlayOpen;
 
 	HWND hwForeGroundWindow = nullptr;
 	bool bNeedFocusSwitch = false;
