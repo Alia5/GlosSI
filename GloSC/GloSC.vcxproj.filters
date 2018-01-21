@@ -102,7 +102,4 @@
   <ItemGroup>
     <Image Include="..\GloSC_Icon.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
 </Project>
