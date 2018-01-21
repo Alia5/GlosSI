@@ -94,6 +94,7 @@ private:
 	static std::atomic<bool> overlayOpen;
 	static HHOOK hook;
 
+
 	HWND hwForeGroundWindow = nullptr;
 	bool bNeedFocusSwitch = false;
 

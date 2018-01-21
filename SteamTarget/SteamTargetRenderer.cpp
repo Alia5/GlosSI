@@ -363,7 +363,7 @@ LRESULT WINAPI SteamTargetRenderer::HookCallback(int nCode, WPARAM wParam, LPARA
 	{
 		PMSG msg = reinterpret_cast<PMSG>(lParam);
 		std::cout << "DEBUG: " << "message: " << msg->message << std::endl;
-		if (msg->message == 0x14FA) //Posted when the overlay gets opened
+		if (msg->message == 0x14FA || msg->message == 0x14FF) //Posted when the overlay gets opened
 		{
 			overlayOpen = true;
 			std::cout << "Overlay Opened!\n";
