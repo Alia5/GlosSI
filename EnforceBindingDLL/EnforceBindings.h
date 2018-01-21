@@ -21,6 +21,14 @@ limitations under the License.
 #include <Windows.h>
 #include <psapi.h>
 
+#include "../packages/minhook.1.3.3/lib/native/include/MinHook.h"
+
+#if defined _M_X64
+#pragma comment(lib, "../packages/minhook.1.3.3/lib/native/lib/libMinHook-x64-v141-mt.lib")
+#elif defined _M_IX86
+#pragma comment(lib, "../packages/minhook.1.3.3/lib/native/lib/libMinHook-x86-v141-mt.lib")
+#endif
+
 
 class EnforceBindings
 {
@@ -28,6 +36,9 @@ public:
 
 	static void patchBytes();
 	static void Unpatch();
+
+	static void patchLizard();
+	static void unpatchLizard();
 
 private:
 
