@@ -28,34 +28,6 @@ int32_t enforceBindingsID = 413080;
 
 std::string fun_prolog = "\x55\x8B\xEC\x83\xEC\x10";
 
-
-
-
-typedef HWND (WINAPI *GETFOREGROUNDWINDOW)();
-
-GETFOREGROUNDWINDOW fGetForegroundWindow = NULL;
-
-HWND WINAPI DetourGetForegroundWindow()
-{
-	HWND gloscHWND = FindWindow(nullptr, L"GloSC_OverlayWindow");
-	return gloscHWND;
-}
-
-
-template <typename T>
-inline MH_STATUS MH_CreateHookEx(LPVOID pTarget, LPVOID pDetour, T** ppOriginal)
-{
-	return MH_CreateHook(pTarget, pDetour, reinterpret_cast<LPVOID*>(ppOriginal));
-}
-
-template <typename T>
-inline MH_STATUS MH_CreateHookApiEx(
-	LPCWSTR pszModule, LPCSTR pszProcName, LPVOID pDetour, T** ppOriginal)
-{
-	return MH_CreateHookApi(
-		pszModule, pszProcName, pDetour, reinterpret_cast<LPVOID*>(ppOriginal));
-}
-
 //////////////////////////////////  CODE  ///////////////////////////////////////////
 __declspec(naked) void generalized_hookFn()
 {
@@ -118,30 +90,6 @@ void EnforceBindings::Unpatch()
 	{
 		RestoreBytes((BYTE*)address, (BYTE*)fun_prolog.c_str(), fun_prolog.length());
 	}
-}
-
-void EnforceBindings::patchLizard()
-{
-	// Initialize MinHook.
-	if (MH_Initialize() != MH_OK)
-		return;
-
-	// Create a hook for GetActiveWindow, in disabled state.
-	if (MH_CreateHookApiEx(L"user32", "GetForegroundWindow", &DetourGetForegroundWindow, &fGetForegroundWindow) != MH_OK)
-		return;
-
-	// Enable the hook for GetActiveWindow.
-	if (MH_EnableHook(&GetForegroundWindow) != MH_OK)
-		return;
-}
-
-void EnforceBindings::unpatchLizard()
-{
-	if (MH_DisableHook(&GetForegroundWindow) != MH_OK)
-		return;
-	// Uninitialize MinHook.
-	if (MH_Uninitialize() != MH_OK)
-		return;
 }
 
 
