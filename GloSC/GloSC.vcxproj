@@ -269,12 +269,22 @@
   <ItemGroup>
     <Image Include="..\GloSC_Icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\minhook.1.3.3\build\native\minhook.targets" Condition="Exists('..\packages\minhook.1.3.3\build\native\minhook.targets')" />
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" Qt5Version_x0020_Win32="5.7_x86" Qt5Version_x0020_x64="5.9_x64" MocOptions="" />
     </VisualStudio>
   </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\minhook.1.3.3\build\native\minhook.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\minhook.1.3.3\build\native\minhook.targets'))" />
+  </Target>
 </Project>
