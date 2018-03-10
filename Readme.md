@@ -14,6 +14,10 @@ It is **the tool** to enjoy any Game that has trouble with Steam and/or *add ext
 
 Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
 
+---
+
+This thing started out as a giant hack / proof of concept, work has began on a cleaner and more maintainable (v2 branch)[https://github.com/Alia5/GloSC/tree/v2]
+
 --- 
 
 **How does it work? / What does it do?**
