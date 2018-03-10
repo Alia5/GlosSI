@@ -16,7 +16,7 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 
 ---
 
-This thing started out as a giant hack / proof of concept, work has began on a cleaner and more maintainable (v2 branch)[https://github.com/Alia5/GloSC/tree/v2]
+This thing started out as a giant hack / proof of concept, work has began on a cleaner and more maintainable [v2 branch](https://github.com/Alia5/GloSC/tree/v2)
 
 --- 
 
