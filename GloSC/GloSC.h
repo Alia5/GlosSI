@@ -57,7 +57,7 @@ private:
 
 	QList<UWPPair> uwpPairs;
 
-	const unsigned int GLOSC_VERSION = 0x00000140; //Version Number in as bytes, just remove the dots.
+	const unsigned int GLOSC_VERSION = 0x00000512; //Version Number in as bytes, just remove the dots.
 
 	int wide_x = 711;
 	int small_x = 302;
