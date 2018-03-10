@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Peter Repukat - FlatspotSoftware
+Copyright 2016 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ VirtualControllerThread::VirtualControllerThread()
 	{
 		std::cout << "Error initializing ViGem!" << std::endl;
 		MessageBoxW(NULL, L"Error initializing ViGem!", L"GloSC-SteamTarget", MB_OK);
-		bShouldRun = false;
+		b_should_run_ = false;
 	}
 
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
@@ -45,13 +45,13 @@ VirtualControllerThread::~VirtualControllerThread()
 
 void VirtualControllerThread::run()
 {
-	bShouldRun = true;
+	b_should_run_ = true;
 	controller_thread_ = std::thread(&VirtualControllerThread::controllerLoop, this);
 }
 
 void VirtualControllerThread::stop()
 {
-	bShouldRun = false;
+	b_should_run_ = false;
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
 		vigem_target_remove(driver_, vt_x360_[i]);
@@ -61,13 +61,13 @@ void VirtualControllerThread::stop()
 
 bool VirtualControllerThread::isRunning() const
 {
-	return bShouldRun;
+	return b_should_run_;
 }
 
 void VirtualControllerThread::controllerLoop()
 {
 	sf::Clock waitForHookTimer;
-	while (bShouldRun)
+	while (b_should_run_)
 	{
 		sf_clock_.restart();
 
@@ -189,17 +189,16 @@ DWORD VirtualControllerThread::XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_S
 
 DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_STATE* pState)
 {
-	DWORD ret;
 	DWORD dwOldProtect, dwBkup;
 
-	BYTE* Address = reinterpret_cast<BYTE*>(x_get_state_);
+	auto* Address = reinterpret_cast<BYTE*>(x_get_state_);
 	VirtualProtect(Address, op_patch_lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		//Change permissions of memory..
 	for (DWORD i = 0; i < op_patch_lenght; i++)											//unpatch Valve's hook
 	{
 		*(Address + i) = real_bytes_[i];
 	}
 
-	ret = x_get_state_(dwUserIndex, pState);												//Cal REAL XInputGetState...
+	const DWORD ret = x_get_state_(dwUserIndex, pState);												//Cal REAL XInputGetState...
 
 	for (int i = 0; i < op_patch_lenght; i++)												//repatch Valve's hook
 	{

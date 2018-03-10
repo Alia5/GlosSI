@@ -28,6 +28,10 @@ class SteamTarget : public QApplication
 
 public:
 	SteamTarget(int& argc, char** argv);
+	SteamTarget(const SteamTarget& other) = delete;
+	SteamTarget(SteamTarget&& other) noexcept = delete;
+	SteamTarget& operator=(const SteamTarget& other) = delete;
+	SteamTarget& operator=(SteamTarget&& other) noexcept = delete;
 	~SteamTarget() = default;
 
 	void init();

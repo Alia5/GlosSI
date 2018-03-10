@@ -22,7 +22,7 @@ limitations under the License.
 #include <vector>
 
 #include <Windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 
 #include <SFML/System.hpp>
 
@@ -34,6 +34,10 @@ class VirtualControllerThread
 {
 public:
 	VirtualControllerThread();
+	VirtualControllerThread(const VirtualControllerThread& other) = delete;
+	VirtualControllerThread(VirtualControllerThread&& other) noexcept = delete;
+	VirtualControllerThread& operator=(const VirtualControllerThread& other) = delete;
+	VirtualControllerThread& operator=(VirtualControllerThread&& other) noexcept = delete;
 	~VirtualControllerThread();
 
 	void run();
@@ -43,13 +47,11 @@ public:
 
 private:
 
-	std::atomic<bool> bShouldRun = false;
-
-
+	std::atomic<bool> b_should_run_ = false;
 	typedef DWORD(WINAPI* XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE* pState);
 
 	static const uint8_t op_patch_lenght = 5;
-	uint8_t valve_hook_bytes_[5];
+	uint8_t valve_hook_bytes_[5]{};
 
 	bool seven_ = false;
 
@@ -64,7 +66,7 @@ private:
 	XInputGetState_t x_get_state_ = nullptr;
 
 	PVIGEM_CLIENT driver_;
-	PVIGEM_TARGET vt_x360_[XUSER_MAX_COUNT];
+	PVIGEM_TARGET vt_x360_[XUSER_MAX_COUNT]{};
 
 	std::thread controller_thread_;
 

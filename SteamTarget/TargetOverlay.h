@@ -23,7 +23,11 @@ class TargetOverlay
 {
 public:
 	TargetOverlay() = default;
-
+	TargetOverlay(const TargetOverlay& other) = delete;
+	TargetOverlay(TargetOverlay&& other) noexcept = delete;
+	TargetOverlay& operator=(const TargetOverlay& other) = delete;
+	TargetOverlay& operator=(TargetOverlay&& other) noexcept = delete;
+	~TargetOverlay() = default;
 
 	bool init(bool hidden = false);
 	void stop();
