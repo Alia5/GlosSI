@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@ limitations under the License.
 */
 #include "SteamTargetRenderer.h"
 #include <QtCore/QCoreApplication>
+#include "SteamTarget.h"
 
 int main(int argc, char *argv[])
 {
-	SteamTargetRenderer renderer(argc, argv);
-	renderer.run();
-	return renderer.exec();
+	SteamTarget target(argc, argv);
+	target.init();
+	return target.exec();
 }
 

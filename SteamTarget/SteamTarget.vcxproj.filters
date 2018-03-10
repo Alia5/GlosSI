@@ -58,12 +58,27 @@
     <ClCompile Include="VirtualControllerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SteamTarget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SteamTarget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_SteamTarget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SteamTarget.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
     <CustomBuild Include="SteamTargetRenderer.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SteamTarget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -73,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="VirtualControllerThread.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetOverlay.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

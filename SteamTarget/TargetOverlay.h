@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,24 +13,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include <Windows.h>
-#include "EnforceBindings.h"
 
-HANDLE hThread;
+#pragma once
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <thread>
+#include <mutex>
 
-void WINAPI Run()
+class TargetOverlay
 {
+public:
+	TargetOverlay() = default;
 
-}
 
+	bool init(bool hidden = false);
+	void stop();
 
-int WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
-{
-	if (reason == DLL_PROCESS_ATTACH)
-	{
-		EnforceBindings::patchBytes();
-	} else if (reason == DLL_PROCESS_DETACH) {
-		EnforceBindings::Unpatch();
-	}
-	return true;
-}
+	void overlayLoop();
+
+	void onOverlayOpened();
+	void onOverlayClosed();
+
+private:
+
+	void makeSfWindowTransparent();
+	void moveMouseIntoOverlay() const;
+
+	std::thread overlay_thread_;
+	sf::RenderWindow window_;
+	std::mutex mtx_;
+	bool run_ = true;
+	bool hidden_ = false;
+};

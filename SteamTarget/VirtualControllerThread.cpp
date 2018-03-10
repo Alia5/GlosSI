@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ limitations under the License.
 
 VirtualControllerThread::VirtualControllerThread()
 {
-	driver = vigem_alloc();
+	driver_ = vigem_alloc();
 
-	if (!VIGEM_SUCCESS(vigem_connect(driver)))
+	if (!VIGEM_SUCCESS(vigem_connect(driver_)))
 	{
 		std::cout << "Error initializing ViGem!" << std::endl;
 		MessageBoxW(NULL, L"Error initializing ViGem!", L"GloSC-SteamTarget", MB_OK);
@@ -29,24 +29,24 @@ VirtualControllerThread::VirtualControllerThread()
 
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
-		vtX360[i] = vigem_target_x360_alloc();
+		vt_x360_[i] = vigem_target_x360_alloc();
 	}
 
-	seven = IsWindows7OrGreater() != IsWindows8OrGreater();
+	seven_ = IsWindows7OrGreater() != IsWindows8OrGreater();
 }
 
 
 VirtualControllerThread::~VirtualControllerThread()
 {
-	if (controllerThread.joinable())
-		controllerThread.join();
-	vigem_disconnect(driver);
+	if (controller_thread_.joinable())
+		controller_thread_.join();
+	vigem_disconnect(driver_);
 }
 
 void VirtualControllerThread::run()
 {
 	bShouldRun = true;
-	controllerThread = std::thread(&VirtualControllerThread::controllerLoop, this);
+	controller_thread_ = std::thread(&VirtualControllerThread::controllerLoop, this);
 }
 
 void VirtualControllerThread::stop()
@@ -54,34 +54,32 @@ void VirtualControllerThread::stop()
 	bShouldRun = false;
 	for (int i = 0; i < XUSER_MAX_COUNT; i++)
 	{
-		vigem_target_remove(driver, vtX360[i]);
+		vigem_target_remove(driver_, vt_x360_[i]);
 	}
 }
 
 
-bool VirtualControllerThread::isRunning()
+bool VirtualControllerThread::isRunning() const
 {
 	return bShouldRun;
 }
 
 void VirtualControllerThread::controllerLoop()
 {
-	DWORD result;
-	DWORD result2;
 	sf::Clock waitForHookTimer;
 	while (bShouldRun)
 	{
-		sfClock.restart();
+		sf_clock_.restart();
 
 		// We have to retrieve the XInputGetState function by loading it via GetProcAdress
-		// otherwise the M$ compiler calls to a jumptable, jumping to the real function
+		// otherwise we get calls to a jumptable, jumping to the real function
 		// We can't have this if we wan't to dynamically unpatch and repatch Valve's XInput hook
 		// Also wait a second, jut to be sure Steam has done it's hooking thing...
-		if (XGetState == nullptr && waitForHookTimer.getElapsedTime().asSeconds() > 1)
+		if (x_get_state_ == nullptr && waitForHookTimer.getElapsedTime().asSeconds() > 1)
 		{
 			HMODULE xinputmod = nullptr;
 
-			HANDLE hProcess = GetCurrentProcess();
+			const HANDLE hProcess = GetCurrentProcess();
 			HMODULE hMods[1024];
 			DWORD cbNeeded;
 			EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded);
@@ -103,31 +101,31 @@ void VirtualControllerThread::controllerLoop()
 				}
 			}
 
-			XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(GetProcAddress(xinputmod, "XInputGetState"));
+			const XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(GetProcAddress(xinputmod, "XInputGetState"));
 
 			std::cout << "realXgstate: " << std::hex << realXgstate << "\n";
 			for (int i = 0; i < 5; i++)
 			{
-				valveHookBytes[i] = *reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(*realXgstate) + i);
+				valve_hook_bytes_[i] = *reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(*realXgstate) + i);
 			}
 
-			XGetState = realXgstate;
-			controllerCount = 1;
+			x_get_state_ = realXgstate;
+			controller_count_ = 1;
 		}
 
-		if (XGetState != nullptr)
+		if (x_get_state_ != nullptr)
 		{
 			for (int i = 0; i < XUSER_MAX_COUNT; i++)
 			{
 				////////
 				XINPUT_STATE state = { 0 };
-				result = XInputGetStateWrapper(i, &state);
+				const DWORD result = XInputGetStateWrapper(i, &state);
 				XINPUT_STATE state2 = { 0 };
-				result2 = callRealXinputGetState(i, &state2);
+				const DWORD result2 = callRealXinputGetState(i, &state2);
 
 				if (result == ERROR_SUCCESS)
 				{
-					if ( (result2 != ERROR_SUCCESS) == seven )
+					if ( (result2 != ERROR_SUCCESS) == seven_ )
 					{
 						// By using VID and PID of Valve's SteamController, Steam doesn't give us ANOTHER "fake" XInput device
 						// Leading to endless pain and suffering. 
@@ -135,38 +133,40 @@ void VirtualControllerThread::controllerLoop()
 						// Also annoying the shit out of the user when they open the overlay as steam prompts to setup new XInput devices
 						// Also avoiding any fake inputs from Valve's default controllerprofile
 						// -> Leading to endless pain and suffering
-						vigem_target_set_vid(vtX360[i], 0x28de); //Valve SteamController VID
-						vigem_target_set_pid(vtX360[i], 0x1102); //Valve SteamController PID
+						vigem_target_set_vid(vt_x360_[i], 0x28de); //Valve SteamController VID
+						vigem_target_set_pid(vt_x360_[i], 0x1102); //Valve SteamController PID
 
-						int vigem_res = vigem_target_add(driver, vtX360[i]);
+						const int vigem_res = vigem_target_add(driver_, vt_x360_[i]);
 						if (vigem_res == VIGEM_ERROR_TARGET_UNINITIALIZED)
 						{
-							vtX360[i] = vigem_target_x360_alloc();
+							vt_x360_[i] = vigem_target_x360_alloc();
 						}
 						if (vigem_res == VIGEM_ERROR_NONE)
 						{
-							std::cout << "Plugged in controller " << vigem_target_get_index(vtX360[i]) << std::endl;
-							vigem_target_x360_register_notification(driver, vtX360[i], reinterpret_cast<PVIGEM_X360_NOTIFICATION>(&VirtualControllerThread::controllerCallback));
+							std::cout << "Plugged in controller " << vigem_target_get_index(vt_x360_[i]) << std::endl;
+							vigem_target_x360_register_notification(driver_, vt_x360_[i],
+							                                        reinterpret_cast<PVIGEM_X360_NOTIFICATION>(&VirtualControllerThread::
+								                                        controllerCallback));
 						}
 					}
 
-					if (vtX360[i] != nullptr)
-						vigem_target_x360_update(driver, vtX360[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+					if (vt_x360_[i] != nullptr)
+						vigem_target_x360_update(driver_, vt_x360_[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
 				}
 				else
 				{
-					if (VIGEM_SUCCESS(vigem_target_remove(driver, vtX360[i])))
+					if (VIGEM_SUCCESS(vigem_target_remove(driver_, vt_x360_[i])))
 					{
-						std::cout << "Unplugged controller " << vigem_target_get_index(vtX360[i]) << std::endl;
+						std::cout << "Unplugged controller " << vigem_target_get_index(vt_x360_[i]) << std::endl;
 					}
 				}
 			}
 		}
 
-		tickTime = sfClock.getElapsedTime().asMicroseconds();
-		if (tickTime < delay)
+		tick_time_ = sf_clock_.getElapsedTime().asMicroseconds();
+		if (tick_time_ < delay_)
 		{
-			std::this_thread::sleep_for(std::chrono::microseconds(delay - tickTime));
+			std::this_thread::sleep_for(std::chrono::microseconds(delay_ - tick_time_));
 		}
 
 	}
@@ -192,20 +192,20 @@ DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_
 	DWORD ret;
 	DWORD dwOldProtect, dwBkup;
 
-	BYTE* Address = reinterpret_cast<BYTE*>(XGetState);
-	VirtualProtect(Address, opPatchLenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		//Change permissions of memory..
-	for (DWORD i = 0; i < opPatchLenght; i++)											//unpatch Valve's hook
+	BYTE* Address = reinterpret_cast<BYTE*>(x_get_state_);
+	VirtualProtect(Address, op_patch_lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		//Change permissions of memory..
+	for (DWORD i = 0; i < op_patch_lenght; i++)											//unpatch Valve's hook
 	{
-		*(Address + i) = realBytes[i];
+		*(Address + i) = real_bytes_[i];
 	}
 
-	ret = XGetState(dwUserIndex, pState);												//Cal REAL XInputGetState...
+	ret = x_get_state_(dwUserIndex, pState);												//Cal REAL XInputGetState...
 
-	for (int i = 0; i < opPatchLenght; i++)												//repatch Valve's hook
+	for (int i = 0; i < op_patch_lenght; i++)												//repatch Valve's hook
 	{
-		*(Address + i) = valveHookBytes[i];
+		*(Address + i) = valve_hook_bytes_[i];
 	}
-	VirtualProtect(Address, opPatchLenght, dwOldProtect, &dwBkup);						//Revert permission change...
+	VirtualProtect(Address, op_patch_lenght, dwOldProtect, &dwBkup);						//Revert permission change...
 
 	return ret;
 }
