@@ -21,6 +21,6 @@ int main(int argc, char *argv[])
 {
 	SteamTarget target(argc, argv);
 	target.init();
-	return target.exec();
+	return SteamTarget::exec();
 }
 

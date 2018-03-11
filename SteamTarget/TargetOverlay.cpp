@@ -19,10 +19,15 @@ limitations under the License.
 #include <Windows.h>
 #include <dwmapi.h>
 #include <SFML/Window/Event.hpp>
+#include <iostream>
+#include "SteamTarget.h"
 
 bool TargetOverlay::init(bool hidden)
 {
-	window_.create(sf::VideoMode::getDesktopMode(), "GloSC-SteamTarget");
+	const sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+	window_.create(sf::VideoMode(mode.width - 16, mode.height - 32), "GloSC_OverlayWindow");
+	//Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
+
 	window_.setFramerateLimit(30);
 	window_.setPosition({ 0, 0 });
 	makeSfWindowTransparent();
@@ -64,7 +69,10 @@ void TargetOverlay::overlayLoop()
 			while (window_.pollEvent(event))
 			{
 				if (event.type == sf::Event::Closed)
+				{
 					window_.close();
+					SteamTarget::quit();
+				}
 			}
 			window_.clear(sf::Color::Transparent);
 			window_.display();
@@ -75,16 +83,22 @@ void TargetOverlay::overlayLoop()
 
 void TargetOverlay::onOverlayOpened()
 {
-	mtx_.lock();
+	//mtx_.lock();
 	//TODO: impl
-	mtx_.unlock();
+
+	std::cout << "Overlay opened!\n";
+
+	//mtx_.unlock();
 }
 
 void TargetOverlay::onOverlayClosed()
 {
-	mtx_.lock();
+	//mtx_.lock();
 	//TODO: impl
-	mtx_.unlock();
+
+	std::cout << "Overlay closed!\n";
+
+	//mtx_.unlock();
 }
 
 void TargetOverlay::makeSfWindowTransparent()

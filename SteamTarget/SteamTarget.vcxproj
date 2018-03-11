@@ -204,6 +204,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\common_hookfuns.h" />
+    <ClInclude Include="OverlayHookFunction.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="SteamTarget.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

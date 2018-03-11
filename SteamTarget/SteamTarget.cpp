@@ -1,9 +1,12 @@
-#include "SteamTarget.h"
+﻿#include "SteamTarget.h"
 #include <Windows.h>
 #include <QTimer>
 #include <QSettings>
 #include <qmessagebox.h>
 #include <iostream>
+
+#include "../common/common_hookfuns.h"
+#include "OverlayHookFunction.h"
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -16,6 +19,7 @@ void SteamTarget::init()
 	read_ini();
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	target_overlay_.init(!enable_overlay_);
+	initOverlayEvents();
 	if (enable_controllers_)
 		controller_thread_.run();
 }
@@ -81,6 +85,49 @@ void SteamTarget::read_ini()
 		}
 		settings.endGroup();
 	}
+}
+
+void SteamTarget::initOverlayEvents()
+{
+
+		//You hook into **MY** process? I'm ready to play your games, Valve! I'll hook back!!! 😅
+
+		const DWORD addressOpen = hook_commons::FindPattern(overlay_module_name_.data(),
+			overlay_open_func_sig_,
+			overlay_open_func_mask_.data());
+
+		if (addressOpen != 0)
+		{
+			DWORD addressClosed = 0;
+
+			for (DWORD i = 0; i < 1024; i++)	//search next signature relativ to "addressOpened"
+			{
+				bool found = true;
+				for (DWORD j = 0; j < overlay_closed_func_mask_.length(); j++)
+					found &=
+						overlay_closed_func_mask_[j] == '?' || 
+					overlay_closed_func_sig_[j] == *reinterpret_cast<char*>(addressOpen + j + i);
+
+				if (found)
+				{
+					addressClosed = addressOpen + i;
+					break;
+				}
+			}
+
+			if (addressClosed != 0)
+			{
+				overlay_hook::JMPBackOpen = addressOpen + overlay_open_func_mask_.length();
+				overlay_hook::JMPBackClosed = addressClosed + overlay_closed_func_mask_.length();
+				overlay_hook::target_overlay = &target_overlay_;
+
+				hook_commons::PlaceJMP(reinterpret_cast<BYTE*>(addressOpen),
+					reinterpret_cast<DWORD>(overlay_hook::overlay_opend_hookFN), overlay_open_func_mask_.length());
+
+				hook_commons::PlaceJMP(reinterpret_cast<BYTE*>(addressClosed),
+					reinterpret_cast<DWORD>(overlay_hook::overlay_closed_hookFN), overlay_closed_func_mask_.length());
+			}
+		}
 }
 
 

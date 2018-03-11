@@ -43,6 +43,7 @@ public slots:
 
 private:
 	void read_ini();
+	void initOverlayEvents();
 
 	TargetOverlay target_overlay_;
 	VirtualControllerThread controller_thread_;
@@ -57,6 +58,27 @@ private:
 	bool launch_uwp_ = false;
 	std::string launch_app_path_ = "";
 	std::string launch_app_args_ = "";
+
+
+#ifdef _AMD64_
+	const std::string overlay_module_name_ = "GameOverlayRenderer64.dll";
+	const std::string overlay_open_func_sig_ = "TODO";
+	const std::string overlay_open_func_mask_= "TODO";
+#else
+	const std::string overlay_module_name_ = "GameOverlayRenderer.dll";
+
+	const char* overlay_open_func_sig_
+		= "\x56\xC6\x46\x28\x01";
+	const std::string overlay_open_func_mask_
+		= "xxxxx";
+
+	const char* overlay_closed_func_sig_
+		= "\xC7\x46\x24\x00\x00\x00\x00\xC6\x46\x28\x00";
+	const std::string overlay_closed_func_mask_
+		= "xxxxxxxxxxx";
+
+#endif
+
 
 };
 

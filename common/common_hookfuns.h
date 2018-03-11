@@ -52,7 +52,7 @@ void RestoreBytes(BYTE * Address, BYTE * original, DWORD lenght)
 	VirtualProtect(Address, lenght, dwOldProtect, &dwBkup);
 }
 
-MODULEINFO GetModInfo(char * szModule)
+MODULEINFO GetModInfo(const char * szModule)
 {
 	MODULEINFO ret = { NULL };
 	HMODULE mod = GetModuleHandleA(szModule);
@@ -63,10 +63,12 @@ MODULEINFO GetModInfo(char * szModule)
 }
 
 //returns memory address of given pattern ind given module
-DWORD FindPattern(char * module, const char * pattern, const char * mask)
+DWORD FindPattern(const char * module, const char * pattern, const char * mask)
 {
 	MODULEINFO mInfo = GetModInfo(module);
 	DWORD baseAddr = (DWORD)mInfo.lpBaseOfDll;
+	if (baseAddr == 0)
+		return NULL;
 	DWORD size = mInfo.SizeOfImage;
 
 	DWORD patLenght = strlen(mask);

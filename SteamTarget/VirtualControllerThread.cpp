@@ -103,7 +103,7 @@ void VirtualControllerThread::controllerLoop()
 
 			const XInputGetState_t realXgstate = reinterpret_cast<XInputGetState_t>(GetProcAddress(xinputmod, "XInputGetState"));
 
-			std::cout << "realXgstate: " << std::hex << realXgstate << "\n";
+			//std::cout << "realXgstate: " << std::hex << realXgstate << "\n";
 			for (int i = 0; i < 5; i++)
 			{
 				valve_hook_bytes_[i] = *reinterpret_cast<uint8_t*>(reinterpret_cast<uint64_t>(*realXgstate) + i);
