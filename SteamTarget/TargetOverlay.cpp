@@ -63,7 +63,7 @@ void TargetOverlay::overlayLoop()
 		}
 
 
-		while (window_v.isOpen() && run_)
+		while (window_.isOpen() && run_)
 		{
 			sf::Event event{};
 			while (window_.pollEvent(event))
