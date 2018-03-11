@@ -45,6 +45,9 @@ private:
 	void read_ini();
 	void initOverlayEvents();
 
+	void hookSteam();
+	void uhookSteam();
+
 	TargetOverlay target_overlay_;
 	VirtualControllerThread controller_thread_;
 

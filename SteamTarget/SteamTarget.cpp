@@ -7,6 +7,8 @@
 
 #include "../common/common_hookfuns.h"
 #include "OverlayHookFunction.h"
+#include "Injector.h"
+#include <tlhelp32.h>
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -22,6 +24,8 @@ void SteamTarget::init()
 	initOverlayEvents();
 	if (enable_controllers_)
 		controller_thread_.run();
+	if (hook_steam_ && !use_desktop_conf_)
+		Injector::hookSteam();
 }
 
 BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)
@@ -36,6 +40,9 @@ BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)
 
 void SteamTarget::onAboutToQuit()
 {
+	if (hook_steam_ && !use_desktop_conf_)
+		Injector::unhookSteam();
+
 	controller_thread_.stop();
 	target_overlay_.stop();
 }
@@ -127,5 +134,6 @@ void SteamTarget::initOverlayEvents()
 			}
 		}
 }
+
 
 
