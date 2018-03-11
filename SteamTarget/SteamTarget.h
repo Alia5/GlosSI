@@ -60,6 +60,7 @@ private:
 	std::string launch_app_args_ = "";
 
 
+	//Hooking stuff...
 #ifdef _AMD64_
 	const std::string overlay_module_name_ = "GameOverlayRenderer64.dll";
 	const std::string overlay_open_func_sig_ = "TODO";

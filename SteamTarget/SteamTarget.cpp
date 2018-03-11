@@ -44,7 +44,7 @@ void SteamTarget::read_ini()
 {
 	if (arguments().size() == 1)
 	{
-		QMessageBox::warning(nullptr, "Error", "Target configuration file must be specified! Using default Values!");
+		QMessageBox::warning(nullptr, "GloSC", "Target configuration file must be specified! Using default Values!");
 	}
 	else {
 		QSettings settings(arguments().at(1), QSettings::IniFormat);
@@ -89,9 +89,7 @@ void SteamTarget::read_ini()
 
 void SteamTarget::initOverlayEvents()
 {
-
 		//You hook into **MY** process? I'm ready to play your games, Valve! I'll hook back!!! 😅
-
 		const DWORD addressOpen = hook_commons::FindPattern(overlay_module_name_.data(),
 			overlay_open_func_sig_,
 			overlay_open_func_mask_.data());
