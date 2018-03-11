@@ -30,6 +30,7 @@ bool TargetOverlay::init(bool hidden)
 
 	window_.setFramerateLimit(30);
 	window_.setPosition({ 0, 0 });
+	last_foreground_window_ = window_.getSystemHandle();
 	makeSfWindowTransparent();
 	hidden_ = hidden;
 	if (window_.setActive(false))
@@ -62,9 +63,8 @@ void TargetOverlay::overlayLoop()
 		}
 
 
-		while (window_.isOpen() && run_)
+		while (window_v.isOpen() && run_)
 		{
-			mtx_.lock();
 			sf::Event event{};
 			while (window_.pollEvent(event))
 			{
@@ -74,31 +74,77 @@ void TargetOverlay::overlayLoop()
 					SteamTarget::quit();
 				}
 			}
+
+			if (overlay_state_ == 1)
+			{
+				last_foreground_window_ = GetForegroundWindow();
+
+				std::cout << "Saving current ForegorundWindow HWND: " << last_foreground_window_ << std::endl;
+				std::cout << "Activating OverlayWindow" << std::endl;
+
+				SetWindowLong(window_.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED); //make overlay window clickable
+
+																					  //Actually activate the overlaywindow
+				stealFocus(window_.getSystemHandle());
+
+				//Move the mouse cursor inside the overlaywindow
+				//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
+				moveMouseIntoOverlay();
+				overlay_state_ = 0;
+
+			} else if (overlay_state_ == 2)
+			{
+				//make overlaywindow clickthrough - WS_EX_TRANSPARENT - again
+				SetWindowLong(window_.getSystemHandle(), GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT);
+
+				std::cout << "Switching to previously focused window" << std::endl;
+
+				//switch back the the previosly focused window
+				stealFocus(last_foreground_window_);
+				overlay_state_ = 0;
+			} 
+			 
 			window_.clear(sf::Color::Transparent);
 			window_.display();
-			mtx_.unlock();
 		}
 	}
 }
 
 void TargetOverlay::onOverlayOpened()
 {
-	//mtx_.lock();
-	//TODO: impl
-
 	std::cout << "Overlay opened!\n";
-
-	//mtx_.unlock();
+	overlay_state_ = 1;
 }
 
 void TargetOverlay::onOverlayClosed()
 {
-	//mtx_.lock();
-	//TODO: impl
-
 	std::cout << "Overlay closed!\n";
+	overlay_state_ = 2;
+}
 
-	//mtx_.unlock();
+void TargetOverlay::stealFocus(HWND hwnd)
+{
+	const DWORD dwCurrentThread = GetCurrentThreadId();
+	const DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+
+	AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+
+	// Possible actions you may wan to bring the window into focus.
+	SetForegroundWindow(hwnd);
+	SetCapture(hwnd);
+	SetFocus(hwnd);
+	SetActiveWindow(hwnd);
+	EnableWindow(hwnd, TRUE);
+
+	AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
+
+
+	sf::Clock clock;
+	while (!SetForegroundWindow(hwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window 
+	{
+		Sleep(1);
+	}
+
 }
 
 void TargetOverlay::makeSfWindowTransparent()

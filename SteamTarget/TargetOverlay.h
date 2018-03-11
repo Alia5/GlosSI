@@ -17,7 +17,8 @@ limitations under the License.
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <thread>
-#include <mutex>
+#include <windows.h>
+#include <atomic>
 
 class TargetOverlay
 {
@@ -38,13 +39,24 @@ public:
 	void onOverlayClosed();
 
 private:
+	static void stealFocus(HWND hwnd);
 
 	void makeSfWindowTransparent();
 	void moveMouseIntoOverlay() const;
 
+
 	std::thread overlay_thread_;
 	sf::RenderWindow window_;
-	std::mutex mtx_;
 	bool run_ = true;
 	bool hidden_ = false;
+
+	//Cannot have too much logic inside of overlayOpened / closed callbacks
+	//Otherwise stuff breaks
+	//0 = no change
+	//1 = opened
+	//2 = closed
+	std::atomic<char> overlay_state_ = 0;
+
+	HWND last_foreground_window_;
+
 };
