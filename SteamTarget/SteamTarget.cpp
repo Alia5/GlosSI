@@ -192,7 +192,7 @@ void SteamTarget::launchApplication()
 				const QString appName = QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)).split('\\').last();
 				connect(&launch_check_timer_, &QTimer::timeout, [appName]()
 				{
-					if (!IsProcessRunning(appName.toStdWString().c_str()))
+					if (!process_alive::IsProcessRunning(appName.toStdWString().c_str()))
 						SteamTarget::quit();
 				});
 				QTimer::singleShot(10000, this, [this]()
@@ -220,7 +220,7 @@ void SteamTarget::launchApplication()
 				{
 					connect(&launch_check_timer_, &QTimer::timeout, [pid]()
 					{
-						if (!IsProcessRunning(pid))
+						if (!process_alive::IsProcessRunning(pid))
 							SteamTarget::quit();
 					});
 					QTimer::singleShot(10000, this, [this]()
