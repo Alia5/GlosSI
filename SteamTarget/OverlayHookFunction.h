@@ -15,7 +15,6 @@ limitations under the License.
 */
 #pragma once
 #include <Windows.h>
-#include <functional>
 
 class SteamTarget;
 
