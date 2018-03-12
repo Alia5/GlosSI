@@ -25,6 +25,7 @@ limitations under the License.
 #include "../common/Injector.h"
 #include <tlhelp32.h>
 #include <QProcess>
+#include <QDir>
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -43,7 +44,7 @@ void SteamTarget::init()
 	if (hook_steam_ && !use_desktop_conf_)
 		Injector::hookSteam();
 
-	launchDebug();
+	launchWatchdog();
 
 }
 
@@ -154,14 +155,10 @@ void SteamTarget::initOverlayEvents()
 		}
 }
 
-void SteamTarget::launchDebug() const
+void SteamTarget::launchWatchdog() const
 {
-
-
-	QProcess proc;
-	proc.startDetached("explorer.exe", QStringList() << "C:\\Windows\\system32\\cmd.exe");
-
-
+	const QString watchDogPath = QDir::toNativeSeparators(applicationDirPath()) + "\\GloSC_Watchdog.exe";
+	QProcess::startDetached("explorer.exe", QStringList() << watchDogPath);
 }
 
 

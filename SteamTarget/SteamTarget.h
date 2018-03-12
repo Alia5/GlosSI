@@ -45,7 +45,7 @@ private:
 	void read_ini();
 	void initOverlayEvents();
 
-	void launchDebug() const;
+	void launchWatchdog() const;
 
 	TargetOverlay target_overlay_;
 	VirtualControllerThread controller_thread_;

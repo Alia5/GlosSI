@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\Injector.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_SteamTarget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -149,7 +150,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Injector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
     <ClCompile Include="TargetOverlay.cpp" />
@@ -177,7 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\common_hookfuns.h" />
-    <ClInclude Include="Injector.h" />
+    <ClInclude Include="..\common\Injector.h" />
     <ClInclude Include="OverlayHookFunction.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="SteamTarget.h">

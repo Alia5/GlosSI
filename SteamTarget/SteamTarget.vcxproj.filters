@@ -61,7 +61,7 @@
     <ClCompile Include="TargetOverlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Injector.cpp">
+    <ClCompile Include="..\common\Injector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,7 +89,7 @@
     <ClInclude Include="OverlayHookFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Injector.h">
+    <ClInclude Include="..\common\Injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
