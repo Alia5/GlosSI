@@ -26,5 +26,8 @@
     <ClInclude Include="..\common\Injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\process_alive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

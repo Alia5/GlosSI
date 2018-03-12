@@ -82,6 +82,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -178,6 +179,7 @@
   <ItemGroup>
     <ClInclude Include="..\common\common_hookfuns.h" />
     <ClInclude Include="..\common\Injector.h" />
+    <ClInclude Include="..\common\process_alive.h" />
     <ClInclude Include="OverlayHookFunction.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="SteamTarget.h">

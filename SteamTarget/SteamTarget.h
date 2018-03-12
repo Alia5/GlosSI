@@ -21,12 +21,18 @@ SteamTarget - Does most of GloSCs heavy lifting.
 */
 
 #pragma once
-#include <QApplication>
-#include <thread>
-#include <Windows.h>
-#include <dwmapi.h>
 #include "TargetOverlay.h"
 #include "VirtualControllerThread.h"
+
+#include <QApplication>
+#include <QTimer>
+
+#include <functional>
+
+#include <Windows.h>
+#include <dwmapi.h>
+
+
 
 
 class SteamTarget : public QApplication
@@ -53,6 +59,9 @@ private:
 	void initOverlayEvents();
 
 	void launchWatchdog() const;
+	void launchApplication();
+
+	static HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
 	TargetOverlay target_overlay_;
 	VirtualControllerThread controller_thread_;
@@ -62,11 +71,14 @@ private:
 	bool enable_overlay_ = true;
 	bool enable_controllers_ = true;
 	bool use_desktop_conf_ = false;
-	bool launch_game_ = false;
-	bool close_launched_done_ = false;
-	bool launch_uwp_ = false;
-	std::string launch_app_path_ = "";
+	bool launch_game_ = true;
+	bool close_launched_done_ = true;
+	bool launch_uwp_ = true;
+	std::string launch_app_path_ = "Microsoft.ApolloBaseGame_8wekyb3d8bbwe!forzamotorsport7";
 	std::string launch_app_args_ = "";
+
+	QTimer launch_check_timer_;
+	
 
 
 	//Hooking stuff...

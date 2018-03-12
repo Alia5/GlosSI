@@ -14,18 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "SteamTarget.h"
-#include <Windows.h>
+
+#include "OverlayHookFunction.h"
+
+#include "../common/common_hookfuns.h"
+#include "../common/Injector.h"
+#include "../common/process_alive.h"
+
+#include <QProcess>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
 #include <QTimer>
 #include <QSettings>
 #include <qmessagebox.h>
 #include <iostream>
 
-#include "../common/common_hookfuns.h"
-#include "OverlayHookFunction.h"
-#include "../common/Injector.h"
-#include <tlhelp32.h>
-#include <QProcess>
-#include <QDir>
+#include <Windows.h>
+#include <atlbase.h>
+#include <Shobjidl.h>
+
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -43,9 +51,9 @@ void SteamTarget::init()
 		controller_thread_.run();
 	if (hook_steam_ && !use_desktop_conf_)
 		Injector::hookSteam();
-
 	launchWatchdog();
-
+	if (launch_game_)
+		launchApplication();
 }
 
 BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)
@@ -159,6 +167,92 @@ void SteamTarget::launchWatchdog() const
 {
 	const QString watchDogPath = QDir::toNativeSeparators(applicationDirPath()) + "\\GloSC_Watchdog.exe";
 	QProcess::startDetached("explorer.exe", QStringList() << watchDogPath);
+}
+
+void SteamTarget::launchApplication()
+{
+	if (!launch_uwp_)
+	{
+		// To get our launched application not get hooked by Steam, we have to launch through Windows explorer
+		// To use arguments, launching using explorer, we have to use a batch file...
+		const QString batchContents = '\"' + QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)) 
+									+ '\"' + " " + QString::fromStdString(launch_app_args_);
+
+		QFile file("launchApp.bat");
+		if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
+			QTextStream stream(&file);
+			stream << "@Echo off\n" << batchContents;
+			file.close();
+
+			const QString launchPath = QDir::toNativeSeparators(applicationDirPath()) + "\\launchApp.bat";
+			QProcess::startDetached("explorer.exe", QStringList() << launchPath);
+
+			if (close_launched_done_)
+			{
+				const QString appName = QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)).split('\\').last();
+				connect(&launch_check_timer_, &QTimer::timeout, [appName]()
+				{
+					if (!IsProcessRunning(appName.toStdWString().c_str()))
+						SteamTarget::quit();
+				});
+				QTimer::singleShot(10000, this, [this]()
+				{
+					launch_check_timer_.start(1000);
+				});
+			}
+
+		}
+	}
+	else
+	{
+		// We don't need such bullshit explorer tricks when dealing with UWP, as Valve still hasn't figured out how to hook them.
+		// Or they just don't wan't to
+		// If you're interested in how to hook UWP: https://behind.flatspot.pictures/hacking-windows-universal-apps-uwp/
+
+		DWORD pid = 0;
+		const HRESULT hr = CoInitialize(nullptr);
+		std::wstring appUMId = QString::fromStdString(launch_app_path_).toStdWString();
+		if (SUCCEEDED(hr)) {
+			const HRESULT result = LaunchUWPApp(appUMId.c_str(), &pid);
+			if (SUCCEEDED(result))
+			{
+				if (close_launched_done_)
+				{
+					connect(&launch_check_timer_, &QTimer::timeout, [pid]()
+					{
+						if (!IsProcessRunning(pid))
+							SteamTarget::quit();
+					});
+					QTimer::singleShot(10000, this, [this]()
+					{
+						launch_check_timer_.start(1000);
+					});
+				}
+			}
+		}
+		CoUninitialize();
+	}
+
+
+}
+
+HRESULT SteamTarget::LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId)
+{
+	CComPtr<IApplicationActivationManager> spAppActivationManager;
+	HRESULT result = E_INVALIDARG;
+	// Initialize IApplicationActivationManager
+	result = CoCreateInstance(CLSID_ApplicationActivationManager, NULL, CLSCTX_LOCAL_SERVER, IID_IApplicationActivationManager, (LPVOID*)&spAppActivationManager);
+
+	if (!SUCCEEDED(result))
+		return result;
+	
+	// This call ensures that the app is launched as the foreground window and sometimes may randomly fail...
+	result = CoAllowSetForegroundWindow(spAppActivationManager, NULL);
+	
+	// Launch the app
+	result = spAppActivationManager->ActivateApplication(packageFullName, NULL, AO_NONE, pdwProcessId);
+
+	return result;
 }
 
 
