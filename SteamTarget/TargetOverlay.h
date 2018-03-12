@@ -44,7 +44,6 @@ private:
 	void makeSfWindowTransparent();
 	void moveMouseIntoOverlay() const;
 
-
 	std::thread overlay_thread_;
 	sf::RenderWindow window_;
 	bool run_ = true;
@@ -57,6 +56,6 @@ private:
 	//2 = closed
 	std::atomic<char> overlay_state_ = 0;
 
-	HWND last_foreground_window_;
+	HWND last_foreground_window_{};
 
 };
