@@ -71,10 +71,10 @@ private:
 	bool enable_overlay_ = true;
 	bool enable_controllers_ = true;
 	bool use_desktop_conf_ = false;
-	bool launch_game_ = true;
-	bool close_launched_done_ = true;
-	bool launch_uwp_ = true;
-	std::string launch_app_path_ = "Microsoft.ApolloBaseGame_8wekyb3d8bbwe!forzamotorsport7";
+	bool launch_game_ = false;
+	bool close_launched_done_ = false;
+	bool launch_uwp_ = false;
+	std::string launch_app_path_ = "";
 	std::string launch_app_args_ = "";
 
 	QTimer launch_check_timer_;
