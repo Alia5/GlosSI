@@ -13,6 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+/*
+
+SteamTarget - Does most of GloSCs heavy lifting.
+
+*/
+
 #pragma once
 #include <QApplication>
 #include <thread>
