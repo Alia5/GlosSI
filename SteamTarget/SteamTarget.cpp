@@ -22,7 +22,7 @@ limitations under the License.
 
 #include "../common/common_hookfuns.h"
 #include "OverlayHookFunction.h"
-#include "Injector.h"
+#include "../common/Injector.h"
 #include <tlhelp32.h>
 #include <QProcess>
 
