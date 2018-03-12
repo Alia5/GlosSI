@@ -24,6 +24,7 @@ limitations under the License.
 #include "OverlayHookFunction.h"
 #include "Injector.h"
 #include <tlhelp32.h>
+#include <QProcess>
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
@@ -41,6 +42,9 @@ void SteamTarget::init()
 		controller_thread_.run();
 	if (hook_steam_ && !use_desktop_conf_)
 		Injector::hookSteam();
+
+	launchDebug();
+
 }
 
 BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)
@@ -148,6 +152,16 @@ void SteamTarget::initOverlayEvents()
 					reinterpret_cast<DWORD>(overlay_hook::overlay_closed_hookFN), overlay_closed_func_mask_.length());
 			}
 		}
+}
+
+void SteamTarget::launchDebug() const
+{
+
+
+	QProcess proc;
+	proc.startDetached("explorer.exe", QStringList() << "C:\\Windows\\system32\\cmd.exe");
+
+
 }
 
 
