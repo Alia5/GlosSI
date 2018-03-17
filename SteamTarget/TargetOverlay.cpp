@@ -91,6 +91,7 @@ void TargetOverlay::overlayLoop()
 				//this is neccessary because steam doesn't want to switch to big picture bindings if mouse isn't inside
 				moveMouseIntoOverlay();
 				overlay_state_ = 0;
+				draw_logo_ = true;
 
 			} else if (overlay_state_ == 2)
 			{
@@ -102,8 +103,10 @@ void TargetOverlay::overlayLoop()
 				//switch back the the previosly focused window
 				stealFocus(last_foreground_window_);
 				overlay_state_ = 0;
+				draw_logo_ = false;
 			} 
-			 
+			if (draw_logo_)
+				window_.draw(background_sprite_);
 			window_.clear(sf::Color::Transparent);
 			window_.display();
 		}
@@ -179,5 +182,19 @@ void TargetOverlay::moveMouseIntoOverlay() const
 			SetCursorPos(rect.left + 16, rect.top + 16);
 		}
 	}
+}
+
+void TargetOverlay::loadLogo()
+{
+	HRSRC rsrcData = FindResource(NULL, L"ICOPNG", RT_RCDATA);
+	DWORD rsrcDataSize = SizeofResource(NULL, rsrcData);
+	HGLOBAL grsrcData = LoadResource(NULL, rsrcData);
+	LPVOID firstByte = LockResource(grsrcData);
+	sprite_texture_ = std::make_unique<sf::Texture>();
+	sprite_texture_->loadFromMemory(firstByte, rsrcDataSize);
+	background_sprite_.setTexture(*sprite_texture_);
+	background_sprite_.setOrigin(sf::Vector2f(sprite_texture_->getSize().x / 2.f, sprite_texture_->getSize().y / 2));
+	sf::VideoMode winSize = sf::VideoMode::getDesktopMode();
+	background_sprite_.setPosition(sf::Vector2f(winSize.width / 2.f, winSize.height / 2.f));
 }
 

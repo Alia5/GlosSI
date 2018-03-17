@@ -16,6 +16,8 @@ limitations under the License.
 
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <thread>
 #include <windows.h>
 #include <atomic>
@@ -44,10 +46,18 @@ private:
 	void makeSfWindowTransparent();
 	void moveMouseIntoOverlay() const;
 
+	void loadLogo();
+
+	std::unique_ptr<sf::Texture> sprite_texture_;
+	sf::Sprite background_sprite_;
+
+	bool draw_logo_ = false;
+
 	std::thread overlay_thread_;
 	sf::RenderWindow window_;
 	bool run_ = true;
 	bool hidden_ = false;
+
 
 	//Cannot have too much logic inside of overlayOpened / closed callbacks
 	//Otherwise stuff breaks
