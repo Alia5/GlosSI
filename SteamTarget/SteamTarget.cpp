@@ -43,6 +43,7 @@ void SteamTarget::init()
 {
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	read_ini();
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	target_overlay_.init(!enable_overlay_);
@@ -54,6 +55,14 @@ void SteamTarget::init()
 	launchWatchdog();
 	if (launch_game_)
 		launchApplication();
+
+	sys_tray_icon_.setIcon(QIcon(":/SteamTarget/Resources/GloSC_Icon.png"));
+	tray_icon_menu_.addAction("Quit");
+	sys_tray_icon_.setContextMenu(&tray_icon_menu_);
+
+	connect(&sys_tray_icon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+		this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+	connect(*tray_icon_menu_.actions().begin(), SIGNAL(triggered()), this, SLOT(quit()));
 }
 
 BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)

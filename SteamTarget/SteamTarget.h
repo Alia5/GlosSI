@@ -26,12 +26,13 @@ SteamTarget - Does most of GloSCs heavy lifting.
 
 #include <QApplication>
 #include <QTimer>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 #include <functional>
 
 #include <Windows.h>
 #include <dwmapi.h>
-
 
 
 
@@ -79,6 +80,8 @@ private:
 
 	QTimer launch_check_timer_;
 	
+	QSystemTrayIcon sys_tray_icon_;
+	QMenu tray_icon_menu_;
 
 
 	//Hooking stuff...
