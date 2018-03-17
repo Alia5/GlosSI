@@ -44,8 +44,8 @@ void SteamTarget::init()
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
-	read_ini();
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+	read_ini();
 	target_overlay_.init(!enable_overlay_);
 	initOverlayEvents();
 	if (enable_controllers_)
