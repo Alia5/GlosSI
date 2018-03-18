@@ -70,7 +70,7 @@ private:
 	//Settings from .ini file
 	bool hook_steam_ = true;
 	bool enable_overlay_ = true;
-	bool enable_overlay_only_config_ = true;
+	bool enable_overlay_only_config_ = false;
 	bool enable_controllers_ = true;
 	bool use_desktop_conf_ = false;
 	bool launch_game_ = false;
