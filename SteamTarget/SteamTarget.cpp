@@ -134,9 +134,9 @@ void SteamTarget::read_ini()
 void SteamTarget::initOverlayEvents()
 {
 		//You hook into **MY** process? I'm ready to play your games, Valve! I'll hook back!!! 😅
-		const DWORD addressOpen = hook_commons::FindPattern(overlay_module_name_.data(),
-			overlay_open_func_sig_,
-			overlay_open_func_mask_.data());
+		const DWORD addressOpen = hook_commons::FindPattern(overlay_module_name,
+			overlay_open_func_sig,
+			overlay_open_func_mask);
 
 		if (addressOpen != 0)
 		{
@@ -145,10 +145,10 @@ void SteamTarget::initOverlayEvents()
 			for (DWORD i = 0; i < 1024; i++)	//search next signature relativ to "addressOpened"
 			{
 				bool found = true;
-				for (DWORD j = 0; j < overlay_closed_func_mask_.length(); j++)
+				for (DWORD j = 0; j < std::string(overlay_closed_func_mask).length(); j++)
 					found &=
-						overlay_closed_func_mask_[j] == '?' || 
-					overlay_closed_func_sig_[j] == *reinterpret_cast<char*>(addressOpen + j + i);
+						overlay_closed_func_mask[j] == '?' || 
+					overlay_closed_func_sig[j] == *reinterpret_cast<char*>(addressOpen + j + i);
 
 				if (found)
 				{
@@ -159,15 +159,15 @@ void SteamTarget::initOverlayEvents()
 
 			if (addressClosed != 0)
 			{
-				overlay_hook::JMPBackOpen = addressOpen + overlay_open_func_mask_.length();
-				overlay_hook::JMPBackClosed = addressClosed + overlay_closed_func_mask_.length();
+				overlay_hook::JMPBackOpen = addressOpen + std::string(overlay_open_func_mask).length();
+				overlay_hook::JMPBackClosed = addressClosed + std::string(overlay_closed_func_mask).length();
 				overlay_hook::target_overlay = &target_overlay_;
 
 				hook_commons::PlaceJMP(reinterpret_cast<BYTE*>(addressOpen),
-					reinterpret_cast<DWORD>(overlay_hook::overlay_opend_hookFN), overlay_open_func_mask_.length());
+					reinterpret_cast<DWORD>(overlay_hook::overlay_opend_hookFN), std::string(overlay_open_func_mask).length());
 
 				hook_commons::PlaceJMP(reinterpret_cast<BYTE*>(addressClosed),
-					reinterpret_cast<DWORD>(overlay_hook::overlay_closed_hookFN), overlay_closed_func_mask_.length());
+					reinterpret_cast<DWORD>(overlay_hook::overlay_closed_hookFN), std::string(overlay_closed_func_mask).length());
 			}
 		}
 }

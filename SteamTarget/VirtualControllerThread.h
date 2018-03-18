@@ -56,9 +56,9 @@ private:
 	bool seven_ = false;
 
 #ifdef _AMD64_
-	const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
+	static constexpr const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
 #else
-	const uint8_t real_bytes_[5] = { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
+	static constexpr const uint8_t real_bytes[5] = { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
 #endif
 	//uint8_t realBytes[5] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x90 };
 
@@ -72,7 +72,7 @@ private:
 
 	sf::Clock sf_clock_;
 	int tick_time_ = 0;
-	int delay_ = 1000000 / 200;
+	constexpr static int delay = 1000000 / 200;
 
 	void controllerLoop();
 

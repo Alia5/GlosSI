@@ -164,9 +164,9 @@ void VirtualControllerThread::controllerLoop()
 		}
 
 		tick_time_ = sf_clock_.getElapsedTime().asMicroseconds();
-		if (tick_time_ < delay_)
+		if (tick_time_ < delay)
 		{
-			std::this_thread::sleep_for(std::chrono::microseconds(delay_ - tick_time_));
+			std::this_thread::sleep_for(std::chrono::microseconds(delay - tick_time_));
 		}
 
 	}
@@ -195,7 +195,7 @@ DWORD VirtualControllerThread::callRealXinputGetState(DWORD dwUserIndex, XINPUT_
 	VirtualProtect(Address, op_patch_lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		//Change permissions of memory..
 	for (DWORD i = 0; i < op_patch_lenght; i++)											//unpatch Valve's hook
 	{
-		*(Address + i) = real_bytes_[i];
+		*(Address + i) = real_bytes[i];
 	}
 
 	const DWORD ret = x_get_state_(dwUserIndex, pState);												//Cal REAL XInputGetState...
