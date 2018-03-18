@@ -27,11 +27,6 @@ GloSC::GloSC(QWidget *parent)
 	updateEntryList();
 	updateTargetsToNewVersion();
 
-	//Launch the gamelauncher here, just to be safe
-	//Don't need to check if the process already exists as it does it itself
-	QProcess proc;
-	proc.startDetached("GloSC_Gamelauncher.exe", QStringList(), QApplication::applicationDirPath(), nullptr);
-
 	if (first_launch_)
 		showTutorial();
 }
