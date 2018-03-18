@@ -54,6 +54,7 @@ void TargetOverlay::overlayLoop()
 	if (window_.setActive(true))
 	{
 
+		loadLogo();
 		if (hidden_ || hidden_only_config_)
 		{
 			ShowWindow(window_.getSystemHandle(), SW_HIDE);
@@ -122,9 +123,9 @@ void TargetOverlay::overlayLoop()
 				}
 
 			} 
+			window_.clear(sf::Color::Transparent);
 			if (draw_logo_)
 				window_.draw(background_sprite_);
-			window_.clear(sf::Color::Transparent);
 			window_.display();
 		}
 	}
