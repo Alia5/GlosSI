@@ -16,10 +16,6 @@ Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no 
 
 ---
 
-This thing started out as a giant hack / proof of concept, work has began on a cleaner and more maintainable [v2 branch](https://github.com/Alia5/GloSC/tree/v2)
-
---- 
-
 **How does it work? / What does it do?**
 
 GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears where you can use the Steam-overlay, as well as get access to touch- and radial-menus and other functionality normally only present in Games
@@ -76,7 +72,6 @@ Join the GloSC discord here: https://discord.gg/T9b4D5y
 **GloSC consists of:**
  
  * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
- * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 
 ---
@@ -93,7 +88,7 @@ GloSC is not affiliated with Valve, Steam, or any of their partners.
 
 ---
 
-GloSC is built using [Qt 5.9](https://www.qt.io/) and [SFML](http://www.sfml-dev.org/) for drawing the overlay
+GloSC is built using [Qt 5.X](https://www.qt.io/) and [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
 The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 
