@@ -22,7 +22,7 @@ limitations under the License.
 #include <iostream>
 #include "SteamTarget.h"
 
-bool TargetOverlay::init(bool hidden)
+bool TargetOverlay::init(bool hidden, bool overlay_only_config)
 {
 	const sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 	window_.create(sf::VideoMode(mode.width - 16, mode.height - 32), "GloSC_OverlayWindow");
@@ -33,6 +33,7 @@ bool TargetOverlay::init(bool hidden)
 	last_foreground_window_ = window_.getSystemHandle();
 	makeSfWindowTransparent();
 	hidden_ = hidden;
+	hidden_only_config_ = overlay_only_config;
 	if (window_.setActive(false))
 	{
 		overlay_thread_ = std::thread(&TargetOverlay::overlayLoop, this);
@@ -40,6 +41,7 @@ bool TargetOverlay::init(bool hidden)
 	}
 	return false;
 }
+
 
 void TargetOverlay::stop()
 {
@@ -52,7 +54,7 @@ void TargetOverlay::overlayLoop()
 	if (window_.setActive(true))
 	{
 
-		if (hidden_)
+		if (hidden_ || hidden_only_config_)
 		{
 			ShowWindow(window_.getSystemHandle(), SW_HIDE);
 			window_.setFramerateLimit(1); //Window is not shown anyway,
@@ -77,6 +79,14 @@ void TargetOverlay::overlayLoop()
 
 			if (overlay_state_ == 1)
 			{
+
+				if (hidden_only_config_)
+				{
+					ShowWindow(window_.getSystemHandle(), SW_SHOW);
+					window_.setFramerateLimit(30);
+				}
+
+
 				last_foreground_window_ = GetForegroundWindow();
 
 				std::cout << "Saving current ForegorundWindow HWND: " << last_foreground_window_ << std::endl;
@@ -104,6 +114,13 @@ void TargetOverlay::overlayLoop()
 				stealFocus(last_foreground_window_);
 				overlay_state_ = 0;
 				draw_logo_ = false;
+
+				if (hidden_only_config_)
+				{
+					ShowWindow(window_.getSystemHandle(), SW_HIDE);
+					window_.setFramerateLimit(1); //Window is not shown anyway	
+				}
+
 			} 
 			if (draw_logo_)
 				window_.draw(background_sprite_);

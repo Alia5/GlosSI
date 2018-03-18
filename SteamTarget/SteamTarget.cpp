@@ -99,6 +99,9 @@ void SteamTarget::read_ini()
 			if (childkey == "bEnableOverlay") {
 				enable_overlay_ = settings.value(childkey).toBool();
 			}
+			if (childkey == "bEnableOverlayOnlyConfig") {
+				enable_overlay_only_config_ = settings.value(childkey).toBool();
+			}
 			else if (childkey == "bEnableControllers") {
 				enable_controllers_ = settings.value(childkey).toBool();
 			}

@@ -32,7 +32,7 @@ public:
 	TargetOverlay& operator=(TargetOverlay&& other) noexcept = delete;
 	~TargetOverlay() = default;
 
-	bool init(bool hidden = false);
+	bool init(bool hidden = false, bool overlay_only_config = false);
 	void stop();
 
 	void overlayLoop();
@@ -57,6 +57,7 @@ private:
 	sf::RenderWindow window_;
 	bool run_ = true;
 	bool hidden_ = false;
+	bool hidden_only_config_ = false;
 
 
 	//Cannot have too much logic inside of overlayOpened / closed callbacks
