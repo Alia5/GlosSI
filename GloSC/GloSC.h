@@ -37,6 +37,8 @@ limitations under the License.
 
 #include "UWPPair.h"
 #include "UWPSelectDialog.h"
+#include "UpdateChecker.h"
+
 
 class GloSC : public QMainWindow
 {
@@ -77,6 +79,8 @@ private:
 
 	int current_slide_ = 0;
 	int last_slide_ = 13;
+
+	UpdateChecker updater_;
 
 private slots:
 	void on_cbUseDesktop_toggled(bool checked);

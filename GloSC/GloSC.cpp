@@ -15,9 +15,10 @@ limitations under the License.
 */
 #include "GloSC.h"
 #include <memory>
+#include "UpdateChecker.h"
 
 GloSC::GloSC(QWidget *parent)
-	: QMainWindow(parent)
+	: QMainWindow(parent), updater_(this)
 {
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
 	ui_.setupUi(this);
@@ -29,6 +30,8 @@ GloSC::GloSC(QWidget *parent)
 
 	if (first_launch_)
 		showTutorial();
+
+	updater_.checkUpdate(GLOSC_VERSION);
 }
 
 void GloSC::updateEntryList()
