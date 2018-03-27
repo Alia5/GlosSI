@@ -12,7 +12,7 @@ GloSC can, but isn't required to, launch any of your favorite games or applicati
 
 It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your SteamController
 
-*UWP*, *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
+*UWP*, *Reshade / SweetFX*, *Origin* and *Uplay* and *more* with **no hassle**
 
 ---
 
@@ -42,12 +42,12 @@ If the "Start Application" option does not work, launch any GloSC-Shortcut from 
 
 * **Q: The overlay isn't showing up!**
 
-  A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
+  A: The overlay only works for windowed or borderless windowed mode applications.
      This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, some Windows bullshit prevents unsigned apps from drawing over them.
      
-     Try running your games as borderless window mode
+     Try running your games in borderless window mode
 
-* **Q: GloSC always creates four controllers, resulting in doubled inputs for some Games**
+* **Q: GloSC always creates four controllers, resulting in doubled inputs**
 
   A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
 
@@ -106,7 +106,7 @@ The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/Vi
 ## License
 
 ```
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2017-2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
