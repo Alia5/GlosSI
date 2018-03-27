@@ -33,7 +33,7 @@ limitations under the License.
 class VirtualControllerThread
 {
 public:
-	VirtualControllerThread();
+	explicit VirtualControllerThread(int delay);
 	VirtualControllerThread(const VirtualControllerThread& other) = delete;
 	VirtualControllerThread(VirtualControllerThread&& other) noexcept = delete;
 	VirtualControllerThread& operator=(const VirtualControllerThread& other) = delete;
@@ -72,7 +72,7 @@ private:
 
 	sf::Clock sf_clock_;
 	int tick_time_ = 0;
-	constexpr static int delay = 1000000 / 200;
+	int delay_ = 0;
 
 	void controllerLoop();
 

@@ -45,11 +45,12 @@ void SteamTarget::init()
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-	read_ini();
+	readIni();
 	target_overlay_.init(!enable_overlay_);
 	initOverlayEvents();
+	controller_thread_ = std::make_unique<VirtualControllerThread>(update_rate_);
 	if (enable_controllers_)
-		controller_thread_.run();
+		controller_thread_->run();
 	if (hook_steam_ && !use_desktop_conf_)
 		Injector::hookSteam();
 	launchWatchdog();
@@ -80,11 +81,11 @@ void SteamTarget::onAboutToQuit()
 	if (hook_steam_ && !use_desktop_conf_)
 		Injector::unhookSteam();
 
-	controller_thread_.stop();
+	controller_thread_->stop();
 	target_overlay_.stop();
 }
 
-void SteamTarget::read_ini()
+void SteamTarget::readIni()
 {
 	if (arguments().size() == 1)
 	{
@@ -110,6 +111,14 @@ void SteamTarget::read_ini()
 			}
 			else if (childkey == "bUseDesktopConfig") {
 				use_desktop_conf_ = settings.value(childkey).toBool();
+			}
+			else if (childkey == "iUpdateRate") {
+				bool isInt = false;
+				update_rate_ = settings.value(childkey).toInt(&isInt);
+				if (!isInt)
+					update_rate_ = 5000;
+				if (update_rate_ < 0)
+					update_rate_ = 5000;
 			}
 		}
 		settings.endGroup();

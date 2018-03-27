@@ -16,7 +16,7 @@ limitations under the License.
 #include "VirtualControllerThread.h"
 //
 
-VirtualControllerThread::VirtualControllerThread()
+VirtualControllerThread::VirtualControllerThread(const int delay)
 {
 	driver_ = vigem_alloc();
 
@@ -33,6 +33,7 @@ VirtualControllerThread::VirtualControllerThread()
 	}
 
 	seven_ = IsWindows7OrGreater() != IsWindows8OrGreater();
+	delay_ = delay;
 }
 
 
@@ -164,9 +165,9 @@ void VirtualControllerThread::controllerLoop()
 		}
 
 		tick_time_ = sf_clock_.getElapsedTime().asMicroseconds();
-		if (tick_time_ < delay)
+		if (tick_time_ < delay_)
 		{
-			std::this_thread::sleep_for(std::chrono::microseconds(delay - tick_time_));
+			std::this_thread::sleep_for(std::chrono::microseconds(delay_ - tick_time_));
 		}
 
 	}

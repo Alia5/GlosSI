@@ -56,7 +56,7 @@ public slots:
 
 
 private:
-	void read_ini();
+	void readIni();
 	void initOverlayEvents();
 
 	void launchWatchdog() const;
@@ -65,7 +65,7 @@ private:
 	static HRESULT LaunchUWPApp(LPCWSTR packageFullName, PDWORD pdwProcessId);
 
 	TargetOverlay target_overlay_;
-	VirtualControllerThread controller_thread_;
+	std::unique_ptr<VirtualControllerThread> controller_thread_;
 
 	//Settings from .ini file
 	bool hook_steam_ = true;
@@ -78,6 +78,7 @@ private:
 	bool launch_uwp_ = false;
 	std::string launch_app_path_ = "";
 	std::string launch_app_args_ = "";
+	int update_rate_ = 5000;
 
 	QTimer launch_check_timer_;
 	
