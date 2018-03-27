@@ -49,10 +49,9 @@ void SteamTarget::init()
 	loguru::add_file("last.log", loguru::Truncate, loguru::Verbosity_INFO);
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
-	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	readIni();
-	target_overlay_.init(!enable_overlay_);
+	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_);
 	initOverlayEvents();
 	controller_thread_ = std::make_unique<VirtualControllerThread>(update_rate_);
 	if (enable_controllers_)

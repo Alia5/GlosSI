@@ -58,7 +58,8 @@ void TargetOverlay::overlayLoop()
 		if (hidden_ || hidden_only_config_)
 		{
 			ShowWindow(window_.getSystemHandle(), SW_HIDE);
-			window_.setFramerateLimit(1); //Window is not shown anyway,
+			if (hidden_)
+				window_.setFramerateLimit(1); //Window is not shown anyway,
 		}
 		else
 		{
@@ -84,7 +85,6 @@ void TargetOverlay::overlayLoop()
 				if (hidden_only_config_)
 				{
 					ShowWindow(window_.getSystemHandle(), SW_SHOW);
-					window_.setFramerateLimit(30);
 				}
 
 
@@ -119,7 +119,6 @@ void TargetOverlay::overlayLoop()
 				if (hidden_only_config_)
 				{
 					ShowWindow(window_.getSystemHandle(), SW_HIDE);
-					window_.setFramerateLimit(1); //Window is not shown anyway	
 				}
 
 			} 
