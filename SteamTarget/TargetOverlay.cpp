@@ -133,13 +133,11 @@ void TargetOverlay::overlayLoop()
 
 void TargetOverlay::onOverlayOpened()
 {
-	std::cout << "Overlay opened!\n";
 	overlay_state_ = 1;
 }
 
 void TargetOverlay::onOverlayClosed()
 {
-	std::cout << "Overlay closed!\n";
 	overlay_state_ = 2;
 }
 

@@ -17,6 +17,9 @@ limitations under the License.
 #include <tlhelp32.h>
 #include <iostream>
 
+#include "../common/loguru.hpp"
+
+
 void Injector::TakeDebugPrivilege()
 {
 	HANDLE hProcess = GetCurrentProcess(), hToken;
@@ -45,7 +48,10 @@ int Injector::Inject(DWORD pid, std::wstring &libPath)
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_CREATE_THREAD | PROCESS_VM_OPERATION | PROCESS_VM_WRITE, false, pid);
 
 	if (!hProcess)
+	{
 		return 1;
+
+	}
 
 	allocAddress = VirtualAllocEx(hProcess, NULL, pathSize, MEM_COMMIT, PAGE_READWRITE);
 
@@ -96,12 +102,14 @@ int Injector::Eject(DWORD pid, std::wstring &libPath)
 
 
 	if (!findModule(pid, libPath, hLibMod))
+	{
 		return 2;
-
+	}
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_CREATE_THREAD | PROCESS_VM_OPERATION, false, pid);
 	if (!hProcess)
+	{
 		return 1;
-
+	}
 	pfnThreadRtn = (PTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(L"Kernel32"), "FreeLibrary");
 
 	if (!pfnThreadRtn)
@@ -175,29 +183,29 @@ int Injector::hookSteam()
 
 	if (pid == NULL)
 	{
-		std::wcout << "Can't detect Steam.exe running" << std::endl;
+		LOG_F(WARNING, "Can't detect Steam.exe running");
 		return 0;
 	}
 	const int result = Injector::Inject(pid, libPath);
 	switch (result)
 	{
 	case 0:
-		std::wcout << "Inject success!" << std::endl;
+		LOG_F(INFO, "Inject success!");
 		return 1;
 	case 1:
-		std::wcout << "Error: Couldn't open process" << std::endl;
+		LOG_F(ERROR, "Couldn't open process");
 		break;
 	case 2:
-		std::wcout << "Error: Couldn't allocate memory" << std::endl;
+		LOG_F(ERROR, "Couldn't allocate memory");
 		break;
 	case 3:
-		std::wcout << "Error: Couldn't write memory" << std::endl;
+		LOG_F(ERROR, "Couldn't write memory");
 		break;
 	case 4:
-		std::wcout << "Error: Couldn't get pointer ro LoadLibraryW" << std::endl;
+		LOG_F(ERROR, "Couldn't get pointer ro LoadLibraryW");
 		break;
 	case 5:
-		std::wcout << "Error: Couldn't start remote thread" << std::endl;
+		LOG_F(ERROR, "Couldn't start remote thread");
 		break;
 	default:
 		return 0;
@@ -232,7 +240,7 @@ int Injector::unhookSteam()
 
 	if (pid == NULL)
 	{
-		std::wcout << "Can't detect Steam.exe running" << std::endl;
+		LOG_F(WARNING, "Can't detect Steam.exe running");
 		return 0;
 	}
 
@@ -240,19 +248,19 @@ int Injector::unhookSteam()
 	switch (result)
 	{
 	case 0:
-		std::wcout << "Eject success!" << std::endl;
+		LOG_F(INFO, "Eject success!");
 		return 1;
 	case 1:
-		std::wcout << "Error: Couldn't open process" << std::endl;
+		LOG_F(ERROR, "Couldn't open process");
 		break;
 	case 2:
-		std::wcout << "Error: Couldn't find module in process" << std::endl;
+		LOG_F(ERROR, "Couldn't find module in process");
 		break;
 	case 3:
-		std::wcout << "Error: Couldn't get pointer ro FreeLibrary" << std::endl;
+		LOG_F(ERROR, "Couldn't get pointer ro FreeLibrary");
 		break;
 	case 4:
-		std::wcout << "Error: Couldn't start remote thread" << std::endl;
+		LOG_F(ERROR, "Couldn't start remote thread");
 		break;
 	default:
 		return 0;

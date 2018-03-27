@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include "VirtualControllerThread.h"
-//
+
+#include "../common/loguru.hpp"
+
 
 VirtualControllerThread::VirtualControllerThread(const int delay)
 {
@@ -22,7 +24,7 @@ VirtualControllerThread::VirtualControllerThread(const int delay)
 
 	if (!VIGEM_SUCCESS(vigem_connect(driver_)))
 	{
-		std::cout << "Error initializing ViGem!" << std::endl;
+		LOG_F(ERROR, "initializing ViGem!");
 		MessageBoxW(NULL, L"Error initializing ViGem!", L"GloSC-SteamTarget", MB_OK);
 		b_should_run_ = false;
 	}
@@ -146,7 +148,7 @@ void VirtualControllerThread::controllerLoop()
 						}
 						if (vigem_res == VIGEM_ERROR_NONE)
 						{
-							std::cout << "Plugged in controller " << vigem_target_get_index(vt_x360_[i]) << std::endl;
+							LOG_F(INFO, "Plugged in controller %d", vigem_target_get_index(vt_x360_[i]));
 							vigem_target_x360_register_notification(driver_, vt_x360_[i],
 							                                        reinterpret_cast<PVIGEM_X360_NOTIFICATION>(&VirtualControllerThread::
 								                                        controllerCallback));
@@ -160,7 +162,7 @@ void VirtualControllerThread::controllerLoop()
 				{
 					if (VIGEM_SUCCESS(vigem_target_remove(driver_, vt_x360_[i])))
 					{
-						std::cout << "Unplugged controller " << vigem_target_get_index(vt_x360_[i]) << std::endl;
+						LOG_F(INFO, "Unplugged controller %d", vigem_target_get_index(vt_x360_[i]));
 					}
 				}
 			}

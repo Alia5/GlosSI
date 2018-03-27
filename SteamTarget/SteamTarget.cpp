@@ -21,6 +21,9 @@ limitations under the License.
 #include "../common/Injector.h"
 #include "../common/process_alive.h"
 
+#define LOGURU_IMPLEMENTATION 1
+#include "../common/loguru.hpp"
+
 #include <QProcess>
 #include <QDir>
 #include <QFile>
@@ -35,12 +38,15 @@ limitations under the License.
 #include <Shobjidl.h>
 
 
+
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
+	loguru::init(argc, argv);
 }
 
 void SteamTarget::init()
 {
+	loguru::add_file("last.log", loguru::Truncate, loguru::Verbosity_INFO);
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
@@ -89,6 +95,7 @@ void SteamTarget::readIni()
 {
 	if (arguments().size() == 1)
 	{
+		LOG_F(WARNING, "Target configuration file must be specified! Using default Values!");
 		QMessageBox::warning(nullptr, "GloSC", "Target configuration file must be specified! Using default Values!");
 	}
 	else {
@@ -180,14 +187,21 @@ void SteamTarget::initOverlayEvents()
 
 				hook_commons::PlaceJMP(reinterpret_cast<BYTE*>(addressClosed),
 					reinterpret_cast<DWORD>(overlay_hook::overlay_closed_hookFN), std::string(overlay_closed_func_mask).length());
+			} else {
+				LOG_F(WARNING, "Failed to find overlayClosed signature!");
 			}
+		} else {
+			LOG_F(WARNING, "Failed to find overlayOpened signature!");
 		}
 }
 
 void SteamTarget::launchWatchdog() const
 {
 	const QString watchDogPath = QDir::toNativeSeparators(applicationDirPath()) + "\\GloSC_Watchdog.exe";
-	QProcess::startDetached("explorer.exe", QStringList() << watchDogPath);
+	if(QProcess::startDetached("explorer.exe", QStringList() << watchDogPath))
+		LOG_F(INFO, "Launched Watchdog");
+	else
+		LOG_F(WARNING, "Failed to launch Watchdog!");
 }
 
 void SteamTarget::launchApplication()
