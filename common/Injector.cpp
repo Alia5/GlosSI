@@ -19,7 +19,6 @@ limitations under the License.
 
 #include "../common/loguru.hpp"
 
-
 void Injector::TakeDebugPrivilege()
 {
 	HANDLE hProcess = GetCurrentProcess(), hToken;
