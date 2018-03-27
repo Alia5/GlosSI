@@ -4,25 +4,21 @@
 
 # GloSC
 
-GloSC or Global SteamController is a small set of tools that allows you to use your SteamController as a system wide XInput-controller alongside a system wide (borderless window) Steam overlay
+GloSC or Global SteamController is a tool that allows you to use your SteamController as a system wide XInput-controller alongside a system wide (borderless window) Steam overlay
 
 All complete with **per application bindings and working rumble emulation.**
 
-GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!
+GloSC can, but isn't required to, launch any of your favorite games or applications and directly add them to Steam, be it Win32 or UWP!
 
-It is **the tool** to enjoy any Game that has trouble with Steam and/or *add extra functionality* to your SteamController
+It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your SteamController
 
-Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
+*UWP*, *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
 
 ---
 
-This thing started out as a giant hack / proof of concept, work has began on a cleaner and more maintainable [v2 branch](https://github.com/Alia5/GloSC/tree/v2)
-
---- 
-
 **How does it work? / What does it do?**
 
-GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears where you can use the Steam-overlay, as well as get access to touch- and radial-menus and other functionality normally only present in Games
+GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears in which you can use the Steam-overlay. You also get access to touch- and radial-menus and other functionality normally only present in Games
 
 In addition to that, XInput-inputs are redirected to the whole operating system, so that they will work with any game or application
 
@@ -32,10 +28,11 @@ This brings full SteamController functionality to the desktop and any other appl
 
 **Cleaning up misconceptions**
 
-GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
+GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to the desktop-config (if not disabled)
 
-This is why you also don't need to launch any game using GloSC.
-You can launch any GloSC-Shortcut from Steam and launch any game or application afterwards if the "Start Application" option causes any trouble.
+Games do not need to be launched using GloSC.  
+
+If the "Start Application" option does not work, launch any GloSC-Shortcut from Steam, followed by a game or application.
 
 
 ```
@@ -46,25 +43,32 @@ You can launch any GloSC-Shortcut from Steam and launch any game or application 
 * **Q: The overlay isn't showing up!**
 
   A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
-     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, , some Windows bullshit prevents unsigned apps from drawing over them.
+     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, some Windows bullshit prevents unsigned apps from drawing over them.
      
-     Try running your games as borderless window
+     Try running your games as borderless window mode
 
-* **Q: GloSC always creates four controllers**
-
-  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
-  
-* **Q: Some games (Gears of War 4, Forza Horizons 3) have odd double inputs with the bumper buttons and sticks**
+* **Q: GloSC always creates four controllers, resulting in doubled inputs for some Games**
 
   A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
 
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
 
   A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
+
+* **Q: The controller doesn't use my config**
+
+    A: In some cases the privileges of the launched application are higher than Steams, switching the controller to "Lizard-Mode"
+    Try running Steam **as Admin**
     
 * **Q: GloSC overlay causes the screen to be black**
 
-  A: If running on mobile, open up Nvidia control panel (right click your Desktop and select it). Manage 3D-settings and have it auto select your graphics processor, if not then maybe try adding an exclusive fix for Steam on program settings tab.        
+  A: If running on mobile, open up NVidia control panel (right click your Desktop and select it). Manage the 3D-settings and have it auto select your graphics processor.
+
+  Alternatively there is the _`bEnableOverlayOnlyConfig`_ setting in GloSC's .ini files.
+  If this flag is set, the overlay is only shown if it is opened.
+  This will, unfortunately, also prevent you from using touch- and radial-menus.
+
+  Instructions for AMD GPUs should be similar, in case any issues occur.        
      
 ```
 ```
@@ -75,9 +79,10 @@ Join the GloSC discord here: https://discord.gg/T9b4D5y
 
 **GloSC consists of:**
  
- * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
- * The "GloSC-GameLauncher" which can launch Win32 and UWP games and mainly exists to work around dual overlays
+ * A main application ("GloSC") handling shortcut ("SteamTarget") creation and their addition to Steam.
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
+ * A GloSC Watchdog making sure Steam get's unhooked once a "SteamTarget" is closed.
+ * EnforceBindingDLL that gets injected into Steam, preventing the controller switching to the desktop-config
 
 ---
 
@@ -93,7 +98,7 @@ GloSC is not affiliated with Valve, Steam, or any of their partners.
 
 ---
 
-GloSC is built using [Qt 5.9](https://www.qt.io/) and [SFML](http://www.sfml-dev.org/) for drawing the overlay
+GloSC is built using [Qt 5.X](https://www.qt.io/) and [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
 The system wide Xbox-Controller works via [ViGEm](https://github.com/nefarius/ViGEm)
 

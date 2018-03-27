@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -37,16 +37,18 @@ limitations under the License.
 
 #include "UWPPair.h"
 #include "UWPSelectDialog.h"
+#include "UpdateChecker.h"
+
 
 class GloSC : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-	GloSC(QWidget *parent = Q_NULLPTR);
+	explicit GloSC(QWidget *parent = Q_NULLPTR);
 
 private:
-	Ui::GloSCClass ui;
+	Ui::GloSCClass ui_;
 
 	void updateEntryList();
 	void writeIni(QString entryName) const;
@@ -55,17 +57,17 @@ private:
 
 	void check360ControllerRebinding();
 
-	QList<UWPPair> uwpPairs;
+	QList<UWPPair> uwp_pairs_;
 
-	const unsigned int GLOSC_VERSION = 0x00000140; //Version Number in as bytes, just remove the dots.
+	constexpr static const unsigned int GLOSC_VERSION = 0x00000512; //Version Number in as bytes, just remove the dots.
 
-	int wide_x = 711;
-	int small_x = 302;
+	int wide_x_ = 711;
+	int small_x_ = 302;
 
-	int wide_x_create = 261;
-	int small_x_create = 131;
+	int wide_x_create_ = 261;
+	int small_x_create_ = 131;
 
-	QGraphicsOpacityEffect opEff;
+	QGraphicsOpacityEffect op_eff_;
 
 	void animate(int to);
 
@@ -77,6 +79,8 @@ private:
 
 	int current_slide_ = 0;
 	int last_slide_ = 13;
+
+	UpdateChecker updater_;
 
 private slots:
 	void on_cbUseDesktop_toggled(bool checked);

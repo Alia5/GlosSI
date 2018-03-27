@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ limitations under the License.
 #include <vector>
 
 #include <Windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 
 #include <SFML/System.hpp>
 
@@ -33,48 +33,50 @@ limitations under the License.
 class VirtualControllerThread
 {
 public:
-	VirtualControllerThread();
+	explicit VirtualControllerThread(int delay);
+	VirtualControllerThread(const VirtualControllerThread& other) = delete;
+	VirtualControllerThread(VirtualControllerThread&& other) noexcept = delete;
+	VirtualControllerThread& operator=(const VirtualControllerThread& other) = delete;
+	VirtualControllerThread& operator=(VirtualControllerThread&& other) noexcept = delete;
 	~VirtualControllerThread();
 
 	void run();
 	void stop();
 
-	bool isRunning();
+	bool isRunning() const;
 
 private:
 
-	std::atomic<bool> bShouldRun = false;
-
-
+	std::atomic<bool> b_should_run_ = false;
 	typedef DWORD(WINAPI* XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE* pState);
 
-	static const uint8_t opPatchLenght = 5;
-	uint8_t valveHookBytes[5];
+	static const uint8_t op_patch_lenght = 5;
+	uint8_t valve_hook_bytes_[5]{};
 
-	bool seven = false;
+	bool seven_ = false;
 
 #ifdef _AMD64_
-	const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
+	static constexpr const uint8_t realBytes[5] = {0x48, 0x89, 0x5C, 0x24, 0x08};
 #else
-	const uint8_t realBytes[5] = { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
+	static constexpr const uint8_t real_bytes[5] = { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
 #endif
 	//uint8_t realBytes[5] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x90 };
 
-	int controllerCount = 0;
-	XInputGetState_t XGetState = nullptr;
+	int controller_count_ = 0;
+	XInputGetState_t x_get_state_ = nullptr;
 
-	PVIGEM_CLIENT driver;
-	PVIGEM_TARGET vtX360[XUSER_MAX_COUNT];
+	PVIGEM_CLIENT driver_;
+	PVIGEM_TARGET vt_x360_[XUSER_MAX_COUNT]{};
 
-	std::thread controllerThread;
+	std::thread controller_thread_;
 
-	sf::Clock sfClock;
-	int tickTime = 0;
-	int delay = 1000000 / 200;
+	sf::Clock sf_clock_;
+	int tick_time_ = 0;
+	int delay_ = 0;
 
 	void controllerLoop();
 
-	static void controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
+	static void __RPC_CALLEE controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber);
 
 	static DWORD XInputGetStateWrapper(DWORD dwUserIndex, XINPUT_STATE* pState); //Easier to find in x64dbg...
 

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 #include "EnforceBindings.h"
 #include <vector>
+#include "../common/common_hookfuns.h"
 
 //stuff for finding the function as well as the injected code
 //should probably be moved somewhere else
@@ -80,7 +81,7 @@ void EnforceBindings::patchBytes()
 	if (address != NULL)
 	{
 		JMPBack = address + fun_prolog.length();
-		PlaceJMP((BYTE*)address, (DWORD)generalized_hookFn, fun_prolog.length());
+		hook_commons::PlaceJMP((BYTE*)address, (DWORD)generalized_hookFn, fun_prolog.length());
 	}
 }
 
@@ -88,75 +89,9 @@ void EnforceBindings::Unpatch()
 {
 	if (address != NULL)
 	{
-		RestoreBytes((BYTE*)address, (BYTE*)fun_prolog.c_str(), fun_prolog.length());
+		hook_commons::RestoreBytes((BYTE*)address, (BYTE*)fun_prolog.c_str(), fun_prolog.length());
 	}
 }
-
-
-//places a jmp instruction to a __declspec(naked) function on a given adress
-//nops the rest of bytes to don't break any instructions
-//part of patched code may has to be executed in the hook function
-void EnforceBindings::PlaceJMP(BYTE * Address, DWORD jumpTo, DWORD lenght)	
-{
-	DWORD dwOldProtect, dwBkup, dwReloadAddr;
-	VirtualProtect(Address, lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);	
-	dwReloadAddr = (jumpTo - (DWORD)Address) - 5;								//5 == lenght of jump instruction (1byte + 4byte address)
-	*Address = 0xE9; //jmp instrcution
-	*((DWORD*)(Address + 0x1)) = dwReloadAddr;
-
-	for (DWORD x = 5; x < lenght; x++)
-		*(Address + x) = 0x90;							//nop the rest
-
-	VirtualProtect(Address, lenght, dwOldProtect, &dwBkup);
-}
-
-void EnforceBindings::RestoreBytes(BYTE * Address, BYTE * original, DWORD lenght)
-{
-	DWORD dwOldProtect, dwBkup, dwReloadAddr;
-	VirtualProtect(Address, lenght, PAGE_EXECUTE_READWRITE, &dwOldProtect);		
-
-
-	for (DWORD x = 0; x < lenght; x++)
-	{
-		*(Address + x) = *(original + x);
-	}
-
-	VirtualProtect(Address, lenght, dwOldProtect, &dwBkup);
-}
-
-MODULEINFO EnforceBindings::GetModInfo(char * szModule)
-{
-	MODULEINFO ret = { NULL };
-	HMODULE mod = GetModuleHandleA(szModule);
-
-	if (mod != 0)
-		GetModuleInformation(GetCurrentProcess(), mod, &ret, sizeof(MODULEINFO));
-	return ret;
-}
-
-//returns memory address of given pattern ind given module
-DWORD EnforceBindings::FindPattern(char * module, const char * pattern, const char * mask)
-{
-	MODULEINFO mInfo = GetModInfo(module);
-	DWORD baseAddr = (DWORD)mInfo.lpBaseOfDll;
-	DWORD size = mInfo.SizeOfImage;
-
-	DWORD patLenght = strlen(mask);
-
-	for (DWORD i = 0; i < size - patLenght; i++)	//bad for loop btw...
-	{
-		bool found = true;
-		for (DWORD j = 0; j < patLenght; j++)
-			found &= mask[j] == '?' || pattern[j] == *(char*)(baseAddr + j + i);
-
-		if (found)
-			return baseAddr + i;
-
-	}
-
-	return NULL;
-}
-
 
 /*
  * Search for address of functrion we want to hook
@@ -171,7 +106,7 @@ DWORD EnforceBindings::FindPattern(char * module, const char * pattern, const ch
  */
 DWORD EnforceBindings::FindHookFunctionAdress()
 {
-	MODULEINFO mInfo = GetModInfo("steamclient.dll");
+	MODULEINFO mInfo = hook_commons::GetModInfo("steamclient.dll");
 	DWORD baseAddr = (DWORD)mInfo.lpBaseOfDll;
 	DWORD size = mInfo.SizeOfImage;
 

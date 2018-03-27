@@ -46,16 +46,22 @@
     <ClCompile Include="GeneratedFiles\qrc_SteamTarget.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="SteamTargetRenderer.cpp">
+    <ClCompile Include="VirtualControllerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_SteamTargetRenderer.cpp">
+    <ClCompile Include="SteamTarget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_SteamTarget.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_SteamTargetRenderer.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_SteamTarget.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="VirtualControllerThread.cpp">
+    <ClCompile Include="TargetOverlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\Injector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,7 +69,7 @@
     <CustomBuild Include="SteamTarget.qrc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="SteamTargetRenderer.h">
+    <CustomBuild Include="SteamTarget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -72,6 +78,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VirtualControllerThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common_hookfuns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayHookFunction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\Injector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\process_alive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetOverlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

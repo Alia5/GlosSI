@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,10 +31,6 @@ public:
 
 private:
 
-	static void PlaceJMP(BYTE * Address, DWORD jumpTo, DWORD lenght);
-	static void RestoreBytes(BYTE *Address, BYTE *original, DWORD lenght);
-	static MODULEINFO GetModInfo(char *szModule);
-	static DWORD FindPattern(char *module, const char *pattern, const char *mask);
-	static DWORD FindHookFunctionAdress();
+		static DWORD FindHookFunctionAdress();
 };
 

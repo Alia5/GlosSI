@@ -1,17 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SteamTarget", "SteamTarget\SteamTarget.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC", "GloSC\GloSC.vcxproj", "{2E7F8131-0BD8-475D-B16F-20445CCF2D16}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC_GameLauncher", "GloSC_GameLauncher\GloSC_GameLauncher.vcxproj", "{431D29FD-73F8-4374-868B-F72972566F41}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnforceBindingDLL", "EnforceBindingDLL\EnforceBindingDLL.vcxproj", "{AFA0047E-7DEE-472A-AF4B-436A30459905}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Injector", "Injector\Injector.vcxproj", "{0F6DB076-7345-487C-BA8C-E659EBB05962}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC_Watchdog", "GloSC_Watchdog\GloSC_Watchdog.vcxproj", "{752D3933-73A3-45E4-B139-CCB8C04BE543}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,35 +35,28 @@ Global
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Release|x64.Build.0 = Release|x64
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Release|x86.ActiveCfg = Release|Win32
 		{2E7F8131-0BD8-475D-B16F-20445CCF2D16}.Release|x86.Build.0 = Release|Win32
-		{431D29FD-73F8-4374-868B-F72972566F41}.Debug|x64.ActiveCfg = Debug|x64
-		{431D29FD-73F8-4374-868B-F72972566F41}.Debug|x64.Build.0 = Debug|x64
-		{431D29FD-73F8-4374-868B-F72972566F41}.Debug|x86.ActiveCfg = Debug|Win32
-		{431D29FD-73F8-4374-868B-F72972566F41}.Debug|x86.Build.0 = Debug|Win32
-		{431D29FD-73F8-4374-868B-F72972566F41}.Release|x64.ActiveCfg = Release|x64
-		{431D29FD-73F8-4374-868B-F72972566F41}.Release|x64.Build.0 = Release|x64
-		{431D29FD-73F8-4374-868B-F72972566F41}.Release|x86.ActiveCfg = Release|Win32
-		{431D29FD-73F8-4374-868B-F72972566F41}.Release|x86.Build.0 = Release|Win32
-		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x64.ActiveCfg = Debug|Win32
-		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x64.Build.0 = Debug|Win32
+		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x64.ActiveCfg = Debug|x64
+		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x64.Build.0 = Debug|x64
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x86.ActiveCfg = Debug|Win32
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Debug|x86.Build.0 = Debug|Win32
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Release|x64.ActiveCfg = Release|Win32
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Release|x64.Build.0 = Release|Win32
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Release|x86.ActiveCfg = Release|Win32
 		{AFA0047E-7DEE-472A-AF4B-436A30459905}.Release|x86.Build.0 = Release|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Debug|x64.ActiveCfg = Debug|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Debug|x64.Build.0 = Debug|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Debug|x86.ActiveCfg = Debug|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Debug|x86.Build.0 = Debug|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Release|x64.ActiveCfg = Release|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Release|x64.Build.0 = Release|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Release|x86.ActiveCfg = Release|Win32
-		{0F6DB076-7345-487C-BA8C-E659EBB05962}.Release|x86.Build.0 = Release|Win32
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Debug|x64.ActiveCfg = Debug|x64
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Debug|x64.Build.0 = Debug|x64
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Debug|x86.ActiveCfg = Debug|Win32
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Debug|x86.Build.0 = Debug|Win32
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Release|x64.ActiveCfg = Release|x64
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Release|x64.Build.0 = Release|x64
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Release|x86.ActiveCfg = Release|Win32
+		{752D3933-73A3-45E4-B139-CCB8C04BE543}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7ACD6EA-A3F9-4E3C-8A47-AC10F52B14B9}
 		Qt5Version = 5.10.1_x64
 	EndGlobalSection
 EndGlobal

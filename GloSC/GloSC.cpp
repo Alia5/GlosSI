@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,30 +15,28 @@ limitations under the License.
 */
 #include "GloSC.h"
 #include <memory>
+#include "UpdateChecker.h"
 
 GloSC::GloSC(QWidget *parent)
-	: QMainWindow(parent)
+	: QMainWindow(parent), updater_(this)
 {
 	QDir::setCurrent(QCoreApplication::applicationDirPath());
-	ui.setupUi(this);
+	ui_.setupUi(this);
 
-	this->setMaximumWidth(small_x);
+	this->setMaximumWidth(small_x_);
 
 	updateEntryList();
 	updateTargetsToNewVersion();
 
-	//Launch the gamelauncher here, just to be safe
-	//Don't need to check if the process already exists as it does it itself
-	QProcess proc;
-	proc.startDetached("GloSC_Gamelauncher.exe", QStringList(), QApplication::applicationDirPath(), nullptr);
-
 	if (first_launch_)
 		showTutorial();
+
+	updater_.checkUpdate(GLOSC_VERSION);
 }
 
 void GloSC::updateEntryList()
 {
-	ui.lwInstances->clear();
+	ui_.lwInstances->clear();
 
 	QDir dir("./targets");
 	QStringList fileNames = dir.entryList(QDir::Files);
@@ -50,7 +48,7 @@ void GloSC::updateEntryList()
 	for (auto &fileName : fileNames)
 	{
 		if (fileName.endsWith(".ini"))
-			ui.lwInstances->addItem(fileName.left(fileName.length() - 4));
+			ui_.lwInstances->addItem(fileName.left(fileName.length() - 4));
 	}
 
 
@@ -62,9 +60,9 @@ void GloSC::writeIni(QString entryName) const
 
 	settings.beginGroup("BaseConf");
 
-	settings.setValue("bEnableOverlay", 0 + ui.cbOverlay->isChecked());
-	settings.setValue("bEnableControllers", 0 + ui.cbControllers->isChecked());
-	settings.setValue("bUseDesktopConfig", 0 + ui.cbUseDesktop->isChecked());
+	settings.setValue("bEnableOverlay", 0 + ui_.cbOverlay->isChecked());
+	settings.setValue("bEnableControllers", 0 + ui_.cbControllers->isChecked());
+	settings.setValue("bUseDesktopConfig", 0 + ui_.cbUseDesktop->isChecked());
 	settings.setValue("bHookSteam", hook_steam_);
 	settings.setValue("version", GLOSC_VERSION);
 
@@ -73,15 +71,15 @@ void GloSC::writeIni(QString entryName) const
 
 	settings.beginGroup("LaunchGame");
 
-	settings.setValue("bLaunchGame", 0 + ui.cbLaunchGame->isChecked());
-	settings.setValue("Path", ui.lePath->text());
-	settings.setValue("Args", ui.leArguments->text());
-	if (ui.lePath->text().contains("\\") || ui.lePath->text().contains("/"))
+	settings.setValue("bLaunchGame", 0 + ui_.cbLaunchGame->isChecked());
+	settings.setValue("Path", ui_.lePath->text());
+	settings.setValue("Args", ui_.leArguments->text());
+	if (ui_.lePath->text().contains("\\") || ui_.lePath->text().contains("/"))
 		settings.setValue("Type", "Win32");
 	else
 		settings.setValue("Type", "UWP");
 
-	settings.setValue("bCloseWhenDone", 0 + ui.cbCloseWhenDone->isChecked());
+	settings.setValue("bCloseWhenDone", 0 + ui_.cbCloseWhenDone->isChecked());
 
 	settings.endGroup();
 
@@ -90,14 +88,14 @@ void GloSC::writeIni(QString entryName) const
 void GloSC::updateTargetsToNewVersion()
 {
 	//incredible lazy way to update to this next version but eh...
-	for (int i = 0; i < ui.lwInstances->count(); i++)
+	for (int i = 0; i < ui_.lwInstances->count(); i++)
 	{
 		on_lwInstances_currentRowChanged(i);
-		QString name = ui.leName->text();
+		const QString name = ui_.leName->text();
 
 		QSettings settings("./targets/" + name + ".ini", QSettings::IniFormat);
 		settings.beginGroup("BaseConf");
-		unsigned int version = settings.value("version").toInt();
+		const unsigned int version = settings.value("version").toInt();
 		settings.endGroup();
 
 		if (version < GLOSC_VERSION)
@@ -107,9 +105,9 @@ void GloSC::updateTargetsToNewVersion()
 
 void GloSC::check360ControllerRebinding()
 {
-	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
-	QString steamPath = settings.value("SteamPath").toString();
-	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
+	QSettings settings(R"(HKEY_CURRENT_USER\SOFTWARE\Valve\Steam)", QSettings::NativeFormat);
+	const QString steamPath = settings.value("SteamPath").toString();
+	const QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
 
 	QFile configFile(steamPath + "/userdata/" + activeUser + "/config/localconfig.vdf");
 
@@ -185,11 +183,11 @@ void GloSC::animate(int to)
 		});
 		this->setMaximumWidth(to);
 
-		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui.pbCreateNew, "size");
+		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui_.pbCreateNew, "size");
 		buttonAnim->setEasingCurve(QEasingCurve::InOutExpo);
 		buttonAnim->setDuration(360);
-		buttonAnim->setStartValue(QSize(ui.pbCreateNew->width(), ui.pbCreateNew->height()));
-		buttonAnim->setEndValue(QSize(wide_x_create, ui.pbCreateNew->height()));
+		buttonAnim->setStartValue(QSize(ui_.pbCreateNew->width(), ui_.pbCreateNew->height()));
+		buttonAnim->setEndValue(QSize(wide_x_create_, ui_.pbCreateNew->height()));
 		buttonAnim->start(QPropertyAnimation::DeleteWhenStopped);
 
 	}
@@ -202,11 +200,11 @@ void GloSC::animate(int to)
 		});
 		this->setMinimumWidth(to);
 
-		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui.pbCreateNew, "size");
+		QPropertyAnimation* buttonAnim = new QPropertyAnimation(ui_.pbCreateNew, "size");
 		buttonAnim->setEasingCurve(QEasingCurve::InExpo);
 		buttonAnim->setDuration(360);
-		buttonAnim->setStartValue(QSize(ui.pbCreateNew->width(), ui.pbCreateNew->height()));
-		buttonAnim->setEndValue(QSize(small_x_create, ui.pbCreateNew->height()));
+		buttonAnim->setStartValue(QSize(ui_.pbCreateNew->width(), ui_.pbCreateNew->height()));
+		buttonAnim->setEndValue(QSize(small_x_create_, ui_.pbCreateNew->height()));
 		buttonAnim->start(QPropertyAnimation::DeleteWhenStopped);
 
 	}
@@ -225,85 +223,85 @@ void GloSC::showTutorial()
 {
 
 
-	ui.pbTuorialCreate->setVisible(false);
-	ui.pbTuorialCreate->setEnabled(false);
-	ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 386);
+	ui_.pbTuorialCreate->setVisible(false);
+	ui_.pbTuorialCreate->setEnabled(false);
+	ui_.tutorialFrame->setGeometry(ui_.tutorialFrame->x(), ui_.tutorialFrame->y(), ui_.tutorialFrame->width(), 386);
 
 	for (int i = 1; i < 14; i++)
 	{
-		QLabel* label = ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(i)));
+		QLabel* label = ui_.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(i)));
 		if (label != nullptr)
 			label->setVisible(false);
 	}
 
-	connect(ui.pbTutorialNext, &QPushButton::clicked, [this]() {
+	connect(ui_.pbTutorialNext, &QPushButton::clicked, [this]() {
 		current_slide_++;
 
 		if (current_slide_ >= 14)
 		{
-			ui.tutorialFrame->setGeometry(ui.tutorialFrame->x(), ui.tutorialFrame->y(), ui.tutorialFrame->width(), 0);
-			ui.pbTutorialNext->setVisible(false);
-			ui.pbTutorialNext->setEnabled(false);
+			ui_.tutorialFrame->setGeometry(ui_.tutorialFrame->x(), ui_.tutorialFrame->y(), ui_.tutorialFrame->width(), 0);
+			ui_.pbTutorialNext->setVisible(false);
+			ui_.pbTutorialNext->setEnabled(false);
 			return;
 		}
 
-		ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_ - 1)))->setVisible(false);
-		ui.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_)))->setVisible(true);
+		ui_.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_ - 1)))->setVisible(false);
+		ui_.tutorialFrame->findChild<QLabel *>(QString("lTutorialText" + QString::number(current_slide_)))->setVisible(true);
 
 		QString test = QString(":/Tutorial/tut-assets/Tut" + QString::number(current_slide_) + ".png");
-		ui.lTutorialBackground->setPixmap(QPixmap(test));
+		ui_.lTutorialBackground->setPixmap(QPixmap(test));
 
 		if (current_slide_ == 1)
 		{
-			ui.pbTutorialNext->setVisible(false);
-			ui.pbTutorialNext->setEnabled(false);
-			ui.pbTuorialCreate->setVisible(true);
-			ui.pbTuorialCreate->setEnabled(true);
+			ui_.pbTutorialNext->setVisible(false);
+			ui_.pbTutorialNext->setEnabled(false);
+			ui_.pbTuorialCreate->setVisible(true);
+			ui_.pbTuorialCreate->setEnabled(true);
 		}
 		if (current_slide_ == 2)
-			ui.pbTutorialNext->setGeometry(600, ui.pbTutorialNext->y(), ui.pbTutorialNext->width(), ui.pbTutorialNext->height());
+			ui_.pbTutorialNext->setGeometry(600, ui_.pbTutorialNext->y(), ui_.pbTutorialNext->width(), ui_.pbTutorialNext->height());
 
 		if (current_slide_ == 13)
 		{
-			animate(small_x);
-			ui.pbTutorialNext->setText("Finish");
-			ui.pbTutorialNext->setGeometry(180, 45, ui.pbTutorialNext->width(), ui.pbTutorialNext->height());
+			animate(small_x_);
+			ui_.pbTutorialNext->setText("Finish");
+			ui_.pbTutorialNext->setGeometry(180, 45, ui_.pbTutorialNext->width(), ui_.pbTutorialNext->height());
 
 		}
 
 	});
 
-	connect(ui.pbTuorialCreate, &QPushButton::clicked, [this]()
+	connect(ui_.pbTuorialCreate, &QPushButton::clicked, [this]()
 	{
-		ui.pbTuorialCreate->setVisible(false);
-		ui.pbTuorialCreate->setEnabled(false);
-		ui.pbTutorialNext->setVisible(true);
-		ui.pbTutorialNext->setEnabled(true);
+		ui_.pbTuorialCreate->setVisible(false);
+		ui_.pbTuorialCreate->setEnabled(false);
+		ui_.pbTutorialNext->setVisible(true);
+		ui_.pbTutorialNext->setEnabled(true);
 		on_pbCreateNew_clicked();
-		ui.pbTutorialNext->click();
+		ui_.pbTutorialNext->click();
 	});
 
 }
 
 void GloSC::on_pbCreateNew_clicked()
 {
-	ui.leName->setText("");
+	ui_.leName->setText("");
 
-	ui.cbOverlay->setChecked(true);
-	ui.cbControllers->setChecked(true);
+	ui_.cbOverlay->setChecked(true);
+	ui_.cbControllers->setChecked(true);
 	hook_steam_ = true;
 
-	ui.cbLaunchGame->setChecked(false);
-	ui.lePath->setText("");
-	ui.leArguments->setText("");
-	ui.cbCloseWhenDone->setChecked(false);
+	ui_.cbLaunchGame->setChecked(false);
+	ui_.lePath->setText("");
+	ui_.leArguments->setText("");
+	ui_.cbCloseWhenDone->setChecked(false);
 
-	animate(wide_x);
+	animate(wide_x_);
 }
 
 void GloSC::on_pbSave_clicked()
 {
-	QString name = ui.leName->text();
+	QString name = ui_.leName->text();
 	name.remove("\\");
 	name.remove("/");
 	name.remove(":");
@@ -321,13 +319,13 @@ void GloSC::on_pbSave_clicked()
 
 	updateEntryList();
 
-	animate(small_x);
+	animate(small_x_);
 }
 
 
 void GloSC::on_pbDelete_clicked()
 {
-	QString name = ui.leName->text();
+	QString name = ui_.leName->text();
 
 	QString temp = name;
 	if (temp.remove(" ") == "")
@@ -340,20 +338,20 @@ void GloSC::on_pbDelete_clicked()
 	}
 	updateEntryList();
 
-	animate(small_x);
+	animate(small_x_);
 }
 
 void GloSC::on_pbAddToSteam_clicked()
 {
-	if (ui.lwInstances->count() <= 0)
+	if (ui_.lwInstances->count() <= 0)
 	{
 		QMessageBox::information(this, "GloSC", "No shortcuts! Create some shortcuts first for them to be added to Steam!", QMessageBox::Ok);
 		return;
 	}
 
-	QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
-	QString steamPath = settings.value("SteamPath").toString();
-	QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
+	QSettings settings(R"(HKEY_CURRENT_USER\SOFTWARE\Valve\Steam)", QSettings::NativeFormat);
+	const QString steamPath = settings.value("SteamPath").toString();
+	const QString activeUser = settings.value("ActiveProcess/ActiveUser").toString();
 
 	QFile shortcutsFile(steamPath + "/userdata/" + activeUser + "/config/shortcuts.vdf");
 
@@ -381,11 +379,10 @@ void GloSC::on_pbAddToSteam_clicked()
 	temp = temp.mid(temp.lastIndexOf("tags") + 8, temp.size() - 1);
 	int shortcutCount = QString(temp).toInt();
 
-	QString itemName;
 	QDir appDir = QDir::current();
-	for (int i = 0; i < ui.lwInstances->count(); i++)
+	for (int i = 0; i < ui_.lwInstances->count(); i++)
 	{
-		itemName = ui.lwInstances->item(i)->text();
+		const QString itemName = ui_.lwInstances->item(i)->text();
 		if (!shortcutsFileBytes.contains(("\"" + QDir::toNativeSeparators(appDir.absoluteFilePath("SteamTarget.exe")) + "\"" + " \"./targets/" + itemName + ".ini\"").toStdString().c_str()))
 		{
 			shortcutsFileBytes.chop(2); //chop of end bytes
@@ -461,7 +458,7 @@ void GloSC::on_pbAddToSteam_clicked()
 
 	shortcutsFile.close();
 
-	animate(small_x);
+	animate(small_x_);
 
 	if( QMessageBox::information(this, "GloSC",
 		"Shortcuts were added!\nRestart Steam for changes to take effect!\nRestart Steam now?",
@@ -470,7 +467,7 @@ void GloSC::on_pbAddToSteam_clicked()
 		== QMessageBox::Yes)
 	{
 		
-		QSettings settings("HKEY_CURRENT_USER\\SOFTWARE\\Valve\\Steam", QSettings::NativeFormat);
+		QSettings settings(R"(HKEY_CURRENT_USER\SOFTWARE\Valve\Steam)", QSettings::NativeFormat);
 		QString steamPath = settings.value("SteamPath").toString() + "/Steam.exe";
 		steamPath = QDir::toNativeSeparators(steamPath);
 
@@ -496,17 +493,17 @@ void GloSC::on_pbSearchPath_clicked()
 	if (!filePath.isEmpty())
 	{
 		QFileInfo fileInfo(filePath);
-		ui.lePath->setText(fileInfo.filePath());
+		ui_.lePath->setText(fileInfo.filePath());
 		QString name = fileInfo.fileName();
 		name.chop(4);
-		ui.leName->setText(name);
-		ui.cbLaunchGame->setChecked(true);
+		ui_.leName->setText(name);
+		ui_.cbLaunchGame->setChecked(true);
 	}
 }
 
 void GloSC::on_pbUWP_clicked()
 {
-	auto settings = std::make_unique<QSettings>("HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId", QSettings::NativeFormat);
+	auto settings = std::make_unique<QSettings>(R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId)", QSettings::NativeFormat);
 
 	QStringList childs = settings->childGroups();
 	QStringList packages;
@@ -537,7 +534,7 @@ void GloSC::on_pbUWP_clicked()
 		{
 			return;
 		}
-		settings = std::make_unique<QSettings>("HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\" + package, QSettings::NativeFormat);
+		settings = std::make_unique<QSettings>(R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)" + package, QSettings::NativeFormat);
 
 		
 
@@ -545,8 +542,8 @@ void GloSC::on_pbUWP_clicked()
 		{
 			if (child == "ActivatableClassId")
 			{
-				auto classIDSettings = std::make_unique<QSettings>(
-					"HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\" + package + "\\" + child,
+				const auto classIDSettings = std::make_unique<QSettings>(
+					R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)" + package + "\\" + child,
 					QSettings::NativeFormat);
 
 				if (classIDSettings->childGroups().length() > 0)
@@ -564,8 +561,8 @@ void GloSC::on_pbUWP_clicked()
 
 					QString AppUMId = pkgNameCleaned + "!" + classIDSettings->childGroups().at(0);
 
-					auto appInfoSettings = std::make_unique<QSettings>(
-						"HKEY_CLASSES_ROOT\\Extensions\\ContractId\\Windows.Launch\\PackageId\\"
+					const auto appInfoSettings = std::make_unique<QSettings>(
+						R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)"
 						+ package + "\\" + child + "\\" + classIDSettings->childGroups().at(0),
 						QSettings::NativeFormat);
 
@@ -586,17 +583,16 @@ void GloSC::on_pbUWP_clicked()
 						else if (AppName.at(0) == '@') {
 							QString packageName = AppName.mid(AppName.indexOf('{') + 1, AppName.size() - 1);
 							packageName = packageName.mid(0, packageName.indexOf('?'));
-							QStringList cachedNameChildGroups;
 							QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache", QSettings::NativeFormat);
 
-							cachedNameChildGroups = settings.childGroups();
+							QStringList cachedNameChildGroups = settings.childGroups();
 
 							for (auto &childGroup : cachedNameChildGroups)
 							{
 
 								if (childGroup.contains(packageName))
 								{
-									QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache\\" + childGroup, QSettings::NativeFormat);
+									QSettings settings(R"(HKEY_CLASSES_ROOT\Local Settings\MrtCache\)" + childGroup, QSettings::NativeFormat);
 
 									QStringList allKeys = settings.allKeys();
 
@@ -618,7 +614,7 @@ void GloSC::on_pbUWP_clicked()
 							}
 						}
 
-						UWPPair uwpPair = {
+						const UWPPair uwpPair = {
 							AppName,
 							AppUMId,
 						};
@@ -636,19 +632,19 @@ void GloSC::on_pbUWP_clicked()
 
 	}
 
-	uwpPairs = pairs;
+	uwp_pairs_ = pairs;
 
 	progDialog.close();
 
 	UWPSelectDialog dialog(this);
-	dialog.setUWPList(uwpPairs);
+	dialog.setUWPList(uwp_pairs_);
 	int selection = dialog.exec();
 
 	if (selection > -1)
 	{
-		ui.lePath->setText(uwpPairs.at(selection).AppUMId);
-		ui.leName->setText(uwpPairs.at(selection).AppName);
-		ui.cbLaunchGame->setChecked(true);
+		ui_.lePath->setText(uwp_pairs_.at(selection).AppUMId);
+		ui_.leName->setText(uwp_pairs_.at(selection).AppName);
+		ui_.cbLaunchGame->setChecked(true);
 	}
 
 }
@@ -657,17 +653,17 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 {
 	if (row < 0)
 		return;
-	QString entryName = ui.lwInstances->item(row)->text();
-	ui.leName->setText(entryName);
+	const QString entryName = ui_.lwInstances->item(row)->text();
+	ui_.leName->setText(entryName);
 
 	QSettings settings("./targets/" + entryName + ".ini", QSettings::IniFormat);
 
 	settings.beginGroup("BaseConf");
 
-	ui.cbOverlay->setChecked(settings.value("bEnableOverlay").toBool());
-	ui.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
-	ui.cbUseDesktop->setChecked(settings.value("bUseDesktopConfig").toBool());
-	if (ui.cbUseDesktop->isChecked())
+	ui_.cbOverlay->setChecked(settings.value("bEnableOverlay").toBool());
+	ui_.cbControllers->setChecked(settings.value("bEnableControllers").toBool());
+	ui_.cbUseDesktop->setChecked(settings.value("bUseDesktopConfig").toBool());
+	if (ui_.cbUseDesktop->isChecked())
 	{
 		hook_steam_ = false;
 	}
@@ -681,10 +677,10 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 	settings.beginGroup("LaunchGame");
 
-	ui.cbLaunchGame->setChecked(settings.value("bLaunchGame").toBool());
-	ui.lePath->setText(settings.value("Path").toString());
-	ui.leArguments->setText(settings.value("Args").toString());
-	ui.cbCloseWhenDone->setChecked(settings.value("bCloseWhenDone").toBool());
+	ui_.cbLaunchGame->setChecked(settings.value("bLaunchGame").toBool());
+	ui_.lePath->setText(settings.value("Path").toString());
+	ui_.leArguments->setText(settings.value("Args").toString());
+	ui_.cbCloseWhenDone->setChecked(settings.value("bCloseWhenDone").toBool());
 
 	settings.endGroup();
 
@@ -692,8 +688,8 @@ void GloSC::on_lwInstances_currentRowChanged(int row)
 
 void GloSC::on_lwInstances_itemSelectionChanged()
 {
-	if (width() != wide_x)
+	if (width() != wide_x_)
 	{
-		animate(wide_x);
+		animate(wide_x_);
 	} 
 }

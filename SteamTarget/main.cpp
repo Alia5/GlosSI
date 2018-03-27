@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Peter Repukat - FlatspotSoftware
+Copyright 2018 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "SteamTargetRenderer.h"
 #include <QtCore/QCoreApplication>
+#include <Windows.h>
+#include "SteamTarget.h"
 
-int main(int argc, char *argv[])
+int CALLBACK WinMain(
+	_In_ HINSTANCE hInstance,
+	_In_ HINSTANCE hPrevInstance,
+	_In_ LPSTR     lpCmdLine,
+	_In_ int       nCmdShow
+)
 {
-	SteamTargetRenderer renderer(argc, argv);
-	renderer.run();
-	return renderer.exec();
+	SteamTarget target(__argc, __argv);
+	target.init();
+	return SteamTarget::exec();
 }
 
