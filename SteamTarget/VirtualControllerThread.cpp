@@ -27,9 +27,9 @@ VirtualControllerThread::VirtualControllerThread(const int delay)
 		b_should_run_ = false;
 	}
 
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
+	for (auto & target : vt_x360_)
 	{
-		vt_x360_[i] = vigem_target_x360_alloc();
+		target = vigem_target_x360_alloc();
 	}
 
 	seven_ = IsWindows7OrGreater() != IsWindows8OrGreater();
@@ -53,9 +53,9 @@ void VirtualControllerThread::run()
 void VirtualControllerThread::stop()
 {
 	b_should_run_ = false;
-	for (int i = 0; i < XUSER_MAX_COUNT; i++)
+	for (auto & target : vt_x360_)
 	{
-		vigem_target_remove(driver_, vt_x360_[i]);
+		vigem_target_remove(driver_, target);
 	}
 }
 
