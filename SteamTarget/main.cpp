@@ -14,11 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #include <QtCore/QCoreApplication>
+#include <Windows.h>
 #include "SteamTarget.h"
 
-int main(int argc, char *argv[])
+int CALLBACK WinMain(
+	_In_ HINSTANCE hInstance,
+	_In_ HINSTANCE hPrevInstance,
+	_In_ LPSTR     lpCmdLine,
+	_In_ int       nCmdShow
+)
 {
-	SteamTarget target(argc, argv);
+	SteamTarget target(__argc, __argv);
 	target.init();
 	return SteamTarget::exec();
 }
