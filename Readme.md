@@ -4,34 +4,30 @@
 
 # GloSC
 
-GloSC or Global SteamController is a small set of tools that allows you to use your SteamController as a system wide XInput-controller alongside a system wide (borderless window) Steam overlay
+Global SteamController (GloSC) is a small set of tools that allows the SteamController to be used as a system wide XInput-controller alongside the Steam overlay.
 
-All complete with **per application bindings and working rumble emulation.**
+This tool allows the enjoyment of any game that has trouble with Steam while *adding extra functionality* to the SteamController, such as **per application bindings and a working rumble emulation.**
 
-GloSC can also launch any of your favorite Games and directly add them to Steam, be it Win32 or UWP!
+GloSC can launch any game and directly add them to Steam, be it Win32 or UWP!
 
-It is **the tool** to enjoy any Game that has trouble with Steam and/or *add extra functionality* to your SteamController
-
-Play *UWP-Games*, use *Reshade / SweetFX*, *Origin* and *Uplay*-Games with **no hassle**
+Play *UWP*, *Origin* and *Uplay*-Games, and use *Reshade / SweetFX* with **no hassle**!
 
 ---
 
 **How does it work? / What does it do?**
 
-GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears where you can use the Steam-overlay, as well as get access to touch- and radial-menus and other functionality normally only present in Games
+GloSC creates and adds non-Steam shortcuts to Steam. When a shortcut is launched, a transparent, borderless window allowing the use of the Steam-overlay appears. GloSC also allows access to touch- and radial-menus as well as other functionalities normally only present in games.
 
-In addition to that, XInput-inputs are redirected to the whole operating system, so that they will work with any game or application
-
-This brings full SteamController functionality to the desktop and any other application the SteamController might not have worked before
+XInput-inputs are redirected to the whole operating system, in order to function with any game or application, enabling full SteamController functionality to any application that previously could not be used with the controller.
 
 ---
 
 **Cleaning up misconceptions**
 
-GloSC doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to desktop-config (if wanted)
+GloSC doesn't hook into any games, launched programs or system-component. The user can choose to have GloSC hook into Steam to keep the controller from switching to the desktop-config.
 
-This is why you also don't need to launch any game using GloSC.
-You can launch any GloSC-Shortcut from Steam and launch any game or application afterwards if the "Start Application" option causes any trouble.
+Games do not need to be launched using GloSC.  
+If the "Start Application" option does not work, launch any GloSC-Shortcut from Steam, followed by a game or application.
 
 
 ```
@@ -41,27 +37,27 @@ You can launch any GloSC-Shortcut from Steam and launch any game or application 
 
 * **Q: The overlay isn't showing up!**
 
-  A: The overlay only works for windowed or borderless windowed mode applications. Nothing much I can do here.
-     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, , some Windows bullshit prevents unsigned apps from drawing over them.
-     
-     Try running your games as borderless window
+  A: The overlay only works for windowed or borderless windowed mode applications.
+     Even though UWP-Games do not run exclusive fullscreen, Windows prevents unsigned apps from drawing over UWP-Games so the overlay will not work.
+
+     Try running the game in borderless windowed mode.
 
 * **Q: GloSC always creates four controllers**
 
-  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
-  
+  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings.
+
 * **Q: Some games (Gears of War 4, Forza Horizons 3) have odd double inputs with the bumper buttons and sticks**
 
-  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings. 
+  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings.
 
 * **Q: Hitting the Steam Button + RT to take a screenshot doesn't work**
 
-  A: Another limitation that most likely won't be fixed, even if Steam would take a screenshot, you'd most likely get just a blank image
-    
+  A: This is another limitation that most likely won't be fixed. Even if Steam can take a screenshot, only a blank image would be obtained.
+
 * **Q: GloSC overlay causes the screen to be black**
 
-  A: If running on mobile, open up Nvidia control panel (right click your Desktop and select it). Manage 3D-settings and have it auto select your graphics processor, if not then maybe try adding an exclusive fix for Steam on program settings tab.        
-     
+  A: If GloSC is being run on a mobile, open up Nvidia control panel (right click your Desktop and select it). Manage the 3D-settings and have it auto select your graphics processor. Otherwise, add an exclusive fix for Steam on the program settings tab.        
+
 ```
 ```
 
@@ -70,8 +66,8 @@ Join the GloSC discord here: https://discord.gg/T9b4D5y
 ---
 
 **GloSC consists of:**
- 
- * A main application ("GloSC") allowing you to create and configure new shortcuts or "SteamTargets" and automatically add them to Steam
+
+ * A main application ("GloSC") allowing the creation and configuration of new shortcuts ("SteamTargets") their automatic addition to Steam
  * The "SteamTarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 
 ---
