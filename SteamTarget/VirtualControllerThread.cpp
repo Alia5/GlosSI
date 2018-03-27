@@ -119,6 +119,8 @@ void VirtualControllerThread::controllerLoop()
 			for (int i = 0; i < XUSER_MAX_COUNT; i++)
 			{
 				////////
+
+				//Call the hooked, as well as the 'real' XInputGetState function to determine if a controller is real of 'fake' (from Steam)
 				XINPUT_STATE state = { 0 };
 				const DWORD result = XInputGetStateWrapper(i, &state);
 				XINPUT_STATE state2 = { 0 };
@@ -126,7 +128,7 @@ void VirtualControllerThread::controllerLoop()
 
 				if (result == ERROR_SUCCESS)
 				{
-					if ( (result2 != ERROR_SUCCESS) == seven_ )
+					if ( (result2 != ERROR_SUCCESS) == seven_ ) //for whatever reason, the second call also returns true on win7, false (as it should(?)) otherwise.
 					{
 						// By using VID and PID of Valve's SteamController, Steam doesn't give us ANOTHER "fake" XInput device
 						// Leading to endless pain and suffering. 
