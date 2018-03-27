@@ -17,21 +17,24 @@ build:
   verbosity: normal
 after_build:
 - cmd: >-
-7z a GloSC.zip TargetConfig.ini License.txt qt-license.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%\build\Win32\%configuration%\*.exe %APPVEYOR_BUILD_FOLDER%\build\Win32\%configuration%\*.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-x86\bin\sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-x86\bin\sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%\dependencies\SFML-2.4.2-x86\bin\sfml-graphics-2.dll redist\* %QTDIR%\bin\Qt5Core.dll %QTDIR%\bin\Qt5Gui.dll %QTDIR%\bin\Qt5Widgets.dll %QTDIR%\plugins\platforms\qwindows.dll
+    7z a GloSC.zip TargetConfig.ini License.txt qt-license.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%/build/Win32/%configuration%/*.exe %APPVEYOR_BUILD_FOLDER%/build/Win32/%configuration%/*.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-graphics-2.dll redist/* %QTDIR%/bin/Qt5Core.dll %QTDIR%/bin/Qt5Gui.dll %QTDIR%/bin/Qt5Widgets.dll %QTDIR%/plugins/platforms/qwindows.dll
 
-7z rn GloSC.zip qwindows.dll platforms\qwindows.dll
 
-7z rn GloSC.zip redist/libeay32.dll libeay32.dll
+    7z rn GloSC.zip qwindows.dll platforms/qwindows.dll
 
-7z rn GloSC.zip redist/ssleay32.dll ssleay32.dll
+
+    7z rn GloSC.zip redist/libeay32.dll libeay32.dll
+
+
+    7z rn GloSC.zip redist/ssleay32.dll ssleay32.dll
 artifacts:
-- path: GloSC_$(platform).zip
-  name: GloSC_$(platform)
+- path: GloSC.zip
+  name: GloSC
 deploy:
 - provider: GitHub
   auth_token:
     secure: HdTPh2HVHhlpsjWkSIT89w+4KyDeB9CVCb/FFlzZpYdUTtUqLSAJ5/nOw29be0PG
-  artifact: /GloSC_x..\.zip/
+  artifact: GloSC.zip
   draft: true
   prerelease: true
   force_update: true
