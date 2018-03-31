@@ -22,6 +22,9 @@ limitations under the License.
 #include <iostream>
 #include "SteamTarget.h"
 
+#include "../dependencies/minhook/include/MinHook.h"
+
+
 bool TargetOverlay::init(bool hidden, bool overlay_only_config)
 {
 	const sf::VideoMode mode = sf::VideoMode::getDesktopMode();
@@ -86,8 +89,9 @@ void TargetOverlay::overlayLoop()
 					ShowWindow(window_.getSystemHandle(), SW_SHOW);
 				}
 
-
+				MH_DisableHook(&GetForegroundWindow);
 				last_foreground_window_ = GetForegroundWindow();
+				MH_EnableHook(&GetForegroundWindow);
 
 				std::cout << "Saving current ForegorundWindow HWND: " << last_foreground_window_ << std::endl;
 				std::cout << "Activating OverlayWindow" << std::endl;
@@ -142,7 +146,9 @@ void TargetOverlay::onOverlayClosed()
 void TargetOverlay::stealFocus(HWND hwnd)
 {
 	const DWORD dwCurrentThread = GetCurrentThreadId();
+	MH_DisableHook(&GetForegroundWindow);
 	const DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), nullptr);
+	MH_EnableHook(&GetForegroundWindow);
 
 	AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
 
@@ -159,6 +165,7 @@ void TargetOverlay::stealFocus(HWND hwnd)
 	sf::Clock clock;
 	while (!SetForegroundWindow(hwnd) && clock.getElapsedTime().asMilliseconds() < 1000) //try to forcefully set foreground window 
 	{
+		SetActiveWindow(hwnd);
 		Sleep(1);
 	}
 

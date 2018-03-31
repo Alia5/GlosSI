@@ -180,6 +180,7 @@
     <ClInclude Include="..\common\common_hookfuns.h" />
     <ClInclude Include="..\common\Injector.h" />
     <ClInclude Include="..\common\process_alive.h" />
+    <ClInclude Include="ForegroundWindowHook.h" />
     <ClInclude Include="OverlayHookFunction.h" />
     <ClInclude Include="resource.h" />
     <CustomBuild Include="SteamTarget.h">

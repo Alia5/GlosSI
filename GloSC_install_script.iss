@@ -58,6 +58,7 @@ Source: "redist\Install_Update_ViGEm.ps1"; DestDir: "{app}\redist"; Flags: ignor
 Source: "redist\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\OpenSSL License.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dependencies\minhook\MH_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 
 [Icons]

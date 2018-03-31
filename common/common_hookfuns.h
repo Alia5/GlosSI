@@ -18,6 +18,16 @@ limitations under the License.
 #include <Windows.h>
 #include <Psapi.h>
 
+
+
+#include "../dependencies/minhook/include/MinHook.h"
+
+#if defined _M_X64
+#pragma comment(lib, "../packages/minhook.1.3.3/lib/native/lib/libMinHook-x64-v141-mt.lib")
+#elif defined _M_IX86
+#pragma comment(lib, "../dependencies/minhook/build/VC15/lib/Release/libMinHook.x86.lib")
+#endif
+
 namespace hook_commons
 {
 
@@ -86,4 +96,5 @@ DWORD FindPattern(const char * module, const char * pattern, const char * mask)
 
 	return NULL;
 }
+
 }

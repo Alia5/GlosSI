@@ -16,6 +16,7 @@ limitations under the License.
 #include "SteamTarget.h"
 
 #include "OverlayHookFunction.h"
+#include "ForegroundWindowHook.h"
 
 #include "../common/common_hookfuns.h"
 #include "../common/Injector.h"
@@ -39,6 +40,9 @@ limitations under the License.
 
 
 
+
+
+
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 {
 	loguru::init(argc, argv);
@@ -53,6 +57,7 @@ void SteamTarget::init()
 	readIni();
 	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_);
 	initOverlayEvents();
+	fgwinhook::patchForegroundWindow();
 	controller_thread_ = std::make_unique<VirtualControllerThread>(update_rate_);
 	if (enable_controllers_)
 		controller_thread_->run();
@@ -69,6 +74,7 @@ void SteamTarget::init()
 	connect(&sys_tray_icon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 		this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 	connect(*tray_icon_menu_.actions().begin(), SIGNAL(triggered()), this, SLOT(quit()));
+
 }
 
 BOOL SteamTarget::ConsoleCtrlCallback(DWORD dwCtrlType)
