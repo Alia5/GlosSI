@@ -57,7 +57,8 @@ void SteamTarget::init()
 	readIni();
 	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_);
 	initOverlayEvents();
-	fgwinhook::patchForegroundWindow();
+	if (!use_desktop_conf_)
+		fgwinhook::patchForegroundWindow();
 	controller_thread_ = std::make_unique<VirtualControllerThread>(update_rate_);
 	if (enable_controllers_)
 		controller_thread_->run();
