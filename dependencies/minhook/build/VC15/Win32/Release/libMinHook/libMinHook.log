@@ -1,0 +1,5 @@
+﻿  buffer.c
+  hde32.c
+  hook.c
+  trampoline.c
+  libMinHook.vcxproj -> D:\Alia5\Documents\Visual Studio Projects\minhook\build\VC15\lib\Release\libMinHook.x86.lib
