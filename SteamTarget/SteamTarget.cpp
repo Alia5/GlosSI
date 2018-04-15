@@ -229,7 +229,7 @@ void SteamTarget::launchApplication()
 			stream << "@Echo off\n" << batchContents;
 			file.close();
 
-			const QString launchPath = QDir::toNativeSeparators(applicationDirPath()) + "\\launchApp.bat";
+			const QString launchPath = QDir::toNativeSeparators(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0)) + "\\launchApp.bat";
 			QProcess::startDetached("explorer.exe", QStringList() << launchPath);
 
 			if (close_launched_done_)
