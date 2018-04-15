@@ -98,7 +98,7 @@ void GloSC::updateTargetsToNewVersion()
 		const unsigned int version = settings.value("version").toInt();
 		settings.endGroup();
 
-		if (version < GLOSC_VERSION)
+		if (version < GLOSC_VERSION || version >= 0x500)
 			on_pbSave_clicked();
 	}
 }
