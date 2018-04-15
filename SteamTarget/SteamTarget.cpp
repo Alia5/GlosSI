@@ -219,7 +219,7 @@ void SteamTarget::launchApplication()
 		programPath = programPath.mid(0, programPath.lastIndexOf("\\"));
 
 		const QString batchContents = 
-			"cd \"" + programPath + "\"\n"
+			"cd /D \"" + programPath + "\"\n"
 				+ '\"' + QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)) 
 				+ '\"' + " " + QString::fromStdString(launch_app_args_);
 
