@@ -37,10 +37,7 @@ limitations under the License.
 #include <Windows.h>
 #include <atlbase.h>
 #include <Shobjidl.h>
-
-
-
-
+#include <qstandardpaths.h>
 
 
 SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
@@ -50,7 +47,8 @@ SteamTarget::SteamTarget(int& argc, char** argv) : QApplication(argc, argv)
 
 void SteamTarget::init()
 {
-	loguru::add_file("last.log", loguru::Truncate, loguru::Verbosity_INFO);
+	loguru::add_file(QString(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0) + "/last.log").toStdString().c_str(),
+		loguru::Truncate, loguru::Verbosity_INFO);
 	connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
@@ -220,6 +218,7 @@ void SteamTarget::launchApplication()
 									+ '\"' + " " + QString::fromStdString(launch_app_args_);
 
 		QFile file("launchApp.bat");
+		QFile file(QString(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0) + "/launchApp.bat"));
 		if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
 			QTextStream stream(&file);
 			stream << "@Echo off\n" << batchContents;
