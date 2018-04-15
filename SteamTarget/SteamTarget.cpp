@@ -214,10 +214,15 @@ void SteamTarget::launchApplication()
 	{
 		// To get our launched application not get hooked by Steam, we have to launch through Windows explorer
 		// To use arguments, launching using explorer, we have to use a batch file...
-		const QString batchContents = '\"' + QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)) 
-									+ '\"' + " " + QString::fromStdString(launch_app_args_);
 
-		QFile file("launchApp.bat");
+		QString programPath = QDir::toNativeSeparators(QString::fromStdString(launch_app_path_));
+		programPath = programPath.mid(0, programPath.lastIndexOf("\\"));
+
+		const QString batchContents = 
+			"cd \"" + programPath + "\"\n"
+				+ '\"' + QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)) 
+				+ '\"' + " " + QString::fromStdString(launch_app_args_);
+
 		QFile file(QString(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0) + "/launchApp.bat"));
 		if (file.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Truncate)) {
 			QTextStream stream(&file);
