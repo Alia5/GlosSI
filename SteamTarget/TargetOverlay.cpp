@@ -25,12 +25,12 @@ limitations under the License.
 #include "../dependencies/minhook/include/MinHook.h"
 
 
-bool TargetOverlay::init(bool hidden, bool overlay_only_config)
+bool TargetOverlay::init(bool hidden, bool overlay_only_config, int max_fps)
 {
 	const sf::VideoMode mode = sf::VideoMode::getDesktopMode();
 	window_.create(sf::VideoMode(mode.width - 16, mode.height - 32), "GloSC_OverlayWindow");
 	//Window is too large ; always 16 and 32 pixels?  - sf::Style::None breaks transparency!
-	window_.setFramerateLimit(30);
+	window_.setFramerateLimit(max_fps);
 	window_.setPosition({ 0, 0 });
 	last_foreground_window_ = window_.getSystemHandle();
 	makeSfWindowTransparent();

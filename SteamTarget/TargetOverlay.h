@@ -32,7 +32,7 @@ public:
 	TargetOverlay& operator=(TargetOverlay&& other) noexcept = delete;
 	~TargetOverlay() = default;
 
-	bool init(bool hidden = false, bool overlay_only_config = false);
+	bool init(bool hidden = false, bool overlay_only_config = false, int max_fps = 60);
 	void stop();
 
 	void overlayLoop();

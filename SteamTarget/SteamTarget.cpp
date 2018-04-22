@@ -53,7 +53,7 @@ void SteamTarget::init()
 	SetConsoleCtrlHandler(reinterpret_cast<PHANDLER_ROUTINE>(ConsoleCtrlCallback), true);
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	readIni();
-	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_);
+	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_, max_fps_);
 	initOverlayEvents();
 	if (!use_desktop_conf_)
 		fgwinhook::patchForegroundWindow();

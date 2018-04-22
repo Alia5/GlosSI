@@ -79,6 +79,7 @@ private:
 	std::string launch_app_path_ = "";
 	std::string launch_app_args_ = "";
 	int update_rate_ = 5000;
+	int max_fps_ = 60;
 
 	QTimer launch_check_timer_;
 	
