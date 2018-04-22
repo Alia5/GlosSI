@@ -63,7 +63,7 @@ void GloSC::writeIni(QString entryName) const
 	settings.setValue("bEnableOverlay", 0 + ui_.cbOverlay->isChecked());
 	settings.setValue("bEnableControllers", 0 + ui_.cbControllers->isChecked());
 	settings.setValue("bUseDesktopConfig", 0 + ui_.cbUseDesktop->isChecked());
-	settings.setValue("bHookSteam", hook_steam_);
+	settings.setValue("bHookSteam", 0 + hook_steam_);
 	settings.setValue("version", GLOSC_VERSION);
 
 	settings.endGroup();
@@ -96,10 +96,15 @@ void GloSC::updateTargetsToNewVersion()
 		QSettings settings("./targets/" + name + ".ini", QSettings::IniFormat);
 		settings.beginGroup("BaseConf");
 		const unsigned int version = settings.value("version").toInt();
+		hook_steam_ = settings.value("bHookSteam").toBool();
 		settings.endGroup();
 
 		if (version < GLOSC_VERSION || version >= 0x500)
+		{
+			if (version < GLOSC_VERSION && GLOSC_VERSION > 0x203)
+				hook_steam_ = false;
 			on_pbSave_clicked();
+		}
 	}
 }
 
@@ -518,9 +523,6 @@ void GloSC::on_pbUWP_clicked()
 	progDialog.setWindowModality(Qt::WindowModal);
 
 	QList<UWPPair> pairs;
-
-	//QString AppName;
-	//QString AppUMId;
 
 	QStringList AppNames;
 	QStringList AppUMIds;

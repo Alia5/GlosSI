@@ -68,7 +68,7 @@ private:
 	std::unique_ptr<VirtualControllerThread> controller_thread_;
 
 	//Settings from .ini file
-	bool hook_steam_ = true;
+	bool hook_steam_ = false;
 	bool enable_overlay_ = true;
 	bool enable_overlay_only_config_ = false;
 	bool enable_controllers_ = true;

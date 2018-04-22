@@ -71,7 +71,7 @@ private:
 
 	void animate(int to);
 
-	bool hook_steam_ = true;
+	bool hook_steam_ = false;
 
 	bool first_launch_ = false;
 
