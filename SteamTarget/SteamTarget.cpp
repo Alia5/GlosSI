@@ -126,10 +126,14 @@ void SteamTarget::readIni()
 			else if (childkey == "iUpdateRate") {
 				bool isInt = false;
 				update_rate_ = settings.value(childkey).toInt(&isInt);
-				if (!isInt)
+				if (!isInt || update_rate_ < 0)
 					update_rate_ = 5000;
-				if (update_rate_ < 0)
-					update_rate_ = 5000;
+			}
+			else if (childkey == "iRefreshRate") {
+				bool isInt = false;
+				max_fps_ = settings.value(childkey).toInt(&isInt);
+				if (!isInt || max_fps_ < 0)
+					max_fps_ = 60;
 			}
 		}
 		settings.endGroup();
