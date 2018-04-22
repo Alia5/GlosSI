@@ -143,6 +143,9 @@ void SteamTarget::readIni()
 			else if (childkey == "Path") {
 				launch_app_path_ = settings.value(childkey).toString().toStdString();
 			}
+			else if (childkey == "Args") {
+				launch_app_args_ = settings.value(childkey).toString().toStdString();
+			}
 			else if (childkey == "Type") {
 				launch_uwp_ = settings.value(childkey).toString() == QString("UWP");
 			}
@@ -216,11 +219,10 @@ void SteamTarget::launchApplication()
 		// To use arguments, launching using explorer, we have to use a batch file...
 
 		QString programPath = QDir::toNativeSeparators(QString::fromStdString(launch_app_path_));
-		programPath = programPath.mid(0, programPath.lastIndexOf("\\"));
 
 		const QString batchContents = 
-			"cd /D \"" + programPath + "\"\n"
-				+ '\"' + QDir::toNativeSeparators(QString::fromStdString(launch_app_path_)) 
+			"cd /D \"" + programPath.mid(0, programPath.lastIndexOf("\\")) + "\"\n"
+				+ '\"' + programPath.mid(programPath.lastIndexOf("\\")+1)
 				+ '\"' + " " + QString::fromStdString(launch_app_args_);
 
 		QFile file(QString(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0) + "/launchApp.bat"));
