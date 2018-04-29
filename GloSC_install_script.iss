@@ -68,7 +68,7 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [Run]
 Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser;
-Filename: "{win}\sysnative\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-ExecutionPolicy Unrestricted &'{app}\redist\Install_Update_ViGEm.ps1'"; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
+Filename: "{win}\sysnative\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-ExecutionPolicy Unrestricted -NoProfile &'{app}\redist\Install_Update_ViGEm.ps1'"; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
 
 
