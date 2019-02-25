@@ -29,22 +29,6 @@ p {
     width: 100%;
   }
 
-@media only screen and (max-width : 992px) {
-  .parallax-container .section {
-    position: absolute;
-    top: 40%;
-  }
-  #index-banner .section {
-    top: 10%;
-  }
-}
-
-@media only screen and (max-width : 600px) {
-  #index-banner .section {
-    top: 0;
-  }
-}
-
 .icon-block {
   padding: 0 15px;
 }
@@ -54,4 +38,12 @@ p {
 
 footer.page-footer {
   margin: 0;
+}
+
+/* Fix for download buttons on narrow screens */
+:not(.header) + .row.center {
+  margin-top: -20px;
+}
+.row.center > :not(.header) {
+  margin-top: 20px;
 }
