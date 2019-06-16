@@ -15,6 +15,7 @@ limitations under the License.
 */
 #include "EnforceBindings.h"
 #include <vector>
+#include <string>
 #include "../common/common_hookfuns.h"
 
 //stuff for finding the function as well as the injected code

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SteamTarget", "SteamTarget\SteamTarget.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
@@ -56,7 +56,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F7ACD6EA-A3F9-4E3C-8A47-AC10F52B14B9}
 		Qt5Version = 5.10.1_x64
+		SolutionGuid = {F7ACD6EA-A3F9-4E3C-8A47-AC10F52B14B9}
 	EndGlobalSection
 EndGlobal
