@@ -11,6 +11,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnforceBindingDLL", "Enforc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC_Watchdog", "GloSC_Watchdog\GloSC_Watchdog.vcxproj", "{752D3933-73A3-45E4-B139-CCB8C04BE543}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A03AE2A7-1DCF-4EE2-BC45-4A1D973EE621}"
+	ProjectSection(SolutionItems) = preProject
+		GloSC_install_script.iss = GloSC_install_script.iss
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
