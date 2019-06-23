@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "GloSC"
-#define MyAppVersion "2.0.5"
+#define MyAppVersion "2.0.6"
 #define MyAppPublisher "Peter Repukat - FlatspotSoftware"
 #define MyAppURL "htpp://github.com/Alia5/GloSC"
 #define MyAppExeName "GloSC.exe"
@@ -37,29 +37,34 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "build\Win32\Release\GloSC.exe"; DestDir: "{app}"; Flags: ignoreversion;
+Source: "build\Win32\Release\GloSC.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\Win32\Release\GloSC_Watchdog.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\Win32\Release\SteamTarget.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\SFML-2.4.2-x86\bin\sfml-system-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\SFML-2.4.2-x86\bin\sfml-window-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\SFML-2.4.2-x86\bin\sfml-graphics-2.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "License.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.10.1\msvc2015\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.10.1\msvc2015\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.10.1\msvc2015\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.10.1\msvc2015\bin\Qt5Network.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.12.3\msvc2017\bin\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.12.3\msvc2017\bin\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.12.3\msvc2017\bin\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Qt\5.12.3\msvc2017\bin\Qt5Network.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "build\Win32\Release\EnforceBindingDLL.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "qt-license.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Readme.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Qt\5.10.1\msvc2015\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: "C:\Qt\5.12.3\msvc2017\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
 Source: "redist\vc_redist_x86.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
-Source: "redist\Install_Update_ViGEm.ps1"; DestDir: "{app}\redist"; Flags: ignoreversion
 Source: "redist\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\OpenSSL License.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dependencies\minhook\MH_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-
+;
+; NOTE: ViGEmBus installer and KB3033929 MSU's have to be downloaded separately and placed in the source redist directory
+;
+Source: "redist\ViGEmBus_Setup.exe"; DestDir: "{app}\redist"; Flags: ignoreversion solidbreak
+Source: "redist\ViGEmBus-LICENSE.txt"; DestDir: "{app}\redist"; Flags: ignoreversion
+Source: "redist\Windows6.1-KB3033929-x64.msu"; DestDir: "{app}\redist"; Flags: ignoreversion solidbreak
+Source: "redist\Windows6.1-KB3033929-x86.msu"; DestDir: "{app}\redist"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -67,8 +72,15 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser;
-Filename: "{win}\sysnative\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-ExecutionPolicy Unrestricted -NoProfile &'{app}\redist\Install_Update_ViGEm.ps1'"; Description: "Installing ViGEm Driver..."; Flags: runascurrentuser
+; vc++ platform redist
+Filename: "{app}\redist\vc_redist_x86.exe"; Parameters: "/quiet /install"; Description: "Installing Redist. packages"; Flags: runascurrentuser
+; vigembus driver install
+Filename: "{app}\redist\ViGEmBus_Setup.exe"; Description: "Install ViGEmBus Driver"; Flags: nowait postinstall skipifsilent
+; vigembus driver pre-reqs (win7 patches) - safe to run silently and let them fail if they're not necessary for this OS version
+Filename: wusa.exe; Parameters: """{app}\redist\Windows6.1-KB3033929-x64.msu"" /quiet"; Description: "Install ViGEmBus Win7 Pre-reqs (Hotfix x64)"
+Filename: wusa.exe; Parameters: """{app}\redist\Windows6.1-KB3033929-x86.msu"" /quiet"; Description: "Install ViGEmBus Win7 Pre-reqs (Hotfix x86)"
+
+; install glosc after prereqs
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: runascurrentuser nowait postinstall skipifsilent
 
 

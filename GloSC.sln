@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SteamTarget", "SteamTarget\SteamTarget.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
@@ -10,6 +10,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnforceBindingDLL", "EnforceBindingDLL\EnforceBindingDLL.vcxproj", "{AFA0047E-7DEE-472A-AF4B-436A30459905}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GloSC_Watchdog", "GloSC_Watchdog\GloSC_Watchdog.vcxproj", "{752D3933-73A3-45E4-B139-CCB8C04BE543}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A03AE2A7-1DCF-4EE2-BC45-4A1D973EE621}"
+	ProjectSection(SolutionItems) = preProject
+		GloSC_install_script.iss = GloSC_install_script.iss
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +62,6 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F7ACD6EA-A3F9-4E3C-8A47-AC10F52B14B9}
-		Qt5Version = 5.10.1_x64
+		Qt5Version = msvc2017
 	EndGlobalSection
 EndGlobal
