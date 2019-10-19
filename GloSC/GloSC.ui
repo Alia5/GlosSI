@@ -289,7 +289,7 @@ Doesn't work if GloSC window is in focus</string>
      </property>
      <property name="text">
       <string>Close shortcut when launched Application closes
-(Disable for Uplay-games!)</string>
+(Disable for some launcher games!)</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pbSave">
