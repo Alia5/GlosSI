@@ -81,6 +81,17 @@ void TargetOverlay::overlayLoop()
 				}
 			}
 
+			if ( sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)
+				&& sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab) ) { // default overlay hotkey
+				
+				//seems to be enough to simulate a keystroke to the overlay window for steam to open it
+				PostMessage(window_.getSystemHandle(), WM_KEYDOWN, VK_SHIFT, 0);
+				PostMessage(window_.getSystemHandle(), WM_KEYDOWN, VK_TAB, 0);
+				Sleep(20);
+				PostMessage(window_.getSystemHandle(), WM_KEYUP, VK_TAB, 0);
+				PostMessage(window_.getSystemHandle(), WM_KEYUP, VK_SHIFT, 0);
+			}
+
 			if (overlay_state_ == 1)
 			{
 
