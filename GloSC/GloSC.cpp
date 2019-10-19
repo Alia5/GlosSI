@@ -494,7 +494,7 @@ void GloSC::on_pbAddToSteam_clicked()
 
 void GloSC::on_pbSearchPath_clicked()
 {
-	QString filePath = QFileDialog::getOpenFileName(this, "Select Game", "", "*.exe");
+	QString filePath = QFileDialog::getOpenFileName(this, "Select Game", "", "*.exe *.url");
 	if (!filePath.isEmpty())
 	{
 		QFileInfo fileInfo(filePath);
