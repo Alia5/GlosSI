@@ -151,7 +151,7 @@ void VirtualControllerThread::controllerLoop()
 						{
 							LOG_F(INFO, "Plugged in controller %d", vigem_target_get_index(vt_x360_[i]));
 							vigem_target_x360_register_notification(driver_, vt_x360_[i],
-							                                        reinterpret_cast<PVIGEM_X360_NOTIFICATION>(&VirtualControllerThread::
+							                                        reinterpret_cast<PFN_VIGEM_X360_NOTIFICATION>(&VirtualControllerThread::
 								                                        controllerCallback));
 						}
 					}

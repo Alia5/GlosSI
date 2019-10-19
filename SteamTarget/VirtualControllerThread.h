@@ -27,7 +27,7 @@ limitations under the License.
 #include <SFML/System.hpp>
 
 #include <Xinput.h>
-#include <ViGEmClient.h>
+#include <ViGEm/Client.h>
 #include <VersionHelpers.h>
 
 class VirtualControllerThread
