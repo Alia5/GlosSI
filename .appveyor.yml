@@ -1,42 +1,17 @@
-version: 2.0.5.{build}
+version: 2.0.6.{build}
 pull_requests:
   do_not_increment_build_number: true
 branches:
   only:
   - master
 skip_tags: true
-image: Visual Studio 2017
+image: Visual Studio 2019
 configuration: Release
 environment:
   matrix:
   - platform: x86
-    QTDIR: C:\Qt\5.10.1\msvc2015
+    QTDIR: C:\Qt\5.13.1\msvc2017
     OUTNAME: Win32
 build:
   project: GloSC.sln
   verbosity: normal
-after_build:
-- cmd: >-
-    7z a GloSC.zip TargetConfig.ini License.txt qt-license.txt dependencies/minhook/MH_LICENSE.txt Readme.md Build_Install.md %APPVEYOR_BUILD_FOLDER%/build/Win32/%configuration%/*.exe %APPVEYOR_BUILD_FOLDER%/build/Win32/%configuration%/*.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-system-2.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-window-2.dll %APPVEYOR_BUILD_FOLDER%/dependencies/SFML-2.4.2-x86/bin/sfml-graphics-2.dll redist/* %QTDIR%/bin/Qt5Core.dll %QTDIR%/bin/Qt5Gui.dll %QTDIR%/bin/Qt5Widgets.dll %QTDIR%/plugins/platforms/qwindows.dll
-
-
-    7z rn GloSC.zip qwindows.dll platforms/qwindows.dll
-
-
-    7z rn GloSC.zip redist/libeay32.dll libeay32.dll
-
-
-    7z rn GloSC.zip redist/ssleay32.dll ssleay32.dll
-artifacts:
-- path: GloSC.zip
-  name: GloSC
-deploy:
-- provider: GitHub
-  auth_token:
-    secure: HdTPh2HVHhlpsjWkSIT89w+4KyDeB9CVCb/FFlzZpYdUTtUqLSAJ5/nOw29be0PG
-  artifact: GloSC.zip
-  draft: true
-  prerelease: true
-  force_update: true
-  on:
-    branch: master
