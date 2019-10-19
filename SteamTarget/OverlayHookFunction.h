@@ -32,8 +32,8 @@ namespace overlay_hook
 
 		//excute overrriden instructions 
 		__asm {
-			push esi
-			mov byte ptr ds : [esi + 0x28], 1
+			push eax
+			mov byte ptr ds : [edi + 0x38], 1
 		}
 
 		//our hook code...
@@ -56,8 +56,8 @@ namespace overlay_hook
 	{
 		//excute overrriden instructions 
 		__asm {
-			mov dword ptr ds : [esi + 0x24], 0
-			mov byte ptr ds : [esi + 0x28], 0
+			push eax
+			mov byte ptr ds : [edi + 0x38] , 0
 		}
 
 		//our hook code...

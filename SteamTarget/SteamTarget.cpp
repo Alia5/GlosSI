@@ -54,7 +54,6 @@ void SteamTarget::init()
 	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 	readIni();
 	target_overlay_.init(!enable_overlay_, enable_overlay_only_config_, max_fps_);
-	initOverlayEvents();
 	if (!use_desktop_conf_)
 		fgwinhook::patchForegroundWindow();
 	controller_thread_ = std::make_unique<VirtualControllerThread>(update_rate_);
@@ -65,6 +64,9 @@ void SteamTarget::init()
 	launchWatchdog();
 	if (launch_game_)
 		launchApplication();
+
+	initOverlayEvents();
+
 
 	sys_tray_icon_.setIcon(QIcon(":/SteamTarget/Resources/GloSC_Icon.png"));
 	tray_icon_menu_.addAction("Quit");
@@ -170,22 +172,9 @@ void SteamTarget::initOverlayEvents()
 
 		if (addressOpen != 0)
 		{
-			DWORD addressClosed = 0;
-
-			for (DWORD i = 0; i < 1024; i++)	//search next signature relativ to "addressOpened"
-			{
-				bool found = true;
-				for (DWORD j = 0; j < std::string(overlay_closed_func_mask).length(); j++)
-					found &=
-						overlay_closed_func_mask[j] == '?' || 
-					overlay_closed_func_sig[j] == *reinterpret_cast<char*>(addressOpen + j + i);
-
-				if (found)
-				{
-					addressClosed = addressOpen + i;
-					break;
-				}
-			}
+			DWORD addressClosed = hook_commons::FindPattern(overlay_module_name,
+				overlay_closed_func_sig,
+				overlay_closed_func_mask);
 
 			if (addressClosed != 0)
 			{

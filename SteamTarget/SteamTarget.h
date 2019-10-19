@@ -95,11 +95,11 @@ private:
 #else
 	constexpr static const char* overlay_module_name = "GameOverlayRenderer.dll";
 
-	constexpr static const char* overlay_open_func_sig = "\x56\xC6\x46\x28\x01";
+	constexpr static const char* overlay_open_func_sig = "\x50\xC6\x47\x38\x01";
 	constexpr static const char* overlay_open_func_mask = "xxxxx";
 
-	constexpr static const char* overlay_closed_func_sig = "\xC7\x46\x24\x00\x00\x00\x00\xC6\x46\x28\x00";
-	constexpr static const char* overlay_closed_func_mask = "xxxxxxxxxxx";
+	constexpr static const char* overlay_closed_func_sig = "\x50\xC6\x47\x38\x00";
+	constexpr static const char* overlay_closed_func_mask = "xxxxx";
 
 #endif
 
