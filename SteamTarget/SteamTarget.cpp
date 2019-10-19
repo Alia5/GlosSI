@@ -226,7 +226,7 @@ void SteamTarget::launchApplication()
 
 		const QString batchContents = 
 			"cd /D \"" + programPath.mid(0, programPath.lastIndexOf("\\")) + "\"\n"
-				+ '\"' + programPath.mid(programPath.lastIndexOf("\\")+1)
+				+ "start \"\" " + '\"' + programPath.mid(programPath.lastIndexOf("\\")+1)
 				+ '\"' + " " + QString::fromStdString(launch_app_args_);
 
 		QFile file(QString(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0) + "/launchApp.bat"));
