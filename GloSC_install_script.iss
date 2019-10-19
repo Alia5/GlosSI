@@ -52,7 +52,7 @@ Source: "build\Win32\Release\EnforceBindingDLL.dll"; DestDir: "{app}"; Flags: ig
 Source: "qt-license.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Readme.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "TargetConfig.ini"; DestDir: "{app}"; Flags: ignoreversion
-Source: "F:\Qt\5.13.1\msvc2017\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
+Source: "D:\Qt\5.13.1\msvc2017\plugins\platforms\qwindows.dll"; DestDir: "{app}\platforms"; Flags: ignoreversion
 Source: "redist\vc_redist_x86.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
 Source: "redist\libeay32.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "redist\ssleay32.dll"; DestDir: "{app}"; Flags: ignoreversion
