@@ -62,7 +62,7 @@ Source: "dependencies\minhook\MH_LICENSE.txt"; DestDir: "{app}"; Flags: ignoreve
 ;
 ; NOTE: ViGEmBus installer and KB3033929 MSU's have to be downloaded separately and placed in the source redist directory
 ;
-Source: "redist\ViGEmBus_Setup_1.16.115.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "redist\ViGEmBus_Setup_1.16.115.exe"; DestDir: "{app}\redist"; Flags: ignoreversion
 Source: "redist\ViGEmBus-LICENSE.txt"; DestDir: "{app}\redist"; Flags: ignoreversion
 
 [Icons]
