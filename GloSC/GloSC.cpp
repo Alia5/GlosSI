@@ -16,6 +16,17 @@ limitations under the License.
 #include "GloSC.h"
 #include <memory>
 #include "UpdateChecker.h"
+#include <collection.h>
+#include <appmodel.h>
+#include <shlwapi.h>
+#include <strsafe.h>
+#include <windows.h>
+#include <appxpackaging.h>
+#pragma comment(lib, "Shlwapi.lib")
+
+using namespace Windows::Management::Deployment;
+using namespace Windows::Foundation::Collections;
+
 
 GloSC::GloSC(QWidget *parent)
 	: QMainWindow(parent), updater_(this)
@@ -508,139 +519,206 @@ void GloSC::on_pbSearchPath_clicked()
 
 void GloSC::on_pbUWP_clicked()
 {
-	auto settings = std::make_unique<QSettings>(R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId)", QSettings::NativeFormat);
 
-	QStringList childs = settings->childGroups();
-	QStringList packages;
+	PackageManager^ packageManager = ref new PackageManager();
+	IIterable<Windows::ApplicationModel::Package^>^ packages = packageManager->FindPackages();
 
-	for (auto& child : childs)
-	{
-		packages << child;
-	}
+	int packageCount = 0;
+	// Only way to get the count of packages is to iterate through the whole collection first
+	std::for_each(Windows::Foundation::Collections::begin(packages), Windows::Foundation::Collections::end(packages),
+		[&](Windows::ApplicationModel::Package^ package)
+		{
+			packageCount += 1;
+		});
 
-
-	QProgressDialog progDialog("Searching for UWP apps...", "Cancel", 0, packages.size(), this);
+	QProgressDialog progDialog("Searching for UWP apps...", "Cancel", 0, packageCount, this);
 	progDialog.setWindowModality(Qt::WindowModal);
-
+	// Without this the progress dialog doesn't update in the lambda function.
+	progDialog.show();
+	QApplication::processEvents();
+	
 	QList<UWPPair> pairs;
 
 	QStringList AppNames;
 	QStringList AppUMIds;
 
-
-	for (auto &package : packages)
-	{
-		progDialog.setValue(packages.indexOf(package));
-
-		if (progDialog.wasCanceled())
+	int currPackage = 0;
+	// Iterate through all the packages
+	std::for_each(Windows::Foundation::Collections::begin(packages), Windows::Foundation::Collections::end(packages),
+		[&](Windows::ApplicationModel::Package^ package)
 		{
-			return;
-		}
-		settings = std::make_unique<QSettings>(R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)" + package, QSettings::NativeFormat);
+			progDialog.setValue(currPackage);
+			progDialog.update();
+			
 
-		
-
-		for (auto& child : settings->childGroups())
-		{
-			if (child == "ActivatableClassId")
+			if (progDialog.wasCanceled())
 			{
-				const auto classIDSettings = std::make_unique<QSettings>(
-					R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)" + package + "\\" + child,
-					QSettings::NativeFormat);
+				return;
+			}
 
-				if (classIDSettings->childGroups().length() > 0)
-				{
-					QString pkgNameCleaned = package.mid(0, package.indexOf("_"));
-					QStringList tmp = package.split("__");
-					if (tmp.size() > 1)
-					{
-						pkgNameCleaned += "_" + tmp.at(1);
-					} else {
-						pkgNameCleaned += package.mid(package.lastIndexOf("_"), package.size()-1);
-					}
+			HRESULT hr = S_OK;
+			IStream* inputStream = NULL;
+			UINT32 pathLen = 0;
+			IAppxManifestReader* manifestReader = NULL;
+			IAppxFactory* appxFactory = NULL;						
+			LPWSTR appId = NULL;
+			LPWSTR manifestAppName = NULL;
+			
+			// Get the package path on disk so we can load the manifest XML and get the PRAID
+			GetPackagePathByFullName(package->Id->FullName->Data(), &pathLen, NULL);
+            
+			if (pathLen > 0) {
 
+				// Length of the path + "\\AppxManifest.xml" that we'll be appending
+				UINT32 manifestLen = pathLen + 20;
+				PWSTR pathBuf = (PWSTR)malloc(manifestLen * sizeof(wchar_t));
 
+				GetPackagePathByFullName(package->Id->FullName->Data(), &pathLen, pathBuf);
+				PWSTR manifest_xml = L"\\AppxManifest.xml";
 
-					QString AppUMId = pkgNameCleaned + "!" + classIDSettings->childGroups().at(0);
+				hr = StringCchCatW(pathBuf, manifestLen, manifest_xml);
 
-					const auto appInfoSettings = std::make_unique<QSettings>(
-						R"(HKEY_CLASSES_ROOT\Extensions\ContractId\Windows.Launch\PackageId\)"
-						+ package + "\\" + child + "\\" + classIDSettings->childGroups().at(0),
-						QSettings::NativeFormat);
+				// Let's ignore a bunch of built in apps and such
+				if (wcsstr(pathBuf, L"SystemApps")) {
+					hr = E_FAIL;
+				}
+				else if (wcsstr(pathBuf, L".NET.Native."))
+					hr = E_FAIL;
+				else if (wcsstr(pathBuf, L".VCLibs."))
+					hr = E_FAIL;
+				else if (wcsstr(pathBuf, L"Microsoft.UI"))
+					hr = E_FAIL;
+				else if (wcsstr(pathBuf, L"Microsoft.Advertising"))
+					hr = E_FAIL;
+				else if (wcsstr(pathBuf, L"Microsoft.Services.Store"))
+					hr = E_FAIL;
 
+				BOOL hasCurrent = FALSE;
 
-					QString AppName = appInfoSettings->value("DisplayName").toString();
+				// Open the manifest XML
+				if (SUCCEEDED(hr)) {
 
-					if (!AppNames.contains(AppName) && !AppUMIds.contains(AppUMId) && AppUMId.size() > 0)
-					{
-						if (AppName.size() != 0)
-							AppNames << AppName;
+					hr = SHCreateStreamOnFileEx(
+						pathBuf,
+						STGM_READ | STGM_SHARE_EXCLUSIVE,
+						0, // default file attributes
+						FALSE, // do not create new file
+						NULL, // no template
+						&inputStream);
+				}
+				if (SUCCEEDED(hr)) {
 
-						AppUMIds << AppUMId;
+					hr = CoCreateInstance(
+						__uuidof(AppxFactory),
+						NULL,
+						CLSCTX_INPROC_SERVER,
+						__uuidof(IAppxFactory),
+						(LPVOID*)(&appxFactory));
+				}
+				if (SUCCEEDED(hr)) {
+					hr = appxFactory->CreateManifestReader(inputStream, &manifestReader);
+				}
 
-						if (AppName.size() == 0)
-						{
-							AppName = "Unknown";
+				// Grab application ID (PRAID) and DisplayName from the XML
+				if (SUCCEEDED(hr)) {
+					IAppxManifestApplicationsEnumerator* applications = NULL;
+					manifestReader->GetApplications(&applications);
+					if (SUCCEEDED(hr)) {
+						hr = applications->GetHasCurrent(&hasCurrent);
+						if (hasCurrent) {
+							IAppxManifestApplication* application = NULL;
+							hr = applications->GetCurrent(&application);
+							if (SUCCEEDED(hr)) {
+								application->GetStringValue(L"Id", &appId);
+								application->GetStringValue(L"DisplayName", &manifestAppName);
+								application->Release();
+							}
 						}
-						else if (AppName.at(0) == '@') {
-							QString packageName = AppName.mid(AppName.indexOf('{') + 1, AppName.size() - 1);
-							packageName = packageName.mid(0, packageName.indexOf('?'));
-							QSettings settings("HKEY_CLASSES_ROOT\\Local Settings\\MrtCache", QSettings::NativeFormat);
+						else {
+							hr = S_FALSE;
+						}
+						applications->Release();
+					}
+					manifestReader->Release();
+					inputStream->Release();
+					
+				}
 
-							QStringList cachedNameChildGroups = settings.childGroups();
-
-							for (auto &childGroup : cachedNameChildGroups)
-							{
-
-								if (childGroup.contains(packageName))
-								{
-									QSettings settings(R"(HKEY_CLASSES_ROOT\Local Settings\MrtCache\)" + childGroup, QSettings::NativeFormat);
-
-									QStringList allKeys = settings.allKeys();
-
-									AppName.replace("/", "\\");
-									for (auto &key : allKeys)
-									{
-										if (key.contains(AppName))
-										{
-											AppName = settings.value(key).toString();
-											break;
-										}
-									}
-
-									break;
+				if (SUCCEEDED(hr)) {
+					PWSTR appNameBuf;
+					QString AppUMId = QString::fromWCharArray(package->Id->FamilyName->Data());
+					QString AppName;
+					if (manifestAppName != NULL)
+					{
+						// If the display name is an indirect string, we'll try and load it using SHLoadIndirectString
+						if (wcsstr(manifestAppName, L"ms-resource:"))
+						{
+							PWSTR res_name = wcsdup(&manifestAppName[12]);
+							appNameBuf = (PWSTR)malloc(1026);
+							LPCWSTR resource_str = L"@{";
+							std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/resources/" + res_name + L"}";
+							PCWSTR res_str = reslookup.c_str();
+							hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
+							// Try several resource paths
+							if (!SUCCEEDED(hr)) {
+								std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/Resources/" + res_name + L"}";
+								PCWSTR res_str = reslookup.c_str();
+								hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
+								// If the third one doesn't work, we give up and use the package name from PackageManager
+								if (!SUCCEEDED(hr)) {
+									std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/" + res_name + L"}";
+									PCWSTR res_str = reslookup.c_str();
+									hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
 								}
 							}
-							if (AppName.at(0) == '@') {
-								AppName = "Unknown";
+
+							QString PRAID = QString::fromWCharArray(appId);
+							CoTaskMemFree(appId);
+							if (!PRAID.isEmpty()) {
+								AppUMId = AppUMId.append("!");
+								AppUMId = AppUMId.append(PRAID);
 							}
+							if (!SUCCEEDED(hr))
+								AppName = QString::fromWCharArray(package->Id->Name->Data());
+							else
+								AppName = QString::fromWCharArray(appNameBuf);
+							free(appNameBuf);
 						}
+						else
+						{
+							appNameBuf = manifestAppName;
+							AppName = QString::fromWCharArray(appNameBuf);
 
-						const UWPPair uwpPair = {
-							AppName,
-							AppUMId,
-						};
-
-						pairs.push_back(uwpPair);
-
+						}
+						
 					}
+					else {
+						AppName = QString::fromWCharArray(package->Id->Name->Data());
+					}
+					
+			
+					const UWPPair uwpPair = {
+						AppName,
+						AppUMId,
+					};
 
-					break;
+					
+					free(pathBuf);
+
+					pairs.push_back(uwpPair);
 				}
-				break;
 			}
-		}
+			currPackage += 1;
+		});
 
-
-	}
 
 	uwp_pairs_ = pairs;
 
 	progDialog.close();
-
 	UWPSelectDialog dialog(this);
 	dialog.setUWPList(uwp_pairs_);
 	int selection = dialog.exec();
+	
 
 	if (selection > -1)
 	{
