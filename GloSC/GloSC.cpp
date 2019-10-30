@@ -672,12 +672,7 @@ void GloSC::on_pbUWP_clicked()
 								}
 							}
 
-							QString PRAID = QString::fromWCharArray(appId);
-							CoTaskMemFree(appId);
-							if (!PRAID.isEmpty()) {
-								AppUMId = AppUMId.append("!");
-								AppUMId = AppUMId.append(PRAID);
-							}
+							
 							if (!SUCCEEDED(hr))
 								AppName = QString::fromWCharArray(package->Id->Name->Data());
 							else
@@ -696,6 +691,12 @@ void GloSC::on_pbUWP_clicked()
 						AppName = QString::fromWCharArray(package->Id->Name->Data());
 					}
 					
+					QString PRAID = QString::fromWCharArray(appId);
+					CoTaskMemFree(appId);
+					if (!PRAID.isEmpty()) {
+						AppUMId = AppUMId.append("!");
+						AppUMId = AppUMId.append(PRAID);
+					}
 			
 					const UWPPair uwpPair = {
 						AppName,
