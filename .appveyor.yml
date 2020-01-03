@@ -15,6 +15,11 @@ environment:
 build:
   project: GloSC.sln
   verbosity: minimal
+artifacts:
+- path: GloSC.zip
+  name: GloSC
+- path: installer/GloSC-installer.exe
+  name: GloSC
 on_success:
 - cmd: >-
     SET QTDIR="C:\Qt\5.13.2\msvc2017"
