@@ -20,7 +20,7 @@ artifacts:
   name: GloSC
 - path: installer/GloSC-installer.exe
   name: GloSC
-on_success:
+before_package:
 - cmd: >-
     SET QTDIR="C:\Qt\5.13.2\msvc2017"
 
