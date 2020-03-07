@@ -36,6 +36,3 @@ before_package:
     "C:\Program Files\7-Zip\7z.exe" rn GloSC.zip redist/libeay32.dll libeay32.dll
 
     "C:\Program Files\7-Zip\7z.exe" rn GloSC.zip redist/ssleay32.dll ssleay32.dll
-
-
-    "C:\Program Files (x86)\Inno Setup 6\iscc.exe" GloSC_install_script.iss
