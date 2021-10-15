@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"uri": "vscode-remote://wsl+arch/home/alia5/glossi/GloSC/GlosSITarget"
+		},
+		{
+			"name": "root",
+			"uri": "vscode-remote://wsl+arch/home/alia5/glossi/GloSC"
+		}
+	],
+	"settings": {}
+}
