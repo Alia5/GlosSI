@@ -32,7 +32,8 @@ limitations under the License.
 //	return SteamTarget::exec();
 //}
 
-int main(int argc, char* argv[]) {
-	SteamTarget target(argc, argv);
-	return target.run();
+int main(int argc, char *argv[])
+{
+    SteamTarget target(argc, argv);
+    return target.run();
 }

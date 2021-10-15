@@ -37,5 +37,6 @@
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll" />
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-window-d-2.dll" />
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-graphics-d-2.dll" />
+    <None Include=".clang-format" />
   </ItemGroup>
 </Project>
