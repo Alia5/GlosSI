@@ -21,10 +21,21 @@
     <ClCompile Include="SteamTarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TargetWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TargetWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll" />
+    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-window-d-2.dll" />
+    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-graphics-d-2.dll" />
   </ItemGroup>
 </Project>
