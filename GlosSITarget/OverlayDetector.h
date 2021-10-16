@@ -17,29 +17,27 @@ limitations under the License.
 #include <functional>
 #include <string>
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
 
 class OverlayDetector {
   public:
-    explicit OverlayDetector(std::function<void(bool)> overlay_changed = [](bool) {});
+#ifdef _WIN32
+    explicit OverlayDetector(std::function<void(bool)> overlay_changed = [](bool) {}, HWND hwnd = nullptr);
+#else
+    explicit OverlayDetector(
+        std::function<void(bool)> overlay_changed = [](bool) {});
+#endif
     void update();
 
   private:
     std::function<void(bool)> overlay_changed_;
-
-
-    uint64_t findFunctionByPattern(
-        const std::string_view &mod_name,
-        const char pattern[],
-        const std::string_view &mask) const;
-
 #ifdef _WIN32
-    static constexpr std::string_view overlay_module_name_ = "GameOverlayRenderer64.dll";
-    static constexpr char open_func_sig_[] = "\xC6\x41\x5C\x01\x48\x8D\x4C\x24\x30";
-    static constexpr std::string_view open_func_mask_ = "xxxxxxxxx";
-    static constexpr char close_func_sig_[] = "\xC6\x41\x5C\x00\x48\x8D\x4C\x24\x40";
-    static constexpr std::string_view close_func_mask_ = "xxxxxxxxx";
-
-#else
-
+    HWND hwnd_;
+    bool overlay_open_ = false;
+    int msg_count_ = 0;
 #endif
+
 };

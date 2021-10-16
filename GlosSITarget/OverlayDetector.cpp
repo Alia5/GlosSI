@@ -18,80 +18,60 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 
 #ifdef _WIN32
-#include <Psapi.h>
 #define NOMINMAX
 #include <Windows.h>
 #endif
 
-
+#ifdef _WIN32
+OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed, HWND hwnd)
+    : overlay_changed_(std::move(overlay_changed)), hwnd_(hwnd)
+{
+}
+#else
 OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed)
     : overlay_changed_(std::move(overlay_changed))
 {
-    auto addr_open = findFunctionByPattern(overlay_module_name_, open_func_sig_, open_func_mask_);
-    auto addr_close = findFunctionByPattern(overlay_module_name_, close_func_sig_, close_func_mask_);
-
-    spdlog::info("Overlay opened function: {0:x}", addr_open);
-    spdlog::info("Overlay closed function: {0:x}", addr_close);
-
-
 }
+#endif
 
 void OverlayDetector::update()
 {
-}
-
-uint64_t OverlayDetector::findFunctionByPattern(
-    const std::string_view &mod_name,
-    const char pattern[],
-    const std::string_view &mask) const
-{
 #ifdef _WIN32
-
-    MODULEINFO mod_info = {NULL};
-    const HMODULE mod = GetModuleHandleA(mod_name.data());
-
-    if (mod == nullptr) {
-        spdlog::error("{} not found!", overlay_module_name_);
-        return 0;
+    // Steam hooks into Windows messages
+    // as long as the overlay is open, every msg (except for input messages?)
+    // get's the message field set to `0`
+    // to detect the overlay, just exploit this.
+    // if the message is 0 3 frames consecutively -> overlay is open
+    // not -> closed
+    //
+    // i'm guessing something very similar is done on linux
+    // however
+    // reversing on linux SUUUUUUUCKS!
+    MSG msg;
+    if (PeekMessage(&msg, hwnd_, 0, 0, PM_NOREMOVE)) {
+        // filter out some messages as not all get altered by steam...
+        if (msg.message < 1000 && msg.message > 0) {
+            return;
+        }
+        if (msg.message == 0 && !overlay_open_) {
+            msg_count_++;
+            if (msg_count_ >= 3) {
+                msg_count_ = 0;
+                overlay_open_ = true;
+                spdlog::info("Overlay opened");
+                overlay_changed_(overlay_open_);
+            }
+        }
+        if (msg.message != 0 && overlay_open_) {
+            msg_count_++;
+            if (msg_count_ >= 3) {
+                msg_count_ = 0;
+                overlay_open_ = false;
+                spdlog::info("Overlay closed");
+                overlay_changed_(overlay_open_);
+            }
+        }
     }
-    GetModuleInformation(GetCurrentProcess(), mod, &mod_info, sizeof(MODULEINFO));
-
-    auto base_addr = reinterpret_cast<uint64_t>(mod_info.lpBaseOfDll);
-    if (base_addr == 0)
-        return NULL;
-
-    spdlog::debug("overlay module found at: {:x}", base_addr);
-
-    const uint64_t mod_size = mod_info.SizeOfImage;
-    const auto pat_length = mask.size();
-    uint64_t pattern_addr = 0;
-
-    for (uint64_t i = 0; i < mod_size - pat_length; i++) {
-        bool found = true;
-        for (uint64_t j = 0; j < pat_length; j++)
-            found &= mask[j] == '?' || pattern[j] == *reinterpret_cast<char *>(base_addr + j + i);
-
-        if (found)
-            pattern_addr = base_addr + i;
-    }
-    if (pattern_addr == 0)
-        return 0;
-
-    spdlog::debug("signature found at: {:x}", pattern_addr);
-
-    constexpr char start_fn_bytes[] = "\x40\x53";
-
-    for (auto i = pattern_addr; i > base_addr; i--) {
-        bool found = true;
-        for (uint64_t j = 0; j < 2; j++)
-            found &= start_fn_bytes[j] == *reinterpret_cast<char *>(i + j);
-
-        if (found)
-            return i;
-    }
-    return 0;
-
-#else
-
 #endif
+
 }
