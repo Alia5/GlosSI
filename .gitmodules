@@ -1,3 +1,9 @@
 [submodule "deps/SFML"]
 	path = deps/SFML
 	url = https://github.com/Alia5/SFML
+[submodule "deps/WinReg"]
+	path = deps/WinReg
+	url = https://github.com/GiovanniDicanio/WinReg
+[submodule "deps/spdlog"]
+	path = deps/spdlog
+	url = https://github.com/gabime/spdlog

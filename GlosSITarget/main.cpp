@@ -20,6 +20,10 @@ limitations under the License.
 
 #include "SteamTarget.h"
 
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 //int CALLBACK WinMain(
 //	_In_ HINSTANCE hInstance,
 //	_In_ HINSTANCE hPrevInstance,
@@ -34,6 +38,22 @@ limitations under the License.
 
 int main(int argc, char *argv[])
 {
+    const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+    console_sink->set_level(spdlog::level::trace);
+#ifdef _WIN32
+    const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("./glossitarget.log", true);
+#else
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("/tmp/glossitarget.log", true);
+#endif
+    file_sink->set_level(spdlog::level::trace);
+    std::vector<spdlog::sink_ptr> sinks{file_sink, console_sink};
+    auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
+    logger->set_level(spdlog::level::trace);
+    logger->flush_on(spdlog::level::info);
+    spdlog::set_default_logger(logger);
+
     SteamTarget target(argc, argv);
-    return target.run();
+    const auto exit = target.run();
+    spdlog::shutdown();
+    return exit;
 }

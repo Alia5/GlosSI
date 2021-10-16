@@ -15,6 +15,7 @@ limitations under the License.
 */
 #include "TargetWindow.h"
 
+#include <iostream>
 #include <utility>
 
 #include <SFML/Window/Event.hpp>
@@ -24,9 +25,17 @@ limitations under the License.
 #include <dwmapi.h>
 #endif
 
-TargetWindow::TargetWindow(std::function<void()> on_close) : on_close_(std::move(on_close))
+static const bool DEV_MODE = true;
+
+TargetWindow::TargetWindow(std::function<void()> on_close)
+    : on_close_(std::move(on_close))
 {
-    window_.create(sf::VideoMode::getDesktopMode(), "GlosSITarget", sf::Style::None);
+    if (DEV_MODE) {
+        window_.create(sf::VideoMode{1920, 1080}, "GlosSITarget", sf::Style::Default);
+    }
+    else {
+        window_.create(sf::VideoMode::getDesktopMode(), "GlosSITarget", sf::Style::None);
+    }
     window_.setActive(true);
 
 #ifdef _WIN32
@@ -34,12 +43,15 @@ TargetWindow::TargetWindow(std::function<void()> on_close) : on_close_(std::move
     MARGINS margins;
     margins.cxLeftWidth = -1;
     DwmExtendFrameIntoClientArea(hwnd, &margins);
-
-    // always on top
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    if (!DEV_MODE) {
+        // always on top
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
 #endif
 
-    setClickThrough(true);
+    if (!DEV_MODE) {
+        setClickThrough(true);
+    }
 }
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
@@ -70,8 +82,13 @@ void TargetWindow::update()
             on_close_();
         }
     }
-    window_.clear(sf::Color::Transparent);
-    //window_.clear(sf::Color(255,0,0,1));
+    if (DEV_MODE) {
+        window_.clear(sf::Color(0, 0, 0, 128));
+    }
+    else {
+        window_.clear(sf::Color::Transparent);
+    }
+
     window_.display();
 }
 

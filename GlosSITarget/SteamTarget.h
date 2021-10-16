@@ -15,7 +15,9 @@ limitations under the License.
 */
 #pragma once
 
+#include "OverlayDetector.h"
 #include "TargetWindow.h"
+
 
 class SteamTarget {
   public:
@@ -25,4 +27,5 @@ class SteamTarget {
   private:
     bool run_ = false;
     TargetWindow window_;
+    OverlayDetector detector_;
 };

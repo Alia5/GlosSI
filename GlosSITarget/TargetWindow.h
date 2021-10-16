@@ -30,4 +30,5 @@ class TargetWindow {
   private:
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
+
 };
