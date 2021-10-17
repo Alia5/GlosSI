@@ -40,7 +40,11 @@ int SteamTarget::run()
 void SteamTarget::onOverlayChanged(bool overlay_open)
 {
     window_.setClickThrough(!overlay_open);
-    focusWindow(target_window_handle_);
+    if (overlay_open) {
+        focusWindow(target_window_handle_);
+    } else {
+        focusWindow(last_foreground_window_);
+    }
 }
 
 void SteamTarget::focusWindow(WindowHandle hndl)
