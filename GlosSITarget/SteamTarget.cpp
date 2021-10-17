@@ -15,7 +15,11 @@ limitations under the License.
 */
 #include "SteamTarget.h"
 
-SteamTarget::SteamTarget(int argc, char *argv[]) : window_([this] { run_ = false; })
+#include <regex>
+#include <WinReg/WinReg.hpp>
+#include <vdf_parser.hpp>
+#include <SFML/Window/Keyboard.hpp>
+
 SteamTarget::SteamTarget(int argc, char *argv[])
     : window_([this] { run_ = false; }),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }), target_window_handle_(window_.getSystemHandle())
@@ -70,4 +74,54 @@ void SteamTarget::focusWindow(WindowHandle hndl)
     }
 
 #endif
+}
+
+std::wstring SteamTarget::getSteamPath()
+{
+#ifdef _WIN32
+    // TODO: check if keys/value exist
+    // steam should always be open and have written reg values...
+    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
+    return key.GetStringValue(L"SteamPath");
+#else
+    return L""; // TODO
+#endif
+}
+
+std::wstring SteamTarget::getSteamUserId()
+{
+#ifdef _WIN32
+    // TODO: check if keys/value exist
+    // steam should always be open and have written reg values...
+    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
+    return std::to_wstring( key.GetDwordValue(L"ActiveUser"));
+#else
+    return L""; // TODO
+#endif
+}
+
+std::vector<std::string> SteamTarget::getOverlayHotkey()
+{
+    const auto steam_path = getSteamPath();
+    const auto user_id = getSteamUserId();
+
+    const auto config_path = steam_path + std::wstring(user_data_path_) + user_id + std::wstring(config_file_name_);
+    std::ifstream config_file(config_path);
+    // TODO: check if file exists
+    auto root = tyti::vdf::read(config_file);
+
+    auto children = root.childs["system"];
+    auto hotkeys = children->attribs.at("InGameOverlayShortcutKey");
+
+    // has anyone more than 4 keys to open overlay?!
+    std::smatch m;
+    if(!std::regex_match(hotkeys, m, std::regex(R"((.*?)\s*?(.*?)\s*?(.*?)\s*?(.*?))"))) {
+        return {"Shift", "Tab"};
+    }
+
+    std::vector<std::string> res;
+    for (auto i = 1; i < m.size(); i++) {
+        res.emplace_back(m[i]);
+    }
+    return res;
 }

@@ -25,7 +25,21 @@ class SteamTarget {
     int run();
 
   private:
+    void onOverlayChanged(bool overlay_open);
+    void focusWindow(WindowHandle hndl);
+    std::wstring getSteamPath();
+    std::wstring getSteamUserId();
+    std::vector<std::string> getOverlayHotkey();
+
     bool run_ = false;
+    std::vector<std::string> overlay_hotkey_ = getOverlayHotkey();
+
     TargetWindow window_;
     OverlayDetector detector_;
+    WindowHandle last_foreground_window_ = nullptr;
+    WindowHandle target_window_handle_;
+
+    static constexpr std::wstring_view user_data_path_ = L"/userdata/";
+    static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";
+    static constexpr std::string_view hotkey_name_ = "InGameOverlayShortcutKey ";
 };
