@@ -30,6 +30,9 @@
     <ClCompile Include="..\deps\subhook\subhook.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputRedirector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\deps\subhook\subhook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputRedirector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

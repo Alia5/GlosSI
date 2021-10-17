@@ -80,15 +80,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -129,7 +129,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,10 +147,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\deps\subhook\subhook.c" />
+    <ClCompile Include="InputRedirector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OverlayDetector.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
@@ -158,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\deps\subhook\subhook.h" />
+    <ClInclude Include="InputRedirector.h" />
     <ClInclude Include="OverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />

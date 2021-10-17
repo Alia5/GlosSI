@@ -15,6 +15,7 @@ limitations under the License.
 */
 #pragma once
 
+#include "InputRedirector.h"
 #include "OverlayDetector.h"
 
 #include "TargetWindow.h"
@@ -50,6 +51,7 @@ class SteamTarget {
     bool run_ = false;
     std::vector<std::string> overlay_hotkey_ = getOverlayHotkey();
 
+    InputRedirector input_redirector_;
     TargetWindow window_;
     OverlayDetector detector_;
     WindowHandle last_foreground_window_ = nullptr;

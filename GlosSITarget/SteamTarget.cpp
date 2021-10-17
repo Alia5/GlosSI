@@ -50,11 +50,13 @@ int SteamTarget::run()
 {
     run_ = true;
     keepControllerConfig(true);
+    input_redirector_.run();
     while (run_) {
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
     }
+    input_redirector_.stop();
     return 1;
 }
 
