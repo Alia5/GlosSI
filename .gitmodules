@@ -13,3 +13,6 @@
 [submodule "deps/ValveFileVDF"]
 	path = deps/ValveFileVDF
 	url = https://github.com/TinyTinni/ValveFileVDF
+[submodule "deps/ViGEmClient"]
+	path = deps/ViGEmClient
+	url = https://github.com/ViGEm/ViGEmClient
