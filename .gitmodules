@@ -7,3 +7,6 @@
 [submodule "deps/spdlog"]
 	path = deps/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "deps/ValveFileVDF"]
+	path = deps/ValveFileVDF
+	url = https://github.com/TinyTinni/ValveFileVDF
