@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+// Redfine window handle, should impl. change
 #ifdef _WIN32
 #include <Windows.h>
 using WindowHandle = HWND;

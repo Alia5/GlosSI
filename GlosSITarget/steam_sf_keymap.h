@@ -19,6 +19,7 @@ std::unordered_map<std::string, sf::Keyboard::Key> sfkey = {
     {"Space", sf::Keyboard::Key::Space},
     {"Backspace", sf::Keyboard::Key::Backspace},
     {"Enter", sf::Keyboard::Key::Enter},
+    {"KEY_TAB", sf::Keyboard::Key::Tab},
     // TODO: more special keys with keylayout mapping... nope..
     {"KEY_0", sf::Keyboard::Key::Num0},
     {"KEY_1", sf::Keyboard::Key::Num1},
@@ -72,6 +73,7 @@ std::unordered_map<std::string, uint8_t> winkey = {
     {"Space", VK_SPACE},
     {"Backspace", VK_BACK},
     {"Enter", VK_RETURN},
+    {"KEY_TAB", VK_TAB},
     // TODO: more special keys with keylayout mapping... nope..
     {"KEY_0", 0x30},
     {"KEY_1", 0x31},

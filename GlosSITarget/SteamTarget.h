@@ -31,6 +31,14 @@ class SteamTarget {
     std::wstring getSteamUserId();
     std::vector<std::string> getOverlayHotkey();
 
+    /*
+     * Run once per frame
+     * detects steam configured overlay hotkey, and simulates key presses to window
+     *
+     * actually opens the overlay, even if window is not currently focused.
+     */
+    void overlayHotkeyWorkaround();
+
     bool run_ = false;
     std::vector<std::string> overlay_hotkey_ = getOverlayHotkey();
 

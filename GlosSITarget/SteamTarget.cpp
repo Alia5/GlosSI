@@ -15,10 +15,14 @@ limitations under the License.
 */
 #include "SteamTarget.h"
 
-#include <regex>
-#include <WinReg/WinReg.hpp>
-#include <vdf_parser.hpp>
+#include "steam_sf_keymap.h"
+
 #include <SFML/Window/Keyboard.hpp>
+#include <WinReg/WinReg.hpp>
+#include <numeric>
+#include <regex>
+#include <spdlog/spdlog.h>
+#include <vdf_parser.hpp>
 
 SteamTarget::SteamTarget(int argc, char *argv[])
     : window_([this] { run_ = false; }),
@@ -33,6 +37,7 @@ int SteamTarget::run()
     while (run_) {
         detector_.update();
         window_.update();
+        overlayHotkeyWorkaround();
     }
     return 1;
 }
@@ -42,7 +47,8 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
     window_.setClickThrough(!overlay_open);
     if (overlay_open) {
         focusWindow(target_window_handle_);
-    } else {
+    }
+    else {
         focusWindow(last_foreground_window_);
     }
 }
@@ -71,8 +77,7 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 
     //try to forcefully set foreground window at least a few times
     sf::Clock clock;
-    while (!SetForegroundWindow(hndl) && clock.getElapsedTime().asMilliseconds() < 20)
-    {
+    while (!SetForegroundWindow(hndl) && clock.getElapsedTime().asMilliseconds() < 20) {
         SetActiveWindow(hndl);
         Sleep(1);
     }
@@ -98,7 +103,7 @@ std::wstring SteamTarget::getSteamUserId()
     // TODO: check if keys/value exist
     // steam should always be open and have written reg values...
     winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-    return std::to_wstring( key.GetDwordValue(L"ActiveUser"));
+    return std::to_wstring(key.GetDwordValue(L"ActiveUser"));
 #else
     return L""; // TODO
 #endif
@@ -119,13 +124,50 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
 
     // has anyone more than 4 keys to open overlay?!
     std::smatch m;
-    if(!std::regex_match(hotkeys, m, std::regex(R"((.*?)\s*?(.*?)\s*?(.*?)\s*?(.*?))"))) {
-        return {"Shift", "Tab"};
+    if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
+        return {"Shift", "KEY_TAB"};
     }
 
     std::vector<std::string> res;
     for (auto i = 1; i < m.size(); i++) {
-        res.emplace_back(m[i]);
+        const auto s = std::string(m[i]);
+        if (!s.empty()) {
+            res.push_back(s);
+        }
     }
+    spdlog::info("Detected Overlay hotkeys: {}", std::accumulate(
+                                                     res.begin() + 1, res.end(), res[0],
+                                                     [](auto acc, const auto curr) { return acc += "+" + curr; }));
     return res;
+}
+
+void SteamTarget::overlayHotkeyWorkaround()
+{
+    static bool pressed = false;
+    if (std::all_of(overlay_hotkey_.begin(), overlay_hotkey_.end(),
+                    [](const auto &key) {
+                        return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
+                    })) {
+        pressed = true;
+        std::for_each(
+            overlay_hotkey_.begin(), overlay_hotkey_.end(), [this](const auto &key) {
+#ifdef _WIN32
+                PostMessage(target_window_handle_, WM_KEYDOWN, keymap::winkey[key], 0);
+#else
+
+#endif
+            });
+        spdlog::debug("Sending Overlay KeyDown events...");
+    } else if (pressed) {
+        pressed = false;
+        std::for_each(
+            overlay_hotkey_.begin(), overlay_hotkey_.end(), [this](const auto &key) {
+#ifdef _WIN32
+                PostMessage(target_window_handle_, WM_KEYUP, keymap::winkey[key], 0);
+#else
+
+#endif
+            });
+        spdlog::debug("Sending Overlay KeyUp events...");
+    }
 }
