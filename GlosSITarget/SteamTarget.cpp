@@ -49,7 +49,6 @@ SteamTarget::SteamTarget(int argc, char *argv[])
 int SteamTarget::run()
 {
     run_ = true;
-    window_.setFpsLimit(90);
     keepControllerConfig(true);
     while (run_) {
         detector_.update();

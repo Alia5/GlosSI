@@ -51,6 +51,17 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
         // always on top
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
     }
+
+    DEVMODE dev_mode = {};
+    dev_mode.dmSize = sizeof(DEVMODE);
+    dev_mode.dmDriverExtra = 0;
+
+    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
+        setFpsLimit(60);
+    }
+    setFpsLimit(dev_mode.dmDisplayFrequency);
+#else
+    setFpsLimit(60);
 #endif
 
     if (!DEV_MODE) {
