@@ -22,17 +22,11 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-#ifdef _WIN32
-OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed, HWND hwnd)
-    : overlay_changed_(std::move(overlay_changed)), hwnd_(hwnd)
-{
-}
-#else
+
 OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed)
     : overlay_changed_(std::move(overlay_changed))
 {
 }
-#endif
 
 void OverlayDetector::update()
 {
@@ -48,7 +42,8 @@ void OverlayDetector::update()
     // however
     // reversing on linux SUUUUUUUCKS!
     MSG msg;
-    if (PeekMessage(&msg, hwnd_, 0, 0, PM_NOREMOVE)) {
+    // okey to use nullptr as hwnd. get EVERY message
+    if (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
         // filter out some messages as not all get altered by steam...
         if (msg.message < 1000 && msg.message > 0) {
             return;

@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\subhook;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
@@ -122,7 +122,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;SPDLOG_WCHAR_TO_UTF8_SUPPORT;SUBHOOK_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;SPDLOG_WCHAR_TO_UTF8_SUPPORT;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -138,7 +138,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SPDLOG_WCHAR_TO_UTF8_SUPPORT;SUBHOOK_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SPDLOG_WCHAR_TO_UTF8_SUPPORT;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -150,16 +150,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\deps\subhook\subhook.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OverlayDetector.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
     <ClCompile Include="TargetWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\deps\subhook\subhook.h" />
     <ClInclude Include="OverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
+    <ClInclude Include="steam_sf_keymap.h" />
     <ClInclude Include="TargetWindow.h" />
   </ItemGroup>
   <ItemGroup>

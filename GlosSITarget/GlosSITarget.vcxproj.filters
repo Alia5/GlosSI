@@ -27,9 +27,6 @@
     <ClCompile Include="OverlayDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\subhook\subhook.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
@@ -41,7 +38,7 @@
     <ClInclude Include="OverlayDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\deps\subhook\subhook.h">
+    <ClInclude Include="steam_sf_keymap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

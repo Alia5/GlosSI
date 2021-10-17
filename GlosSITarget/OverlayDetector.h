@@ -24,18 +24,14 @@ limitations under the License.
 
 class OverlayDetector {
   public:
-#ifdef _WIN32
-    explicit OverlayDetector(std::function<void(bool)> overlay_changed = [](bool) {}, HWND hwnd = nullptr);
-#else
+
     explicit OverlayDetector(
         std::function<void(bool)> overlay_changed = [](bool) {});
-#endif
     void update();
 
   private:
     std::function<void(bool)> overlay_changed_;
 #ifdef _WIN32
-    HWND hwnd_;
     bool overlay_open_ = false;
     int msg_count_ = 0;
 #endif
