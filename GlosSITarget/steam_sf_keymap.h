@@ -5,11 +5,13 @@
 #define QQ(x) #x
 #define QUOTE(x) QQ(x)
 
-#define KEYCONVSF(KEY) \
-    { QUOTE(KEY), sf::Keyboard::Key::KEY }
+#define KEYCONVSF(KEY)                     \
+    {                                      \
+        QUOTE(KEY), sf::Keyboard::Key::KEY \
+    }
 
 namespace keymap {
-std::unordered_map<std::string, sf::Keyboard::Key> sfkey = {
+static std::unordered_map<std::string, sf::Keyboard::Key> sfkey = {
     {"Shift", sf::Keyboard::Key::LShift},
     {"Alt", sf::Keyboard::Key::LAlt},
     {"Ctrl", sf::Keyboard::Key::LControl},
@@ -56,20 +58,31 @@ std::unordered_map<std::string, sf::Keyboard::Key> sfkey = {
     KEYCONVSF(W),
     KEYCONVSF(X),
     KEYCONVSF(Y),
-    KEYCONVSF(Z)
-};
+    KEYCONVSF(Z),
+    {"KEY_F1", sf::Keyboard::Key::F1},
+    {"KEY_F2", sf::Keyboard::Key::F2},
+    {"KEY_F3", sf::Keyboard::Key::F3},
+    {"KEY_F4", sf::Keyboard::Key::F4},
+    {"KEY_F5", sf::Keyboard::Key::F5},
+    {"KEY_F6", sf::Keyboard::Key::F6},
+    {"KEY_F7", sf::Keyboard::Key::F7},
+    {"KEY_F8", sf::Keyboard::Key::F8},
+    {"KEY_F9", sf::Keyboard::Key::F9},
+    {"KEY_F10", sf::Keyboard::Key::F10},
+    {"KEY_F11", sf::Keyboard::Key::F11},
+    {"KEY_F12", sf::Keyboard::Key::F12}};
 
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
 //yep.. there are smarter ways to tho this...
-std::unordered_map<std::string, uint8_t> winkey = {
+static std::unordered_map<std::string, uint8_t> winkey = {
     {"Shift", VK_SHIFT},
     {"Alt", VK_MENU},
     {"Ctrl", VK_CONTROL},
     {"Del", VK_DELETE},
-    {"Ins",VK_INSERT},
-    {"Home",VK_HOME},
+    {"Ins", VK_INSERT},
+    {"Home", VK_HOME},
     {"Space", VK_SPACE},
     {"Backspace", VK_BACK},
     {"Enter", VK_RETURN},
@@ -110,8 +123,18 @@ std::unordered_map<std::string, uint8_t> winkey = {
     {"KEY_W", 0x57},
     {"KEY_X", 0x58},
     {"KEY_Y", 0x59},
-    {"KEY_Z", 0x5A}
-
-};
+    {"KEY_Z", 0x5A},
+    {"KEY_F1", VK_F1},
+    {"KEY_F2", VK_F2},
+    {"KEY_F3", VK_F3},
+    {"KEY_F4", VK_F4},
+    {"KEY_F5", VK_F5},
+    {"KEY_F6", VK_F6},
+    {"KEY_F7", VK_F7},
+    {"KEY_F8", VK_F8},
+    {"KEY_F9", VK_F9},
+    {"KEY_F10", VK_F10},
+    {"KEY_F11", VK_F11},
+    {"KEY_F12", VK_F12}};
 #endif
-}
+} // namespace keymap

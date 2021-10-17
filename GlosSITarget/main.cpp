@@ -24,19 +24,21 @@ limitations under the License.
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-//int CALLBACK WinMain(
-//	_In_ HINSTANCE hInstance,
-//	_In_ HINSTANCE hPrevInstance,
-//	_In_ LPSTR     lpCmdLine,
-//	_In_ int       nCmdShow
-//)
-//{
-//	SteamTarget target(__argc, __argv);
-//	target.init();
-//	return SteamTarget::exec();
-//}
-
+#define CONSOLE
+#ifdef _WIN32
+#ifdef CONSOLE
 int main(int argc, char *argv[])
+#else
+int CALLBACK WinMain(
+	_In_ HINSTANCE hInstance,
+	_In_ HINSTANCE hPrevInstance,
+	_In_ LPSTR     lpCmdLine,
+	_In_ int       nCmdShow
+)
+#endif
+#else
+int main(int argc, char *argv[])
+#endif
 {
     const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace);
@@ -51,8 +53,11 @@ int main(int argc, char *argv[])
     logger->set_level(spdlog::level::trace);
     logger->flush_on(spdlog::level::info);
     spdlog::set_default_logger(logger);
-
+#ifdef _WIN32
+    SteamTarget target(__argc, __argv);
+#else
     SteamTarget target(argc, argv);
+#endif
     const auto exit = target.run();
     spdlog::shutdown();
     return exit;

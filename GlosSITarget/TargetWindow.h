@@ -29,17 +29,32 @@ using WindowHandle = int; // ???
 
 class TargetWindow {
   public:
-    explicit TargetWindow(std::function<void()> on_close = []() {});
+    explicit TargetWindow(
+        std::function<void()> on_close = []() {}, std::vector<std::string> screenshot_hotkey = {"KEY_F12"});
 
     void setFpsLimit(unsigned int fps_limit);
     void setClickThrough(bool click_through);
     void update();
     void close();
 
+    /*
+     * Run once per frame
+     * - detects steam configured screenshot hotkey
+     * - takes actual screenshot
+     * - renders it to window
+     * - simulates screenshot keys
+     * - Wait a few millis...
+     * (- steam takes screenshot)
+     * - return to normal
+     * 
+     */
+    void screenShotWorkaround();
+
     WindowHandle getSystemHandle() const;
 
   private:
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
+    std::vector<std::string> screenshot_keys_;
 
 };

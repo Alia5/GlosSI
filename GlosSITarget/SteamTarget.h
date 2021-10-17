@@ -16,8 +16,8 @@ limitations under the License.
 #pragma once
 
 #include "OverlayDetector.h"
-#include "TargetWindow.h"
 
+#include "TargetWindow.h"
 
 class SteamTarget {
   public:
@@ -29,8 +29,16 @@ class SteamTarget {
     void focusWindow(WindowHandle hndl);
     std::wstring getSteamPath();
     std::wstring getSteamUserId();
-    std::vector<std::string> getOverlayHotkey();
 
+    std::wstring steam_path_ = getSteamPath();
+    std::wstring steam_user_id_ = getSteamUserId();
+
+    std::vector<std::string> getOverlayHotkey();
+    std::vector<std::string> getScreenshotHotkey();
+
+    // Keep controllerConfig even is window is switched.
+    // On Windoze hooking "GetForeGroundWindow" is enough;
+    void keepControllerConfig(bool keep);
     /*
      * Run once per frame
      * detects steam configured overlay hotkey, and simulates key presses to window
@@ -49,5 +57,6 @@ class SteamTarget {
 
     static constexpr std::wstring_view user_data_path_ = L"/userdata/";
     static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";
-    static constexpr std::string_view hotkey_name_ = "InGameOverlayShortcutKey ";
+    static constexpr std::string_view overlay_hotkey_name_ = "InGameOverlayShortcutKey ";
+    static constexpr std::string_view screenshot_hotkey_name_ = "InGameOverlayScreenshotHotKey ";
 };

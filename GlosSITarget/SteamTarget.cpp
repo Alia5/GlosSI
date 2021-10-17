@@ -24,16 +24,33 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 #include <vdf_parser.hpp>
 
+#include <subhook.h>
+
+#ifdef _WIN32
+subhook::Hook getFgWinHook;
+static HWND target_hwnd = nullptr;
+
+HWND keepForegroundWindow()
+{
+    return target_hwnd;
+}
+
+#endif
+
 SteamTarget::SteamTarget(int argc, char *argv[])
-    : window_([this] { run_ = false; }),
+    : window_([this] { run_ = false; }, getScreenshotHotkey()),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }), target_window_handle_(window_.getSystemHandle())
 {
+#ifdef _WIN32
+    target_hwnd = target_window_handle_;
+#endif
 }
 
 int SteamTarget::run()
 {
     run_ = true;
     window_.setFpsLimit(90);
+    keepControllerConfig(true);
     while (run_) {
         detector_.update();
         window_.update();
@@ -57,11 +74,17 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 {
 #ifdef _WIN32
 
-    //MH_DisableHook(&GetForegroundWindow); // TODO: when GetForegroundWindow hooked, unhook!
-    // store last focused window for later restore
+    if (hndl == target_window_handle_) {
+        spdlog::info("Bring own window to foreground");
+    }
+    else {
+        spdlog::info("Bring window \"{:#x}\" to foreground", reinterpret_cast<uint64_t>(hndl));
+    }
+
+    keepControllerConfig(false); // unhook GetForegroundWindow
     last_foreground_window_ = GetForegroundWindow();
     const DWORD fg_thread = GetWindowThreadProcessId(last_foreground_window_, nullptr);
-    //MH_EnableHook(&GetForegroundWindow); // TODO: when GetForegroundWindow hooked, re-hook!
+    keepControllerConfig(true); // re-hook GetForegroundWindow
 
     // lot's of ways actually bringing our window to foreground...
     const DWORD current_thread = GetCurrentThreadId();
@@ -91,7 +114,9 @@ std::wstring SteamTarget::getSteamPath()
     // TODO: check if keys/value exist
     // steam should always be open and have written reg values...
     winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
-    return key.GetStringValue(L"SteamPath");
+    const auto res = key.GetStringValue(L"SteamPath");
+    spdlog::info(L"Detected Steam Path: {}", res);
+    return res;
 #else
     return L""; // TODO
 #endif
@@ -103,7 +128,9 @@ std::wstring SteamTarget::getSteamUserId()
     // TODO: check if keys/value exist
     // steam should always be open and have written reg values...
     winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-    return std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+    const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+    spdlog::info(L"Detected Steam UserId: {}", res);
+    return res;
 #else
     return L""; // TODO
 #endif
@@ -111,10 +138,7 @@ std::wstring SteamTarget::getSteamUserId()
 
 std::vector<std::string> SteamTarget::getOverlayHotkey()
 {
-    const auto steam_path = getSteamPath();
-    const auto user_id = getSteamUserId();
-
-    const auto config_path = steam_path + std::wstring(user_data_path_) + user_id + std::wstring(config_file_name_);
+    const auto config_path = steam_path_ + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
     std::ifstream config_file(config_path);
     // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
@@ -125,7 +149,8 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
     // has anyone more than 4 keys to open overlay?!
     std::smatch m;
     if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
-        return {"Shift", "KEY_TAB"};
+        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
+        return {"Shift", "KEY_TAB"}; // default
     }
 
     std::vector<std::string> res;
@@ -135,39 +160,97 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
             res.push_back(s);
         }
     }
-    spdlog::info("Detected Overlay hotkeys: {}", std::accumulate(
-                                                     res.begin() + 1, res.end(), res[0],
-                                                     [](auto acc, const auto curr) { return acc += "+" + curr; }));
+    if (res.empty()) {
+        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
+        return {"Shift", "KEY_TAB"}; // default
+    }
+    spdlog::info("Detected Overlay hotkey(s): {}", std::accumulate(
+                                                       res.begin() + 1, res.end(), res[0],
+                                                       [](auto acc, const auto curr) { return acc += "+" + curr; }));
     return res;
+}
+
+std::vector<std::string> SteamTarget::getScreenshotHotkey()
+{
+    const auto config_path = steam_path_ + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    std::ifstream config_file(config_path);
+    // TODO: check if file exists
+    auto root = tyti::vdf::read(config_file);
+
+    auto children = root.childs["system"];
+    auto hotkeys = children->attribs.at("InGameOverlayScreenshotHotKey");
+
+    // has anyone more than 4 keys to screenshot?!
+    std::smatch m;
+    if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
+        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
+        return {"KEY_F12"}; //default
+    }
+
+    std::vector<std::string> res;
+    for (auto i = 1; i < m.size(); i++) {
+        const auto s = std::string(m[i]);
+        if (!s.empty()) {
+            res.push_back(s);
+        }
+    }
+    if (res.empty()) {
+        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
+        return {"KEY_F12"}; //default
+    }
+    spdlog::info("Detected screenshot hotkey(s): {}", std::accumulate(
+                                                          res.begin() + 1, res.end(), res[0],
+                                                          [](auto acc, const auto curr) { return acc += "+" + curr; }));
+    return res;
+}
+
+void SteamTarget::keepControllerConfig(bool keep)
+{
+#ifdef _WIN32
+    if (keep && !getFgWinHook.IsInstalled()) {
+        spdlog::debug("Hooking GetForegroudnWindow (in own process)");
+        getFgWinHook.Install(&GetForegroundWindow, &keepForegroundWindow, subhook::HookFlags::HookFlag64BitOffset);
+        if (!getFgWinHook.IsInstalled()) {
+            spdlog::error("Couldn't install GetForegroundWindow hook!");
+        }
+    }
+    else if (!keep && getFgWinHook.IsInstalled()) {
+        spdlog::debug("Un-Hooking GetForegroudnWindow (in own process)");
+        getFgWinHook.Remove();
+        if (getFgWinHook.IsInstalled()) {
+            spdlog::error("Couldn't un-install GetForegroundWindow hook!");
+        }
+    }
+#endif
 }
 
 void SteamTarget::overlayHotkeyWorkaround()
 {
     static bool pressed = false;
-    if (std::all_of(overlay_hotkey_.begin(), overlay_hotkey_.end(),
-                    [](const auto &key) {
-                        return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
-                    })) {
+    if (std::ranges::all_of(overlay_hotkey_,
+                            [](const auto &key) {
+                                return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
+                            })) {
+        spdlog::debug("Detected overlay hotkey(s)");
         pressed = true;
-        std::for_each(
-            overlay_hotkey_.begin(), overlay_hotkey_.end(), [this](const auto &key) {
+        std::ranges::for_each(overlay_hotkey_, [this](const auto &key) {
 #ifdef _WIN32
-                PostMessage(target_window_handle_, WM_KEYDOWN, keymap::winkey[key], 0);
+            PostMessage(target_window_handle_, WM_KEYDOWN, keymap::winkey[key], 0);
 #else
 
 #endif
-            });
+        });
         spdlog::debug("Sending Overlay KeyDown events...");
-    } else if (pressed) {
+    }
+    else if (pressed) {
         pressed = false;
-        std::for_each(
-            overlay_hotkey_.begin(), overlay_hotkey_.end(), [this](const auto &key) {
+        std::ranges::for_each(overlay_hotkey_, [this](const auto &key) {
 #ifdef _WIN32
-                PostMessage(target_window_handle_, WM_KEYUP, keymap::winkey[key], 0);
+            PostMessage(target_window_handle_, WM_KEYUP, keymap::winkey[key], 0);
 #else
 
 #endif
-            });
+        });
         spdlog::debug("Sending Overlay KeyUp events...");
     }
 }
