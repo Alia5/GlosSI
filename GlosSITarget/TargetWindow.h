@@ -18,6 +18,14 @@ limitations under the License.
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#ifdef _WIN32
+#include <Windows.h>
+using WindowHandle = HWND;
+#else
+using WindowHandle = int; // ???
+#endif
+
+
 class TargetWindow {
   public:
     explicit TargetWindow(std::function<void()> on_close = []() {});
@@ -26,6 +34,8 @@ class TargetWindow {
     void setClickThrough(bool click_through);
     void update();
     void close();
+
+    WindowHandle getSystemHandle() const;
 
   private:
     const std::function<void()> on_close_;

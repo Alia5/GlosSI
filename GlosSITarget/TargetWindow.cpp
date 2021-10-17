@@ -25,7 +25,7 @@ limitations under the License.
 #include <dwmapi.h>
 #endif
 
-static const bool DEV_MODE = true;
+static const bool DEV_MODE = false;
 
 TargetWindow::TargetWindow(std::function<void()> on_close)
     : on_close_(std::move(on_close))
@@ -96,4 +96,9 @@ void TargetWindow::close()
 {
     window_.close();
     on_close_();
+}
+
+WindowHandle TargetWindow::getSystemHandle() const
+{
+    return window_.getSystemHandle();
 }
