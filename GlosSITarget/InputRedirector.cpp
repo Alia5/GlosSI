@@ -41,7 +41,6 @@ InputRedirector::~InputRedirector()
         controller_thread_.join();
     vigem_disconnect(driver_);
     vigem_free(driver_);
-    spdlog::debug("ViGEm Disconnected");
 #endif
 }
 

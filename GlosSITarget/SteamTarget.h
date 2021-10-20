@@ -20,8 +20,11 @@ limitations under the License.
 #include "TargetWindow.h"
 
 #ifdef _WIN32
+#include "HidHide.h"
 #include "InputRedirector.h"
 #endif
+
+#include <filesystem>
 
 class SteamTarget {
   public:
@@ -31,10 +34,10 @@ class SteamTarget {
   private:
     void onOverlayChanged(bool overlay_open);
     void focusWindow(WindowHandle hndl);
-    std::wstring getSteamPath();
-    std::wstring getSteamUserId();
+    std::filesystem::path getSteamPath() const;
+    std::wstring getSteamUserId() const;
 
-    std::wstring steam_path_ = getSteamPath();
+    std::filesystem::path steam_path_ = getSteamPath();
     std::wstring steam_user_id_ = getSteamUserId();
 
     std::vector<std::string> getOverlayHotkey();
@@ -54,7 +57,10 @@ class SteamTarget {
     bool run_ = false;
     std::vector<std::string> overlay_hotkey_ = getOverlayHotkey();
 
+#ifdef _WIN32
+    HidHide hidhide_;
     InputRedirector input_redirector_;
+#endif
     TargetWindow window_;
     OverlayDetector detector_;
     WindowHandle last_foreground_window_ = nullptr;

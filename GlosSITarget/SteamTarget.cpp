@@ -49,14 +49,20 @@ SteamTarget::SteamTarget(int argc, char* argv[])
 int SteamTarget::run()
 {
     run_ = true;
-    keepControllerConfig(true);
+#ifdef  _WIN32
+    hidhide_.hideDevices(steam_path_);
     input_redirector_.run();
+#endif
+    keepControllerConfig(true);
     while (run_) {
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
     }
+#ifdef _WIN32
     input_redirector_.stop();
+    hidhide_.disableHidHide();
+#endif
     return 1;
 }
 
@@ -109,7 +115,7 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 #endif
 }
 
-std::wstring SteamTarget::getSteamPath()
+std::filesystem::path SteamTarget::getSteamPath() const
 {
 #ifdef _WIN32
     // TODO: check if keys/value exist
@@ -123,7 +129,7 @@ std::wstring SteamTarget::getSteamPath()
 #endif
 }
 
-std::wstring SteamTarget::getSteamUserId()
+ std::wstring SteamTarget::getSteamUserId() const
 {
 #ifdef _WIN32
     // TODO: check if keys/value exist
@@ -139,7 +145,7 @@ std::wstring SteamTarget::getSteamUserId()
 
 std::vector<std::string> SteamTarget::getOverlayHotkey()
 {
-    const auto config_path = steam_path_ + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
     std::ifstream config_file(config_path);
     // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
@@ -173,7 +179,7 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
 
 std::vector<std::string> SteamTarget::getScreenshotHotkey()
 {
-    const auto config_path = steam_path_ + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
     std::ifstream config_file(config_path);
     // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
