@@ -17,7 +17,6 @@ limitations under the License.
 
 #include "steam_sf_keymap.h"
 
-#include <iostream>
 #include <utility>
 
 #include <SFML/Window/Event.hpp>
@@ -119,7 +118,7 @@ void TargetWindow::screenShotWorkaround()
 {
 #ifdef _WIN32
     if (std::ranges::all_of(screenshot_keys_,
-                            [](const auto &key) {
+                            [](const auto& key) {
                                 return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
                             })) {
         spdlog::debug("Detected screenshot hotkey(s); Taking screenshot");
@@ -168,10 +167,10 @@ void TargetWindow::screenShotWorkaround()
         sprite.setTexture(texture);
 
         spdlog::debug("Sending screenshot key events and rendering screen...");
-        std::ranges::for_each(screenshot_keys_, [this](const auto &key) {
+        std::ranges::for_each(screenshot_keys_, [this](const auto& key) {
             PostMessage(window_.getSystemHandle(), WM_KEYDOWN, keymap::winkey[key], 0);
         });
-        std::ranges::for_each(screenshot_keys_, [this](const auto &key) {
+        std::ranges::for_each(screenshot_keys_, [this](const auto& key) {
             PostMessage(window_.getSystemHandle(), WM_KEYUP, keymap::winkey[key], 0);
         });
         //actually run event loop, so steam gets notified about keys.

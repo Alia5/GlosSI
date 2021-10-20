@@ -26,7 +26,6 @@ using WindowHandle = HWND;
 using WindowHandle = int; // ???
 #endif
 
-
 class TargetWindow {
   public:
     explicit TargetWindow(
@@ -56,5 +55,4 @@ class TargetWindow {
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
     std::vector<std::string> screenshot_keys_;
-
 };

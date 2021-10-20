@@ -15,14 +15,17 @@ limitations under the License.
 */
 #pragma once
 
-#include "InputRedirector.h"
 #include "OverlayDetector.h"
 
 #include "TargetWindow.h"
 
+#ifdef _WIN32
+#include "InputRedirector.h"
+#endif
+
 class SteamTarget {
   public:
-    explicit SteamTarget(int argc, char *argv[]);
+    explicit SteamTarget(int argc, char* argv[]);
     int run();
 
   private:

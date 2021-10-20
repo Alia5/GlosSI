@@ -1,3 +1,18 @@
+/*
+Copyright 2021 Peter Repukat - FlatspotSoftware
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 #include "InputRedirector.h"
 
 #include <SFML/System/Clock.hpp>
@@ -11,7 +26,8 @@ InputRedirector::InputRedirector()
     vigem_connected_ = VIGEM_SUCCESS(vigem_connect(driver_));
     if (vigem_connected_) {
         spdlog::debug("Connected to ViGEm");
-    } else {
+    }
+    else {
         spdlog::error("Error initializing ViGEm");
         // TODO: setup some mechanic to draw to window...
     }
@@ -39,7 +55,7 @@ void InputRedirector::stop()
 {
     run_ = false;
     if (vigem_connected_) {
-        for (const auto &target : vt_x360_) {
+        for (const auto& target : vt_x360_) {
             vigem_target_remove(driver_, target);
         }
     }
@@ -59,8 +75,9 @@ void InputRedirector::runLoop()
             XINPUT_STATE state{};
             if (XInputGetState(i, &state) == ERROR_SUCCESS) {
                 if (vt_x360_[i] != nullptr) {
-                    vigem_target_x360_update(driver_, vt_x360_[i], *reinterpret_cast<XUSB_REPORT *>(&state.Gamepad));   
-                } else {
+                    vigem_target_x360_update(driver_, vt_x360_[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+                }
+                else {
                     vt_x360_[i] = vigem_target_x360_alloc();
                     // By using VID and PID of Valve's Emulated Controller
                     // ( https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices )
@@ -95,7 +112,8 @@ void InputRedirector::runLoop()
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 if (vt_x360_[i] != nullptr) {
                     if (VIGEM_SUCCESS(vigem_target_remove(driver_, vt_x360_[i]))) {
                         spdlog::info("Unplugged controller {}, {}", i, vigem_target_get_index(vt_x360_[i]));

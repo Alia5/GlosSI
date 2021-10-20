@@ -37,7 +37,7 @@ HWND keepForegroundWindow()
 
 #endif
 
-SteamTarget::SteamTarget(int argc, char *argv[])
+SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }), target_window_handle_(window_.getSystemHandle())
 {
@@ -229,12 +229,12 @@ void SteamTarget::overlayHotkeyWorkaround()
 {
     static bool pressed = false;
     if (std::ranges::all_of(overlay_hotkey_,
-                            [](const auto &key) {
+                            [](const auto& key) {
                                 return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
                             })) {
         spdlog::debug("Detected overlay hotkey(s)");
         pressed = true;
-        std::ranges::for_each(overlay_hotkey_, [this](const auto &key) {
+        std::ranges::for_each(overlay_hotkey_, [this](const auto& key) {
 #ifdef _WIN32
             PostMessage(target_window_handle_, WM_KEYDOWN, keymap::winkey[key], 0);
 #else
@@ -245,7 +245,7 @@ void SteamTarget::overlayHotkeyWorkaround()
     }
     else if (pressed) {
         pressed = false;
-        std::ranges::for_each(overlay_hotkey_, [this](const auto &key) {
+        std::ranges::for_each(overlay_hotkey_, [this](const auto& key) {
 #ifdef _WIN32
             PostMessage(target_window_handle_, WM_KEYUP, keymap::winkey[key], 0);
 #else

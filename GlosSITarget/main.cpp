@@ -27,17 +27,16 @@ limitations under the License.
 #define CONSOLE
 #ifdef _WIN32
 #ifdef CONSOLE
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 #else
 int CALLBACK WinMain(
-	_In_ HINSTANCE hInstance,
-	_In_ HINSTANCE hPrevInstance,
-	_In_ LPSTR     lpCmdLine,
-	_In_ int       nCmdShow
-)
+    _In_ HINSTANCE hInstance,
+    _In_ HINSTANCE hPrevInstance,
+    _In_ LPSTR lpCmdLine,
+    _In_ int nCmdShow)
 #endif
 #else
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 #endif
 {
     const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();

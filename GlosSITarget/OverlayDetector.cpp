@@ -22,7 +22,6 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-
 OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed)
     : overlay_changed_(std::move(overlay_changed))
 {
@@ -68,5 +67,4 @@ void OverlayDetector::update()
         }
     }
 #endif
-
 }

@@ -24,7 +24,6 @@ limitations under the License.
 
 class OverlayDetector {
   public:
-
     explicit OverlayDetector(
         std::function<void(bool)> overlay_changed = [](bool) {});
     void update();
@@ -35,5 +34,4 @@ class OverlayDetector {
     bool overlay_open_ = false;
     int msg_count_ = 0;
 #endif
-
 };
