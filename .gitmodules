@@ -16,3 +16,9 @@
 [submodule "deps/ViGEmClient"]
 	path = deps/ViGEmClient
 	url = https://github.com/ViGEm/ViGEmClient
+[submodule "deps/imgui"]
+	path = deps/imgui
+	url = https://github.com/ocornut/imgui/
+[submodule "deps/imgui-sfml"]
+	path = deps/imgui-sfml
+	url = https://github.com/eliasdaler/imgui-sfml
