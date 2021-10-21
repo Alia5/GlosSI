@@ -22,9 +22,9 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-class OverlayDetector {
+class SteamOverlayDetector {
   public:
-    explicit OverlayDetector(
+    explicit SteamOverlayDetector(
         std::function<void(bool)> overlay_changed = [](bool) {});
     void update();
 

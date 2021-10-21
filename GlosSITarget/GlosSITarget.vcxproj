@@ -155,7 +155,7 @@
     <ClCompile Include="HidHide.cpp" />
     <ClCompile Include="InputRedirector.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OverlayDetector.cpp" />
+    <ClCompile Include="SteamOverlayDetector.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
     <ClCompile Include="TargetWindow.cpp" />
   </ItemGroup>
@@ -163,7 +163,7 @@
     <ClInclude Include="..\deps\subhook\subhook.h" />
     <ClInclude Include="HidHide.h" />
     <ClInclude Include="InputRedirector.h" />
-    <ClInclude Include="OverlayDetector.h" />
+    <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />
     <ClInclude Include="TargetWindow.h" />

@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "OverlayDetector.h"
+#include "SteamOverlayDetector.h"
 
 #include <spdlog/spdlog.h>
 
@@ -22,12 +22,12 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-OverlayDetector::OverlayDetector(std::function<void(bool)> overlay_changed)
+SteamOverlayDetector::SteamOverlayDetector(std::function<void(bool)> overlay_changed)
     : overlay_changed_(std::move(overlay_changed))
 {
 }
 
-void OverlayDetector::update()
+void SteamOverlayDetector::update()
 {
 #ifdef _WIN32
     // Steam hooks into Windows messages

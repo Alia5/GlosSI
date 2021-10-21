@@ -15,7 +15,7 @@ limitations under the License.
 */
 #pragma once
 
-#include "OverlayDetector.h"
+#include "SteamOverlayDetector.h"
 
 #include "TargetWindow.h"
 
@@ -69,7 +69,7 @@ class SteamTarget {
     InputRedirector input_redirector_;
 #endif
     TargetWindow window_;
-    OverlayDetector detector_;
+    SteamOverlayDetector detector_;
     WindowHandle last_foreground_window_ = nullptr;
     static inline WindowHandle target_window_handle_ = nullptr;
 
