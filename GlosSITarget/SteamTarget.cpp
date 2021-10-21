@@ -24,26 +24,12 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 #include <vdf_parser.hpp>
 
-#include <subhook.h>
-
-#ifdef _WIN32
-subhook::Hook getFgWinHook;
-static HWND target_hwnd = nullptr;
-
-HWND keepForegroundWindow()
-{
-    return target_hwnd;
-}
-
-#endif
 
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
-      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }), target_window_handle_(window_.getSystemHandle())
+      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); })
 {
-#ifdef _WIN32
-    target_hwnd = target_window_handle_;
-#endif
+    target_window_handle_ = window_.getSystemHandle();
 }
 
 int SteamTarget::run()
@@ -216,7 +202,7 @@ void SteamTarget::keepControllerConfig(bool keep)
 #ifdef _WIN32
     if (keep && !getFgWinHook.IsInstalled()) {
         spdlog::debug("Hooking GetForegroudnWindow (in own process)");
-        getFgWinHook.Install(&GetForegroundWindow, &keepForegroundWindow, subhook::HookFlags::HookFlag64BitOffset);
+        getFgWinHook.Install(&GetForegroundWindow, &keepFgWindowHookFn, subhook::HookFlags::HookFlag64BitOffset);
         if (!getFgWinHook.IsInstalled()) {
             spdlog::error("Couldn't install GetForegroundWindow hook!");
         }
@@ -230,6 +216,13 @@ void SteamTarget::keepControllerConfig(bool keep)
     }
 #endif
 }
+
+#ifdef _WIN32
+HWND SteamTarget::keepFgWindowHookFn()
+{
+    return target_window_handle_;
+}
+#endif
 
 void SteamTarget::overlayHotkeyWorkaround()
 {

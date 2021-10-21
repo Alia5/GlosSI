@@ -22,6 +22,7 @@ limitations under the License.
 #ifdef _WIN32
 #include "HidHide.h"
 #include "InputRedirector.h"
+#include <subhook.h>
 #endif
 
 #include <filesystem>
@@ -46,6 +47,12 @@ class SteamTarget {
     // Keep controllerConfig even is window is switched.
     // On Windoze hooking "GetForeGroundWindow" is enough;
     void keepControllerConfig(bool keep);
+
+#ifdef _WIN32
+    static HWND keepFgWindowHookFn();
+    static inline subhook::Hook getFgWinHook;
+#endif
+
     /*
      * Run once per frame
      * detects steam configured overlay hotkey, and simulates key presses to window
@@ -64,7 +71,7 @@ class SteamTarget {
     TargetWindow window_;
     OverlayDetector detector_;
     WindowHandle last_foreground_window_ = nullptr;
-    WindowHandle target_window_handle_;
+    static inline WindowHandle target_window_handle_ = nullptr;
 
     static constexpr std::wstring_view user_data_path_ = L"/userdata/";
     static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";
