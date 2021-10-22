@@ -24,23 +24,44 @@ limitations under the License.
 
 #ifdef _WIN32
 #include <SFML/Graphics.hpp>
+#include <VersionHelpers.h>
 #include <Windows.h>
 #include <dwmapi.h>
+
+#if !defined(WM_DPICHANGED)
+#define WM_DPICHANGED 0x02E0
 #endif
 
+#endif
 
 TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::string> screenshot_hotkey)
     : on_close_(std::move(on_close)),
-    screenshot_keys_(std::move(screenshot_hotkey)),
+      screenshot_keys_(std::move(screenshot_hotkey)),
       overlay_(window_, [this]() { close(); })
 {
-
-    window_.create(sf::VideoMode::getDesktopMode(), "GlosSITarget", sf::Style::None);
+    auto desktop_mode = sf::VideoMode::getDesktopMode();
+#ifdef _WIN32
+    // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
+    // Scaling down by 1px each direction is barely noticeable and works.
+    window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
+    //window_.create(sf::VideoMode(1920, 1080, 24), "GlosSITarget");
+#else
+    window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
+#endif
     window_.setActive(true);
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
+    auto dpi = GetWindowDPI(hwnd);
+    spdlog::debug("Screen DPI: {}", dpi);
     // transparent windows window...
+    auto style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~WS_OVERLAPPED;
+    style |= WS_POPUP;
+    SetWindowLong(hwnd, GWL_STYLE, style);
+
+    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
+    DwmEnableBlurBehindWindow(hwnd, &bb);
     MARGINS margins;
     margins.cxLeftWidth = -1;
     DwmExtendFrameIntoClientArea(hwnd, &margins);
@@ -53,9 +74,15 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
 
     if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
         setFpsLimit(60);
-    } else {
+    }
+    else {
         setFpsLimit(dev_mode.dmDisplayFrequency);
     }
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = dpi / 96.f;
+    ImGui::SFML::UpdateFontTexture();
+
 #else
     setFpsLimit(60);
 #endif
@@ -72,10 +99,10 @@ void TargetWindow::setClickThrough(bool click_through)
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
     if (click_through) {
-        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST);
+        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED);
     }
     else {
-        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED);
+        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_COMPOSITED);
     }
 #endif
 }
@@ -83,6 +110,7 @@ void TargetWindow::setClickThrough(bool click_through)
 void TargetWindow::update()
 {
     sf::Event event{};
+
     while (window_.pollEvent(event)) {
         Overlay::ProcessEvent(event);
         if (event.type == sf::Event::Closed) {
@@ -91,7 +119,7 @@ void TargetWindow::update()
         }
     }
 
-    window_.clear(sf::Color::Transparent);
+    window_.clear(sf::Color(0,0,0,0));
     overlay_.update();
     screenShotWorkaround();
     window_.display();
@@ -186,3 +214,36 @@ WindowHandle TargetWindow::getSystemHandle() const
 {
     return window_.getSystemHandle();
 }
+
+#ifdef _WIN32
+// stolen from: https://building.enlyze.com/posts/writing-win32-apps-like-its-2020-part-3/
+typedef HRESULT(WINAPI* PGetDpiForMonitor)(HMONITOR hmonitor, int dpiType, UINT* dpiX, UINT* dpiY);
+WORD TargetWindow::GetWindowDPI(HWND hWnd)
+{
+    // Try to get the DPI setting for the monitor where the given window is located.
+    // This API is Windows 8.1+.
+    HMODULE hShcore = LoadLibraryW(L"shcore");
+    if (hShcore) {
+        PGetDpiForMonitor pGetDpiForMonitor =
+            reinterpret_cast<PGetDpiForMonitor>(GetProcAddress(hShcore, "GetDpiForMonitor"));
+        if (pGetDpiForMonitor) {
+            HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTOPRIMARY);
+            UINT uiDpiX;
+            UINT uiDpiY;
+            HRESULT hr = pGetDpiForMonitor(hMonitor, 0, &uiDpiX, &uiDpiY);
+            if (SUCCEEDED(hr)) {
+                return static_cast<WORD>(uiDpiX);
+            }
+        }
+    }
+
+    // We couldn't get the window's DPI above, so get the DPI of the primary monitor
+    // using an API that is available in all Windows versions.
+    HDC hScreenDC = GetDC(0);
+    int iDpiX = GetDeviceCaps(hScreenDC, LOGPIXELSX);
+    ReleaseDC(0, hScreenDC);
+
+    return static_cast<WORD>(iDpiX);
+}
+
+#endif

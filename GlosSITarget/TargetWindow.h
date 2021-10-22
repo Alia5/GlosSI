@@ -55,6 +55,10 @@ class TargetWindow {
 
     WindowHandle getSystemHandle() const;
 
+#ifdef _WIN32
+    static WORD GetWindowDPI(HWND hWnd);
+#endif
+
   private:
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
