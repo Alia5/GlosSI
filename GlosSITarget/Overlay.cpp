@@ -1,10 +1,12 @@
 #include "Overlay.h"
 
+#include <utility>
+
 #define IMGUI_USER_CONFIG "imconfig.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
 
-Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : window_(window), on_close_(on_close)
+Overlay::Overlay(sf::RenderWindow& window, const std::function<void()>& on_close) : window_(window), on_close_(on_close)
 {
     ImGui::SFML::Init(window_);
     ImGuiIO& io = ImGui::GetIO();
@@ -104,7 +106,7 @@ void Overlay::update()
     if (enabled_) {
         window_.clear(sf::Color(0, 0, 0, 64)); // make window slightly dim screen with overlay
 
-
+        std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });
 
         if (closeButton()) {
             return;
@@ -124,9 +126,14 @@ void Overlay::Shutdown()
     ImGui::SFML::Shutdown();
 }
 
-void Overlay::ShowNotification(const spdlog::details::log_msg& msg)
+void Overlay::AddLog(const spdlog::details::log_msg& msg)
 {
     LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
+}
+
+void Overlay::AddOverlayElem(const std::function<void()>& elem_fn)
+{
+    OVERLAY_ELEMS_.push_back(elem_fn);
 }
 
 void Overlay::showLogs() const

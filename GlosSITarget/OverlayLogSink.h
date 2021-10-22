@@ -14,7 +14,7 @@ class overlay_sink : public spdlog::sinks::base_sink<Mutex> {
   protected:
     void sink_it_(const spdlog::details::log_msg& msg) override
     {
-        Overlay::ShowNotification(msg);
+        Overlay::AddLog(msg);
     }
 
     void flush_() override
