@@ -127,7 +127,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -143,7 +143,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -153,7 +153,6 @@
   <ItemGroup>
     <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp" />
     <ClCompile Include="..\deps\imgui\imgui.cpp" />
-    <ClCompile Include="..\deps\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_widgets.cpp" />
@@ -174,6 +173,7 @@
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="InputRedirector.h" />
     <ClInclude Include="Overlay.h" />
+    <ClInclude Include="OverlayLogSink.h" />
     <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />

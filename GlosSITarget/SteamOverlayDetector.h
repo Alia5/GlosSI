@@ -27,6 +27,7 @@ class SteamOverlayDetector {
     explicit SteamOverlayDetector(
         std::function<void(bool)> overlay_changed = [](bool) {});
     void update();
+    static bool IsSteamInjected();
 
   private:
     std::function<void(bool)> overlay_changed_;

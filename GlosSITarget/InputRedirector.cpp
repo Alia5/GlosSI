@@ -53,6 +53,7 @@ void InputRedirector::run()
 void InputRedirector::stop()
 {
     run_ = false;
+    controller_thread_.join();
     if (vigem_connected_) {
         for (const auto& target : vt_x360_) {
             vigem_target_remove(driver_, target);

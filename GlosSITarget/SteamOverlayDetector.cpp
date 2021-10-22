@@ -68,3 +68,10 @@ void SteamOverlayDetector::update()
     }
 #endif
 }
+
+bool SteamOverlayDetector::IsSteamInjected()
+{
+#ifdef _WIN32
+    return GetModuleHandle(L"GameOverlayRenderer64.dll") != nullptr;
+#endif
+}

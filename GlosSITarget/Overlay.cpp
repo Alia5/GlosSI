@@ -1,9 +1,8 @@
 #include "Overlay.h"
 
 #define IMGUI_USER_CONFIG "imconfig.h"
-#include "imgui.h"
 #include "imgui-SFML.h"
-
+#include "imgui.h"
 
 Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : window_(window), on_close_(on_close)
 {
@@ -84,6 +83,12 @@ void Overlay::setEnabled(bool enabled)
     enabled_ = enabled;
 }
 
+bool Overlay::isEnabled() const
+{
+    return enabled_;
+}
+
+
 bool Overlay::toggle()
 {
     enabled_ = !enabled_;
@@ -94,14 +99,16 @@ void Overlay::update()
 {
     ImGui::SFML::Update(window_, update_clock_.restart());
 
-    bool open = true;
+    showLogs();
+
     if (enabled_) {
         window_.clear(sf::Color(0, 0, 0, 64)); // make window slightly dim screen with overlay
-        ImGui::ShowDemoWindow(&open);
+
+
 
         if (closeButton()) {
             return;
-        }   
+        }
     }
 
     ImGui::SFML::Render(window_);
@@ -117,15 +124,61 @@ void Overlay::Shutdown()
     ImGui::SFML::Shutdown();
 }
 
-void Overlay::ShowNotification(std::string noti_text)
-{}
+void Overlay::ShowNotification(const spdlog::details::log_msg& msg)
+{
+    LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
+}
+
+void Overlay::showLogs() const
+{
+    std::vector<Log> logs;
+    if (enabled_) {
+        logs = LOG_MSGS_;
+    }
+    else {
+        std::ranges::copy_if(LOG_MSGS_,
+                             std::back_inserter(logs),
+                             [](const auto& log) {
+                                 return log.time.time_since_epoch() + std::chrono::seconds(LOG_RETENTION_TIME_) > std::chrono::system_clock::now().time_since_epoch();
+                             });
+    }
+    if (logs.empty())
+        return;
+    if (!enabled_) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {32.f, 32.f});
+        ImGui::Begin("Log", nullptr,
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
+    }
+    else {
+        ImGui::Begin("Log", nullptr);
+    }
+    std::ranges::for_each(LOG_MSGS_, [](const auto& msg) {
+        switch (msg.level) {
+        case spdlog::level::warn:
+            ImGui::TextColored({1.f, 0.8f, 0.f, 1.f}, msg.payload.data());
+            break;
+        case spdlog::level::err:
+            ImGui::TextColored({.8f, 0.0f, 0.f, 1.f}, msg.payload.data());
+            break;
+        case spdlog::level::debug:
+            ImGui::TextColored({.8f, 0.8f, 0.8f, .9f}, msg.payload.data());
+            break;
+        default:
+            ImGui::Text(msg.payload.data());
+        }
+    });
+    ImGui::End();
+    if (!enabled_) {
+        ImGui::PopStyleVar();
+    }
+}
 
 bool Overlay::closeButton() const
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.f, 0.f, 0.0f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.6f, 0.f, 0.f, 0.9f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(1.f, 0.16f, 0.16f, 1.00f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 0.16f, 0.16f, 1.00f));
     ImGui::Begin("##CloseButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     ImGui::SetWindowSize({56 + 24, 32 + 24});
     ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 24, -24});

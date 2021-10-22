@@ -23,8 +23,9 @@ limitations under the License.
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include "OverlayLogSink.h"
 
-#define CONSOLE
+
 #ifdef _WIN32
 #ifdef CONSOLE
 int main(int argc, char* argv[])
@@ -47,7 +48,15 @@ int main(int argc, char* argv[])
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("/tmp/glossitarget.log", true);
 #endif
     file_sink->set_level(spdlog::level::trace);
-    std::vector<spdlog::sink_ptr> sinks{file_sink, console_sink};
+
+    const auto overlay_sink = std::make_shared<spdlog::sinks::overlay_sink_mt>();
+#ifdef _DEBUG
+    overlay_sink->set_level(spdlog::level::debug); // TODO: make configurable
+#else
+    overlay_sink->set_level(spdlog::level::info);
+#endif
+
+    std::vector<spdlog::sink_ptr> sinks{file_sink, console_sink, overlay_sink};
     auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
     logger->set_level(spdlog::level::trace);
     logger->flush_on(spdlog::level::info);

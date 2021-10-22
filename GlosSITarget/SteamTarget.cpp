@@ -35,12 +35,16 @@ SteamTarget::SteamTarget(int argc, char* argv[])
 
 int SteamTarget::run()
 {
-    // TODO: Hide GlosSI overlay not based on time, but on game launch.
-    sf::Clock mock_clock;
-    bool mock_clock_flag = SteamOverlayDetector::IsSteamInjected();
-    if (!mock_clock_flag) {
-        spdlog::warn("Steam Overlay not detected. Keeping GlosSI Overlay!\n\
+    if (!SteamOverlayDetector::IsSteamInjected()) {
+        spdlog::warn("Steam-overlay not detected. Showing GlosSI-overlay!\n\
 Application will not function!");
+        window_.setClickThrough(false);
+        overlay_.setEnabled(true);
+    } else {
+        spdlog::info("Steam-overlay detected.");
+        spdlog::warn("Open/Close Steam-overlay twice to show GlosSI-overlay"); // Just to color output and really get users attention
+        window_.setClickThrough(true);
+        overlay_.setEnabled(false);
     }
 
     run_ = true;
@@ -52,11 +56,6 @@ Application will not function!");
 
     keepControllerConfig(true);
     while (run_) {
-        if (mock_clock_flag && mock_clock.getElapsedTime().asSeconds() > 5) {
-            window_.setClickThrough(true);
-            overlay_.setEnabled(false);
-            mock_clock_flag = false;
-        }
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
@@ -72,7 +71,6 @@ Application will not function!");
 
 void SteamTarget::onOverlayChanged(bool overlay_open)
 {
-    window_.setClickThrough(!overlay_open);
     if (overlay_open) {
         focusWindow(target_window_handle_);
     }
@@ -84,12 +82,22 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
         }
         else {
             if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
-                window_.setClickThrough(!overlay_.toggle());
+                const auto ov_opened = overlay_.toggle();
+                window_.setClickThrough(!ov_opened);
+                if (ov_opened) {
+                    spdlog::info("Opened GlosSI-overlay");
+                    focusWindow(target_window_handle_);
+                } else {
+                    focusWindow(last_foreground_window_);
+                    spdlog::info("Closed GlosSI-overlay");
+                }
             }
             overlay_trigger_flag_ = false;
         }
-
-        focusWindow(last_foreground_window_);
+        if (!overlay_.isEnabled()) {
+            window_.setClickThrough(!overlay_open);
+            focusWindow(last_foreground_window_);
+        }
     }
 }
 
@@ -98,19 +106,23 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 #ifdef _WIN32
 
     if (hndl == target_window_handle_) {
-        spdlog::info("Bring own window to foreground");
+        spdlog::debug("Bring own window to foreground");
     }
     else {
-        spdlog::info("Bring window \"{:#x}\" to foreground", reinterpret_cast<uint64_t>(hndl));
+        spdlog::debug("Bring window \"{:#x}\" to foreground", reinterpret_cast<uint64_t>(hndl));
     }
 
     keepControllerConfig(false); // unhook GetForegroundWindow
-    last_foreground_window_ = GetForegroundWindow();
-    const DWORD fg_thread = GetWindowThreadProcessId(last_foreground_window_, nullptr);
+    const auto current_fgw = GetForegroundWindow();
+    if (current_fgw != target_window_handle_) {
+        last_foreground_window_ = current_fgw;
+    } 
+    const auto fg_thread = GetWindowThreadProcessId(current_fgw, nullptr);
+
     keepControllerConfig(true); // re-hook GetForegroundWindow
 
     // lot's of ways actually bringing our window to foreground...
-    const DWORD current_thread = GetCurrentThreadId();
+    const auto current_thread = GetCurrentThreadId();
     AttachThreadInput(current_thread, fg_thread, TRUE);
 
     SetForegroundWindow(hndl);
@@ -231,14 +243,14 @@ void SteamTarget::keepControllerConfig(bool keep)
 {
 #ifdef _WIN32
     if (keep && !getFgWinHook.IsInstalled()) {
-        spdlog::debug("Hooking GetForegroudnWindow (in own process)");
+        spdlog::debug("Hooking GetForegroundWindow (in own process)");
         getFgWinHook.Install(&GetForegroundWindow, &keepFgWindowHookFn, subhook::HookFlags::HookFlag64BitOffset);
         if (!getFgWinHook.IsInstalled()) {
             spdlog::error("Couldn't install GetForegroundWindow hook!");
         }
     }
     else if (!keep && getFgWinHook.IsInstalled()) {
-        spdlog::debug("Un-Hooking GetForegroudnWindow (in own process)");
+        spdlog::debug("Un-Hooking GetForegroundWindow (in own process)");
         getFgWinHook.Remove();
         if (getFgWinHook.IsInstalled()) {
             spdlog::error("Couldn't un-install GetForegroundWindow hook!");
@@ -261,7 +273,7 @@ void SteamTarget::overlayHotkeyWorkaround()
                             [](const auto& key) {
                                 return sf::Keyboard::isKeyPressed(keymap::sfkey[key]);
                             })) {
-        spdlog::debug("Detected overlay hotkey(s)");
+        spdlog::trace("Detected overlay hotkey(s)");
         pressed = true;
         std::ranges::for_each(overlay_hotkey_, [this](const auto& key) {
 #ifdef _WIN32
@@ -270,7 +282,7 @@ void SteamTarget::overlayHotkeyWorkaround()
 
 #endif
         });
-        spdlog::debug("Sending Overlay KeyDown events...");
+        spdlog::trace("Sending Overlay KeyDown events...");
     }
     else if (pressed) {
         pressed = false;
@@ -281,6 +293,6 @@ void SteamTarget::overlayHotkeyWorkaround()
 
 #endif
         });
-        spdlog::debug("Sending Overlay KeyUp events...");
+        spdlog::trace("Sending Overlay KeyUp events...");
     }
 }
