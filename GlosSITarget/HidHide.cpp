@@ -118,7 +118,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
                 }
                 if (!dev.device_instance_path.empty()) {
                     blacklisted_devices_.push_back(dev.base_container_device_instance_path);
-                }   
+                }
             }
         }
     }
@@ -151,6 +151,14 @@ void HidHide::UnPatchValveHooks()
         }
         else {
             spdlog::error("failed to unpatch SetupDiEnumDeviceInfo");
+        }
+        addr = reinterpret_cast<BYTE*>(GetProcAddress(setupapidll, "SetupDiGetClassDevsW"));
+        if (addr) {
+            UnPatchHook(addr, SETUP_DI_GETCLASSDEVSW_ORIG_BYTES);
+            spdlog::trace("Unpatched SetupDiGetClassDevsW");
+        }
+        else {
+            spdlog::error("failed to unpatch SetupDiGetClassDevsW");
         }
     }
     auto hiddll = GetModuleHandle(L"hid.dll");
