@@ -28,28 +28,24 @@ limitations under the License.
 #include <dwmapi.h>
 #endif
 
-static const bool DEV_MODE = false;
 
 TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::string> screenshot_hotkey)
-    : on_close_(std::move(on_close)), screenshot_keys_(std::move(screenshot_hotkey))
+    : on_close_(std::move(on_close)),
+    screenshot_keys_(std::move(screenshot_hotkey)),
+      overlay_(window_, [this]() { close(); })
 {
-    if (DEV_MODE) {
-        window_.create(sf::VideoMode{1920, 1080}, "GlosSITarget", sf::Style::Default);
-    }
-    else {
-        window_.create(sf::VideoMode::getDesktopMode(), "GlosSITarget", sf::Style::None);
-    }
+
+    window_.create(sf::VideoMode::getDesktopMode(), "GlosSITarget", sf::Style::None);
     window_.setActive(true);
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
+    // transparent windows window...
     MARGINS margins;
     margins.cxLeftWidth = -1;
     DwmExtendFrameIntoClientArea(hwnd, &margins);
-    if (!DEV_MODE) {
-        // always on top
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-    }
+    // always on top
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
     DEVMODE dev_mode = {};
     dev_mode.dmSize = sizeof(DEVMODE);
@@ -57,15 +53,12 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
 
     if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
         setFpsLimit(60);
+    } else {
+        setFpsLimit(dev_mode.dmDisplayFrequency);
     }
-    setFpsLimit(dev_mode.dmDisplayFrequency);
 #else
     setFpsLimit(60);
 #endif
-
-    if (!DEV_MODE) {
-        setClickThrough(true);
-    }
 }
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
@@ -91,19 +84,15 @@ void TargetWindow::update()
 {
     sf::Event event{};
     while (window_.pollEvent(event)) {
+        Overlay::ProcessEvent(event);
         if (event.type == sf::Event::Closed) {
-            window_.close();
-            on_close_();
+            close();
+            return;
         }
     }
 
-    if (DEV_MODE) {
-        window_.clear(sf::Color(0, 0, 0, 128));
-    }
-    else {
-        window_.clear(sf::Color::Transparent);
-    }
-
+    window_.clear(sf::Color::Transparent);
+    overlay_.update();
     screenShotWorkaround();
     window_.display();
 }
@@ -111,7 +100,13 @@ void TargetWindow::update()
 void TargetWindow::close()
 {
     window_.close();
+    Overlay::Shutdown();
     on_close_();
+}
+
+Overlay& TargetWindow::getOverlay()
+{
+    return overlay_;
 }
 
 void TargetWindow::screenShotWorkaround()

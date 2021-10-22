@@ -13,6 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{2c3e6fba-dedb-4076-b773-ef773c7773fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{c54f210b-d322-4887-8bc4-403e6235e7cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\subhook">
+      <UniqueIdentifier>{5923a6d8-ec50-409b-a004-5566024d25d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\subhook">
+      <UniqueIdentifier>{2b9ce4e5-3909-4902-bac0-b68210377d54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui-sfml">
+      <UniqueIdentifier>{70a0a051-1ecd-4e98-9da4-7ecc5fefb467}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui-sfml">
+      <UniqueIdentifier>{5e050d12-af62-455e-afb1-d8a253f06ab8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,14 +45,35 @@
     <ClCompile Include="SteamOverlayDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\subhook\subhook.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InputRedirector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HidHide.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\subhook\subhook.c">
+      <Filter>Source Files\subhook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp">
+      <Filter>Source Files\imgui-sfml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -50,14 +89,26 @@
     <ClInclude Include="steam_sf_keymap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\deps\subhook\subhook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InputRedirector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HidHide.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\imgui\imgui.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\subhook\subhook.h">
+      <Filter>Header Files\subhook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\imgui-sfml\imgui-SFML.h">
+      <Filter>Header Files\imgui-sfml</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #pragma once
+#include "Overlay.h"
+
 #include <functional>
 
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -36,6 +38,8 @@ class TargetWindow {
     void update();
     void close();
 
+    Overlay& getOverlay();
+
     /*
      * Run once per frame
      * - detects steam configured screenshot hotkey
@@ -55,4 +59,6 @@ class TargetWindow {
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
     std::vector<std::string> screenshot_keys_;
+
+    Overlay overlay_;
 };

@@ -25,6 +25,8 @@ limitations under the License.
 #include <subhook.h>
 #endif
 
+#include "Overlay.h"
+
 #include <filesystem>
 
 class SteamTarget {
@@ -69,9 +71,15 @@ class SteamTarget {
     InputRedirector input_redirector_;
 #endif
     TargetWindow window_;
+    Overlay& overlay_;
     SteamOverlayDetector detector_;
     WindowHandle last_foreground_window_ = nullptr;
     static inline WindowHandle target_window_handle_ = nullptr;
+
+    sf::Clock overlay_trigger_clock_;
+    uint32_t overlay_trigger_max_seconds_ = 4;
+    bool overlay_trigger_flag_ = false;
+
 
     static constexpr std::wstring_view user_data_path_ = L"/userdata/";
     static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";

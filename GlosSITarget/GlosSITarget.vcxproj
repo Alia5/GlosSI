@@ -80,14 +80,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -129,7 +129,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,22 +147,33 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp" />
+    <ClCompile Include="..\deps\imgui\imgui.cpp" />
+    <ClCompile Include="..\deps\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\deps\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\deps\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\deps\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\deps\subhook\subhook.c" />
     <ClCompile Include="HidHide.cpp" />
     <ClCompile Include="InputRedirector.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Overlay.cpp" />
     <ClCompile Include="SteamOverlayDetector.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
     <ClCompile Include="TargetWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\deps\imgui-sfml\imgui-SFML.h" />
+    <ClInclude Include="..\deps\imgui\imgui.h" />
     <ClInclude Include="..\deps\subhook\subhook.h" />
     <ClInclude Include="HidHide.h" />
+    <ClInclude Include="imconfig.h" />
     <ClInclude Include="InputRedirector.h" />
+    <ClInclude Include="Overlay.h" />
     <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />

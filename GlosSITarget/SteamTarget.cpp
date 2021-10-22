@@ -27,28 +27,46 @@ limitations under the License.
 
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
-      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); })
+      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
+      overlay_(window_.getOverlay())
 {
     target_window_handle_ = window_.getSystemHandle();
 }
 
 int SteamTarget::run()
 {
+    // TODO: Hide GlosSI overlay not based on time, but on game launch.
+    sf::Clock mock_clock;
+    bool mock_clock_flag = SteamOverlayDetector::IsSteamInjected();
+    if (!mock_clock_flag) {
+        spdlog::warn("Steam Overlay not detected. Keeping GlosSI Overlay!\n\
+Application will not function!");
+    }
+
     run_ = true;
+
 #ifdef  _WIN32
     hidhide_.hideDevices(steam_path_);
     input_redirector_.run();
 #endif
+
     keepControllerConfig(true);
     while (run_) {
+        if (mock_clock_flag && mock_clock.getElapsedTime().asSeconds() > 5) {
+            window_.setClickThrough(true);
+            overlay_.setEnabled(false);
+            mock_clock_flag = false;
+        }
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
     }
+
 #ifdef _WIN32
     input_redirector_.stop();
     hidhide_.disableHidHide();
 #endif
+
     return 1;
 }
 
@@ -59,6 +77,18 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
         focusWindow(target_window_handle_);
     }
     else {
+
+        if (!overlay_trigger_flag_) {
+            overlay_trigger_flag_ = true;
+            overlay_trigger_clock_.restart();
+        }
+        else {
+            if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
+                window_.setClickThrough(!overlay_.toggle());
+            }
+            overlay_trigger_flag_ = false;
+        }
+
         focusWindow(last_foreground_window_);
     }
 }
