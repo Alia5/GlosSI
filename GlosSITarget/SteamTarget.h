@@ -46,6 +46,8 @@ class SteamTarget {
     std::vector<std::string> getOverlayHotkey();
     std::vector<std::string> getScreenshotHotkey();
 
+    bool steam_overlay_present_ = false;
+
     // Keep controllerConfig even is window is switched.
     // On Windoze hooking "GetForeGroundWindow" is enough;
     void keepControllerConfig(bool keep);

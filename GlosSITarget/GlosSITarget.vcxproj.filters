@@ -72,6 +72,9 @@
     <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp">
       <Filter>Source Files\imgui-sfml</Filter>
     </ClCompile>
+    <ClCompile Include="..\deps\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">

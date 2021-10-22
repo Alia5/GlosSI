@@ -27,8 +27,8 @@ limitations under the License.
 
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
-      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
-      overlay_(window_.getOverlay())
+      overlay_(window_.getOverlay()),
+      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); })
 {
     target_window_handle_ = window_.getSystemHandle();
 }
@@ -40,18 +40,20 @@ int SteamTarget::run()
 Application will not function!");
         window_.setClickThrough(false);
         overlay_.setEnabled(true);
+        steam_overlay_present_ = false;
     } else {
         spdlog::info("Steam-overlay detected.");
         spdlog::warn("Open/Close Steam-overlay twice to show GlosSI-overlay"); // Just to color output and really get users attention
         window_.setClickThrough(true);
         overlay_.setEnabled(false);
+        steam_overlay_present_ = true;
     }
 
     run_ = true;
 
 #ifdef  _WIN32
     hidhide_.hideDevices(steam_path_);
-    input_redirector_.run();
+    input_redirector_.run();   
 #endif
 
     keepControllerConfig(true);

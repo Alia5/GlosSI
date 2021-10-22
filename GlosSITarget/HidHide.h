@@ -24,6 +24,7 @@ limitations under the License.
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <SFML/System/Clock.hpp>
 
 class HidHide {
   private:
@@ -65,6 +66,14 @@ class HidHide {
   private:
     HANDLE hidhide_handle = nullptr;
 
+    void enableOverlayElement();
+    sf::Clock overlay_elem_clock_;
+
+    std::vector<std::wstring> blacklisted_devices_;
+    std::vector<SmallHidInfo> avail_devices_;
+    bool hidhide_active_ = false;
+    static constexpr int OVERLAY_ELEM_REFRESH_INTERVAL_S_ = 5; 
+
     static inline constexpr std::array<std::wstring_view, 3> whitelist_executeables_{
         L"GameOverlayUI.exe",
         L"steam.exe",
@@ -74,10 +83,10 @@ class HidHide {
 
     [[nodiscard]] std::vector<std::wstring> getAppWhiteList() const;
     [[nodiscard]] std::vector<std::wstring> getBlackListDevices() const;
-    [[nodiscard]] bool getActive() const;
+    [[nodiscard]] bool getActive();
     void setAppWhiteList(const std::vector<std::wstring>& whitelist) const;
     void setBlacklistDevices(const std::vector<std::wstring>& blacklist) const;
-    void setActive(bool active) const;
+    void setActive(bool active);
 
     [[nodiscard]] DWORD getRequiredOutputBufferSize(IOCTL_TYPE type) const;
 

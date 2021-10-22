@@ -5,6 +5,10 @@
 
 #include <spdlog/spdlog.h>
 
+#define IMGUI_USER_CONFIG "imconfig.h"
+#include "imgui-SFML.h"
+#include "imgui.h"
+
 class Overlay {
   public:
     Overlay(sf::RenderWindow& window, const std::function<void()>& on_close);

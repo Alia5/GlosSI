@@ -1,11 +1,5 @@
 #include "Overlay.h"
 
-#include <utility>
-
-#define IMGUI_USER_CONFIG "imconfig.h"
-#include "imgui-SFML.h"
-#include "imgui.h"
-
 Overlay::Overlay(sf::RenderWindow& window, const std::function<void()>& on_close) : window_(window), on_close_(on_close)
 {
     ImGui::SFML::Init(window_);
@@ -24,14 +18,14 @@ Overlay::Overlay(sf::RenderWindow& window, const std::function<void()>& on_close
     style.ScrollbarRounding = 12;
     style.GrabRounding = 5;
 
-    ImVec4* colors = ImGui::GetStyle().Colors;
+ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.13f, 0.14f, 0.95f);
     colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
     colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
-    colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
-    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 0.05f);
+    colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
     colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
     colors[ImGuiCol_FrameBgHovered] = ImVec4(0.12f, 0.20f, 0.28f, 1.00f);
     colors[ImGuiCol_FrameBgActive] = ImVec4(0.09f, 0.12f, 0.14f, 1.00f);
@@ -107,6 +101,8 @@ void Overlay::update()
         window_.clear(sf::Color(0, 0, 0, 64)); // make window slightly dim screen with overlay
 
         std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });
+
+        ImGui::ShowDemoWindow();
 
         if (closeButton()) {
             return;
