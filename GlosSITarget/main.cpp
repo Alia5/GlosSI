@@ -44,7 +44,16 @@ int main(int argc, char* argv[])
     const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace);
 #ifdef _WIN32
-    const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("./glossitarget.log", true);
+    auto path = std::filesystem::temp_directory_path()
+                    .parent_path()
+                    .parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (!std::filesystem::exists(path))
+        std::filesystem::create_directories(path);
+    path /= "glossitarget.log";
+    const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
 #else
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("/tmp/glossitarget.log", true);
 #endif
