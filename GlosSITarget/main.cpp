@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
     auto path = std::filesystem::temp_directory_path()
                     .parent_path()
+                    .parent_path()
                     .parent_path();
 
     path /= "Roaming";

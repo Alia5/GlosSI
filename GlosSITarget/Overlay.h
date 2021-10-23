@@ -56,4 +56,8 @@ class Overlay {
 
     static inline std::vector<std::function<void()>> OVERLAY_ELEMS_;
 
+#ifdef _WIN32
+    std::string config_file_name_;
+#endif
+
 };

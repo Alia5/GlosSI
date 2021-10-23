@@ -15,21 +15,37 @@ limitations under the License.
 */
 #include "Overlay.h"
 
+#include <filesystem>
 #include <utility>
 
 Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : window_(window), on_close_(std::move(on_close))
 {
     ImGui::SFML::Init(window_);
 
-    //Hack: Trick ImGui::SFML into thinking we already have focus (otherwise only notices after focus-lost)
-    const sf::Event ev(sf::Event::GainedFocus);
-    ProcessEvent(ev);
-
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
+#ifdef _WIN32
+    auto config_path = std::filesystem::temp_directory_path()
+                           .parent_path()
+                           .parent_path()
+                           .parent_path();
+
+    config_path /= "Roaming";
+    config_path /= "GlosSI";
+    if (!std::filesystem::exists(config_path))
+        std::filesystem::create_directories(config_path);
+    config_path /= "imgui.ini";
+    config_file_name_ = config_path.string();
+    io.IniFilename = config_file_name_.data();
+#endif
+
     window.resetGLStates();
+
+    //Hack: Trick ImGui::SFML into thinking we already have focus (otherwise only notices after focus-lost)
+    const sf::Event ev(sf::Event::GainedFocus);
+    ProcessEvent(ev);
 
     auto& style = ImGui::GetStyle();
     style.WindowBorderSize = 0;
@@ -40,7 +56,7 @@ Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : win
     style.ScrollbarRounding = 12;
     style.GrabRounding = 5;
 
-ImVec4* colors = ImGui::GetStyle().Colors;
+    ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.13f, 0.14f, 0.95f);
@@ -105,7 +121,6 @@ bool Overlay::isEnabled() const
 {
     return enabled_;
 }
-
 
 bool Overlay::toggle()
 {
