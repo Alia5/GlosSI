@@ -66,8 +66,6 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
     MARGINS margins;
     margins.cxLeftWidth = -1;
     DwmExtendFrameIntoClientArea(hwnd, &margins);
-    // always on top
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
     DEVMODE dev_mode = {};
     dev_mode.dmSize = sizeof(DEVMODE);
@@ -101,9 +99,11 @@ void TargetWindow::setClickThrough(bool click_through)
     HWND hwnd = window_.getSystemHandle();
     if (click_through) {
         SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED);
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
     }
     else {
         SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_COMPOSITED);
+        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
     }
 #endif
 }
