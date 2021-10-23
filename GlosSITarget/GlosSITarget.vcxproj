@@ -159,7 +159,6 @@
   <ItemGroup>
     <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp" />
     <ClCompile Include="..\deps\imgui\imgui.cpp" />
-    <ClCompile Include="..\deps\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_widgets.cpp" />

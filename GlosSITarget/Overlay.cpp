@@ -1,8 +1,30 @@
+/*
+Copyright 2021 Peter Repukat - FlatspotSoftware
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 #include "Overlay.h"
 
-Overlay::Overlay(sf::RenderWindow& window, const std::function<void()>& on_close) : window_(window), on_close_(on_close)
+#include <utility>
+
+Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : window_(window), on_close_(std::move(on_close))
 {
     ImGui::SFML::Init(window_);
+
+    //Hack: Trick ImGui::SFML into thinking we already have focus (otherwise only notices after focus-lost)
+    const sf::Event ev(sf::Event::GainedFocus);
+    ProcessEvent(ev);
+
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -102,7 +124,7 @@ void Overlay::update()
 
         std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });
 
-        ImGui::ShowDemoWindow();
+        // ImGui::ShowDemoWindow();
 
         if (closeButton()) {
             return;

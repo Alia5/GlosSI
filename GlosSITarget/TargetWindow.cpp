@@ -44,7 +44,7 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
     // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
     // Scaling down by 1px each direction is barely noticeable and works.
     window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
-    //window_.create(sf::VideoMode(1920, 1080, 24), "GlosSITarget");
+    //window_.create(sf::VideoMode(1920, 1080, 32), "GlosSITarget");
 #else
     window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
@@ -54,6 +54,7 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
     HWND hwnd = window_.getSystemHandle();
     auto dpi = GetWindowDPI(hwnd);
     spdlog::debug("Screen DPI: {}", dpi);
+
     // transparent windows window...
     auto style = GetWindowLong(hwnd, GWL_STYLE);
     style &= ~WS_OVERLAPPED;
