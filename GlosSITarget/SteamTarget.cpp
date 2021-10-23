@@ -48,6 +48,7 @@ Application will not function!");
         overlay_.setEnabled(false);
         steam_overlay_present_ = true;
     }
+    getXBCRebindingEnabled();
 
     run_ = true;
 
@@ -75,6 +76,7 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
 {
     if (overlay_open) {
         focusWindow(target_window_handle_);
+        window_.setClickThrough(!overlay_open);
     }
     else {
 
@@ -239,6 +241,20 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
                                                           res.begin() + 1, res.end(), res[0],
                                                           [](auto acc, const auto curr) { return acc += "+" + curr; }));
     return res;
+}
+
+bool SteamTarget::getXBCRebindingEnabled()
+{
+    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    std::ifstream config_file(config_path);
+    // TODO: check if file exists
+    auto root = tyti::vdf::read(config_file);
+
+    auto xbsup = root.attribs.at("SteamController_XBoxSupport");
+    if (xbsup != "1") {
+        spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
+    }
+    return xbsup == "1";
 }
 
 void SteamTarget::keepControllerConfig(bool keep)

@@ -45,6 +45,7 @@ class SteamTarget {
 
     std::vector<std::string> getOverlayHotkey();
     std::vector<std::string> getScreenshotHotkey();
+    bool getXBCRebindingEnabled();
 
     bool steam_overlay_present_ = false;
 
