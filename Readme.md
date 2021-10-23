@@ -17,6 +17,13 @@ It is **the tool** to enjoy any game that has trouble with Steam and/or *add ext
 
 ---
 
+# ATTENTION: GloSC is currently being rewritten, and renamed to GlosSI ([Glo]bal ([s]ystemwide) [S]team [I]nput)
+# No ETA when it's done
+# No support.
+# No nothing.
+
+---
+
 **How does it work? / What does it do?**
 
 GloSC creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears in which you can use the Steam-overlay. You also get access to touch- and radial-menus and other functionality normally only present in Games
