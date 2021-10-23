@@ -119,6 +119,9 @@
     <ClInclude Include="Settings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll" />
@@ -128,5 +131,10 @@
     <None Include="example_conf.json">
       <Filter>Source Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

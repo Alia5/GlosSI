@@ -84,11 +84,13 @@
     <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -134,6 +136,9 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(ProjectDir)version.ps1</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -155,6 +160,9 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(ProjectDir)version.ps1</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp" />
@@ -182,6 +190,7 @@
     <ClInclude Include="InputRedirector.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="OverlayLogSink.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
@@ -200,6 +209,9 @@
     </None>
     <None Include=".clang-format" />
     <None Include="example_conf.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
