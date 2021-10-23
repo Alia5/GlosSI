@@ -73,7 +73,7 @@ Application will not function!");
     hidhide_.disableHidHide();
 #endif
     launcher_.close();
-    return 1;
+    return 0;
 }
 
 void SteamTarget::onOverlayChanged(bool overlay_open)
