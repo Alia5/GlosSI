@@ -21,6 +21,8 @@ limitations under the License.
 #include <ShObjIdl.h>
 #include <atlbase.h>
 #endif
+#include "Settings.h"
+
 #include <regex>
 
 AppLauncher::AppLauncher(std::function<void()> shutdown) : shutdown_(std::move(shutdown))
@@ -32,7 +34,17 @@ AppLauncher::AppLauncher(std::function<void()> shutdown) : shutdown_(std::move(s
 
 void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 {
-    launchWin32App(path, args);
+#ifdef _WIN32
+    std::wsmatch m;
+    if (!std::regex_search(path, m, std::wregex(L"^.{1,3}:"))) {
+        spdlog::info("LaunchApp is UWP, launching...");
+        launchUWPApp(path.data());
+    }
+    else {
+        spdlog::info("LaunchApp is Win32, launching...");
+        launchWin32App(path, args);
+    }
+#endif
 }
 
 void AppLauncher::update()
@@ -41,12 +53,20 @@ void AppLauncher::update()
 #ifdef _WIN32
         if (process_info.dwProcessId > 0) {
             if (!IsProcessRunning(process_info.dwProcessId)) {
-                shutdown_();
+                spdlog::info("Launched App with PID \"{}\" died", process_info.dwProcessId);
+                if (Settings::launch.closeOnExit) {
+                    spdlog::info("Configured to close on exit. Shutting down..");
+                    shutdown_();
+                }
             }
         }
         if (uwp_pid_ > 0) {
             if (!IsProcessRunning(uwp_pid_)) {
-                shutdown_();
+                spdlog::info("Launched App with PID \"{}\" died", uwp_pid_);
+                if (Settings::launch.closeOnExit) {
+                    spdlog::info("Configured to close on exit. Shutting down...");
+                    shutdown_();
+                }
             }
         }
 #endif
@@ -124,10 +144,10 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        launch_dir.empty() ? nullptr : launch_dir.data(),
                        &info,
                        &process_info)) {
-        spdlog::info(L"Started Program: \"{}\" in directory: {}", native_seps_path, launch_dir);
+        spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
     }
     else {
-        spdlog::error(L"Couldn't start program: \"{}\"  in directory: {}", native_seps_path, launch_dir);
+        spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
     }
 }
 

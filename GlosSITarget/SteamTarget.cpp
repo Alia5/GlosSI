@@ -15,6 +15,7 @@ limitations under the License.
 */
 #include "SteamTarget.h"
 
+#include "Settings.h"
 #include "steam_sf_keymap.h"
 
 #include <SFML/Window/Keyboard.hpp>
@@ -24,12 +25,14 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 #include <vdf_parser.hpp>
 
-
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
       overlay_(window_.getOverlay()),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
-      launcher_([this] { run_ = false; })
+      launcher_([this] {
+          delayed_shutdown_ = true;
+          delay_shutdown_clock_.restart();
+      })
 {
     target_window_handle_ = window_.getSystemHandle();
 }
@@ -58,14 +61,23 @@ Application will not function!");
     input_redirector_.run();   
 #endif
 
-    // launcher_.launchApp(L"1234"); // TODO
+    if (Settings::launch.launch) {
+        launcher_.launchApp(Settings::launch.launchPath, Settings::launch.launchAppArgs);
+    }
 
     keepControllerConfig(true);
     while (run_) {
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
-        launcher_.update();
+        // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
+        if (delayed_shutdown_) {
+            if (delay_shutdown_clock_.getElapsedTime().asSeconds() >= 3) {
+                run_ = false;
+            }
+        } else {
+            launcher_.update();
+        }
     }
 
 #ifdef _WIN32

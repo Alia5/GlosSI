@@ -116,11 +116,17 @@
     <ClInclude Include="AppLauncher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll" />
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-window-d-2.dll" />
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-graphics-d-2.dll" />
     <None Include=".clang-format" />
+    <None Include="example_conf.json">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

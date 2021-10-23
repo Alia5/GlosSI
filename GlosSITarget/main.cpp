@@ -24,6 +24,7 @@ limitations under the License.
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include "OverlayLogSink.h"
+#include "Settings.h"
 
 
 #ifdef _WIN32
@@ -62,8 +63,10 @@ int main(int argc, char* argv[])
     logger->flush_on(spdlog::level::info);
     spdlog::set_default_logger(logger);
 #ifdef _WIN32
+    Settings::Parse(__argv[1]);
     SteamTarget target(__argc, __argv);
 #else
+    Settings::Parse(argv[1]);
     SteamTarget target(argc, argv);
 #endif
     const auto exit = target.run();

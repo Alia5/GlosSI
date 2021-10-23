@@ -28,6 +28,8 @@ limitations under the License.
 #include <Windows.h>
 #include <dwmapi.h>
 
+#include "Settings.h"
+
 #if !defined(WM_DPICHANGED)
 #define WM_DPICHANGED 0x02E0
 #endif
@@ -40,14 +42,17 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
       overlay_(window_, [this]() { close(); })
 {
     auto desktop_mode = sf::VideoMode::getDesktopMode();
+    if (Settings::window.windowMode) {
+        window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
+    } else {
 #ifdef _WIN32
-    // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
-    // Scaling down by 1px each direction is barely noticeable and works.
-    window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
-    //window_.create(sf::VideoMode(1920, 1080, 32), "GlosSITarget");
+        // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
+        // Scaling down by 1px each direction is barely noticeable and works.
+        window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
 #else
-    window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
-#endif
+        window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
+#endif   
+    }
     window_.setActive(true);
 
 #ifdef _WIN32
@@ -85,6 +90,16 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
 #else
     setFpsLimit(60);
 #endif
+
+    if (Settings::window.maxFps > 0) {
+        setFpsLimit(Settings::window.maxFps);
+    }
+    if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
+        ImGuiIO& io = ImGui::GetIO();
+        io.FontGlobalScale = Settings::window.scale;
+        ImGui::SFML::UpdateFontTexture();
+    }
+
 }
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
@@ -94,7 +109,9 @@ void TargetWindow::setFpsLimit(unsigned int fps_limit)
 
 void TargetWindow::setClickThrough(bool click_through)
 {
-
+    if (Settings::window.windowMode) {
+        return;
+    }
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
     if (click_through) {

@@ -85,6 +85,9 @@ class SteamTarget {
     uint32_t overlay_trigger_max_seconds_ = 4;
     bool overlay_trigger_flag_ = false;
 
+    bool delayed_shutdown_ = false;
+    sf::Clock delay_shutdown_clock_;
+
 
     static constexpr std::wstring_view user_data_path_ = L"/userdata/";
     static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";

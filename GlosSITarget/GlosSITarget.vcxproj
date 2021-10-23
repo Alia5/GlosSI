@@ -80,14 +80,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -182,6 +182,7 @@
     <ClInclude Include="InputRedirector.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="OverlayLogSink.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />
@@ -198,6 +199,7 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
     <None Include=".clang-format" />
+    <None Include="example_conf.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -31,6 +31,7 @@ limitations under the License.
 #include <initguid.h>
 //
 #include "Overlay.h"
+#include "Settings.h"
 
 #include <devguid.h>
 #include <devpkey.h>
@@ -122,20 +123,24 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
             }
         }
     }
-    // TODO: remove all vigem controllers added by GlosSI
-    setBlacklistDevices(blacklisted_devices_);
-    setActive(true);
+    if (Settings::devices.hideDevices) {
+        // TODO: MAXBE: remove all vigem controllers added by GlosSI
+        setBlacklistDevices(blacklisted_devices_);
+        setActive(true);
+        spdlog::info("Hid Gaming Devices; Enabling Overlay element...");
+        enableOverlayElement();
+    }
     closeCtrlDevice();
-    spdlog::info("Hid Gaming Devices; Enabling Overlay element...");
-    enableOverlayElement();
 }
 
 void HidHide::disableHidHide()
 {
-    openCtrlDevice();
-    setActive(false);
-    closeCtrlDevice();
-    spdlog::info("Un-hid Gaming Devices");
+        openCtrlDevice();
+        if (getActive()) {
+            setActive(false);
+            spdlog::info("Un-hid Gaming Devices");
+        }
+        closeCtrlDevice();
 }
 
 void HidHide::UnPatchValveHooks()
