@@ -25,6 +25,7 @@ limitations under the License.
 #include <subhook.h>
 #endif
 
+#include "AppLauncher.h"
 #include "Overlay.h"
 
 #include <filesystem>
@@ -76,6 +77,7 @@ class SteamTarget {
     TargetWindow window_;
     Overlay& overlay_;
     SteamOverlayDetector detector_;
+    AppLauncher launcher_;
     WindowHandle last_foreground_window_ = nullptr;
     static inline WindowHandle target_window_handle_ = nullptr;
 

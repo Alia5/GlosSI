@@ -28,7 +28,8 @@ limitations under the License.
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_([this] { run_ = false; }, getScreenshotHotkey()),
       overlay_(window_.getOverlay()),
-      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); })
+      detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
+      launcher_([this] { run_ = false; })
 {
     target_window_handle_ = window_.getSystemHandle();
 }
@@ -57,18 +58,21 @@ Application will not function!");
     input_redirector_.run();   
 #endif
 
+    // launcher_.launchApp(L"1234"); // TODO
+
     keepControllerConfig(true);
     while (run_) {
         detector_.update();
         window_.update();
         overlayHotkeyWorkaround();
+        launcher_.update();
     }
 
 #ifdef _WIN32
     input_redirector_.stop();
     hidhide_.disableHidHide();
 #endif
-
+    launcher_.close();
     return 1;
 }
 

@@ -72,6 +72,9 @@
     <ClCompile Include="..\deps\imgui-sfml\imgui-SFML.cpp">
       <Filter>Source Files\imgui-sfml</Filter>
     </ClCompile>
+    <ClCompile Include="AppLauncher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
@@ -108,6 +111,9 @@
       <Filter>Header Files\imgui-sfml</Filter>
     </ClInclude>
     <ClInclude Include="OverlayLogSink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AppLauncher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

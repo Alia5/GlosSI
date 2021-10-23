@@ -163,6 +163,7 @@
     <ClCompile Include="..\deps\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\deps\subhook\subhook.c" />
+    <ClCompile Include="AppLauncher.cpp" />
     <ClCompile Include="HidHide.cpp" />
     <ClCompile Include="InputRedirector.cpp" />
     <ClCompile Include="main.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="..\deps\imgui-sfml\imgui-SFML.h" />
     <ClInclude Include="..\deps\imgui\imgui.h" />
     <ClInclude Include="..\deps\subhook\subhook.h" />
+    <ClInclude Include="AppLauncher.h" />
     <ClInclude Include="HidHide.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="InputRedirector.h" />
