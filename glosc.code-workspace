@@ -1,6 +1,9 @@
 {
 	"folders": [
 		{
+			"path": "GlosSIConfig"
+		},
+		{
 			"path": "GlosSITarget"
 		},
 		{
