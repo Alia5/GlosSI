@@ -29,7 +29,7 @@ Window {
 
     title: qsTr("GlosSI - Config")
 
-    color: uiModel.hasAcrlyicEffect ? colorAlpha(Qt.darker(Material.background, 2), 0.7) : colorAlpha(Qt.darker(Material.background, 1.5), 0.98)
+    color: uiModel.hasAcrlyicEffect ? colorAlpha(Qt.darker(Material.background, 2), 0.65) : colorAlpha(Qt.darker(Material.background, 1.5), 0.98)
 
     function toggleMaximized() {
         if (window.visibility === Window.Maximized || window.visibility === Window.FullScreen) {
@@ -219,9 +219,14 @@ Window {
             onConfirmed: function(param) {
                 shortcutProps.opacity = 1;
                 homeContent.opacity = 0;
-                // TODO Which dialog
                 props.resetInfo()
                 windowContent.editedIndex = -1
+                if (param == "launch") {
+                    props.fileDialog.open();
+                }
+                if (param == "uwp") {
+                   // props.fileDIalog.open();
+                }
             }
         }
 

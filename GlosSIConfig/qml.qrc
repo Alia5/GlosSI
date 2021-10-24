@@ -6,5 +6,8 @@
         <file>qml/ShortcutCards.qml</file>
         <file>qml/ShortcutProps.qml</file>
         <file>qml/FluentTextInput.qml</file>
+        <file>svg/delete_white_24dp.svg</file>
+        <file>svg/edit_white_24dp.svg</file>
+        <file>svg/steam.svg</file>
     </qresource>
 </RCC>

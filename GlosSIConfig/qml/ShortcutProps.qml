@@ -24,6 +24,7 @@ Item {
     id: propsContent
     anchors.fill: parent
 
+    property alias fileDialog: fileDialog
     signal cancel()
     signal done(var shortcut)
 
@@ -92,6 +93,7 @@ Item {
                 placeholderText: qsTr("...")
                 text: shortcutInfo.name
                 onTextChanged: shortcutInfo.name = text
+                validator: RegularExpressionValidator { regularExpression: /([0-z]|\s|.)+/gm }
             }
         }
         Item {
@@ -251,6 +253,7 @@ Item {
         Button {
             text: qsTr("Done")
             highlighted: true
+            enabled: nameInput.acceptableInput
             onClicked: function() {
                 done(shortcutInfo)
             }

@@ -77,23 +77,25 @@ Dialog {
 				highlighted: true
 				onClicked: function(){
 					close()
-					confirmed("uwp")
+					confirmed("man")
 				}
 			}
 			Button {
-				text: qsTr("Win32 Program")
+				text: uiModel.isWindows ? qsTr("Win32 Program") : qsTr("Launch Program")
 				highlighted: true
 				onClicked: function(){
 					close()
-					confirmed("uwp")
+					confirmed("launch")
 				}
 			}
 			Button {
+			visible: uiModel.isWindows
 				text: qsTr("UWP App")
 				highlighted: true
 				onClicked: function(){
 					close()
 					confirmed("uwp")
+					const wtf = uiModel.uwpList;
 				}
 			}
 		}
