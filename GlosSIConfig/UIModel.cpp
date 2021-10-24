@@ -19,6 +19,19 @@ limitations under the License.
 #include <QJsonObject>
 #include <QJsonDocument>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <VersionHelpers.h>
+#include <collection.h>
+#include <appmodel.h>
+#include <shlwapi.h>
+#include <strsafe.h>
+#include <windows.h>
+#include <appxpackaging.h>
+#pragma comment(lib, "Shlwapi.lib")
+using namespace Windows::Management::Deployment;
+using namespace Windows::Foundation::Collections;
+#endif
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -49,7 +62,7 @@ void UIModel::readConfigs()
         return !entry.endsWith(".json");
         });
 
-    std::ranges::for_each(entries, [this](const auto& name)
+    std::for_each(entries.begin(), entries.end(), [this](const auto& name)
         {
             auto path = config_path_;
             path /= config_dir_name_.toStdString();
@@ -95,17 +108,217 @@ void UIModel::updateTarget(int index, QVariant shortcut)
     const auto json = QJsonDocument(QJsonObject::fromVariantMap(map));
     auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
 
-    writeTarget(wtf, map["name"].toString());
-
     auto oldName = targets_[index].toMap()["name"].toString() + ".json";
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
     path /= (oldName).toStdString();
     std::filesystem::remove(path);
 
+    writeTarget(wtf, map["name"].toString());
+
+
     targets_.replace(index, json.toVariant());
     emit targetListChanged();
 }
+
+void UIModel::deleteTarget(int index)
+{
+    auto oldName = targets_[index].toMap()["name"].toString() + ".json";
+    auto path = config_path_;
+    path /= config_dir_name_.toStdString();
+    path /= (oldName).toStdString();
+    std::filesystem::remove(path);
+    targets_.remove(index);
+    emit targetListChanged();
+}
+
+#ifdef _WIN32
+QVariantList UIModel::uwpApps()
+{
+    if (!IsWindows10OrGreater())
+    {
+        return QVariantList();
+    }
+
+    QVariantList pairs;
+
+    // is it considered stealing when you take code that was pull-requested by someone else into your own repo?
+    // Anyway... Stolen from: https://github.com/Thracky/GloSC/commit/3cd92e058498e3ab9d73ced140bbd7e490f639a7
+    // https://github.com/Alia5/GloSC/commit/3cd92e058498e3ab9d73ced140bbd7e490f639a7
+
+
+        // TODO: only return apps for current user.
+        // TODO: I have no clue how this WinRT shit works; HELP MEH!
+        
+    PackageManager^ packageManager = ref new PackageManager();
+    IIterable<Windows::ApplicationModel::Package^>^ packages = packageManager->FindPackages();
+
+    int packageCount = 0;
+    // Only way to get the count of packages is to iterate through the whole collection first
+    std::for_each(Windows::Foundation::Collections::begin(packages), Windows::Foundation::Collections::end(packages),
+        [&](Windows::ApplicationModel::Package^ package)
+        {
+            packageCount += 1;
+        });
+
+    int currPackage = 0;
+    // Iterate through all the packages
+    std::for_each(Windows::Foundation::Collections::begin(packages), Windows::Foundation::Collections::end(packages),
+        [&](Windows::ApplicationModel::Package^ package)
+        {
+            HRESULT hr = S_OK;
+            IStream* inputStream = NULL;
+            UINT32 pathLen = 0;
+            IAppxManifestReader* manifestReader = NULL;
+            IAppxFactory* appxFactory = NULL;
+            LPWSTR appId = NULL;
+            LPWSTR manifestAppName = NULL;
+
+            // Get the package path on disk so we can load the manifest XML and get the PRAID
+            GetPackagePathByFullName(package->Id->FullName->Data(), &pathLen, NULL);
+
+            if (pathLen > 0) {
+
+                // Length of the path + "\\AppxManifest.xml" that we'll be appending
+                UINT32 manifestLen = pathLen + 20;
+                PWSTR pathBuf = (PWSTR)malloc(manifestLen * sizeof(wchar_t));
+
+                GetPackagePathByFullName(package->Id->FullName->Data(), &pathLen, pathBuf);
+                PWSTR manifest_xml = L"\\AppxManifest.xml";
+
+                hr = StringCchCatW(pathBuf, manifestLen, manifest_xml);
+
+                // Let's ignore a bunch of built in apps and such
+                if (wcsstr(pathBuf, L"SystemApps")) {
+                    hr = E_FAIL;
+                }
+                else if (wcsstr(pathBuf, L".NET.Native."))
+                    hr = E_FAIL;
+                else if (wcsstr(pathBuf, L".VCLibs."))
+                    hr = E_FAIL;
+                else if (wcsstr(pathBuf, L"Microsoft.UI"))
+                    hr = E_FAIL;
+                else if (wcsstr(pathBuf, L"Microsoft.Advertising"))
+                    hr = E_FAIL;
+                else if (wcsstr(pathBuf, L"Microsoft.Services.Store"))
+                    hr = E_FAIL;
+
+                BOOL hasCurrent = FALSE;
+
+                // Open the manifest XML
+                if (SUCCEEDED(hr)) {
+
+                    hr = SHCreateStreamOnFileEx(
+                        pathBuf,
+                        STGM_READ | STGM_SHARE_EXCLUSIVE,
+                        0, // default file attributes
+                        FALSE, // do not create new file
+                        NULL, // no template
+                        &inputStream);
+                }
+                if (SUCCEEDED(hr)) {
+
+                    hr = CoCreateInstance(
+                        __uuidof(AppxFactory),
+                        NULL,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(IAppxFactory),
+                        (LPVOID*)(&appxFactory));
+                }
+                if (SUCCEEDED(hr)) {
+                    hr = appxFactory->CreateManifestReader(inputStream, &manifestReader);
+                }
+
+                // Grab application ID (PRAID) and DisplayName from the XML
+                if (SUCCEEDED(hr)) {
+                    IAppxManifestApplicationsEnumerator* applications = NULL;
+                    manifestReader->GetApplications(&applications);
+                    if (SUCCEEDED(hr)) {
+                        hr = applications->GetHasCurrent(&hasCurrent);
+                        if (hasCurrent) {
+                            IAppxManifestApplication* application = NULL;
+                            hr = applications->GetCurrent(&application);
+                            if (SUCCEEDED(hr)) {
+                                application->GetStringValue(L"Id", &appId);
+                                application->GetStringValue(L"DisplayName", &manifestAppName);
+                                application->Release();
+                            }
+                        }
+                        else {
+                            hr = S_FALSE;
+                        }
+                        applications->Release();
+                    }
+                    manifestReader->Release();
+                    inputStream->Release();
+
+                }
+
+                if (SUCCEEDED(hr)) {
+                    PWSTR appNameBuf;
+                    QString AppUMId = QString::fromWCharArray(package->Id->FamilyName->Data());
+                    QString AppName;
+                    if (manifestAppName != NULL)
+                    {
+                        // If the display name is an indirect string, we'll try and load it using SHLoadIndirectString
+                        if (wcsstr(manifestAppName, L"ms-resource:"))
+                        {
+                            PWSTR res_name = wcsdup(&manifestAppName[12]);
+                            appNameBuf = (PWSTR)malloc(1026);
+                            LPCWSTR resource_str = L"@{";
+                            std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/resources/" + res_name + L"}";
+                            PCWSTR res_str = reslookup.c_str();
+                            hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
+                            // Try several resource paths
+                            if (!SUCCEEDED(hr)) {
+                                std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/Resources/" + res_name + L"}";
+                                PCWSTR res_str = reslookup.c_str();
+                                hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
+                                // If the third one doesn't work, we give up and use the package name from PackageManager
+                                if (!SUCCEEDED(hr)) {
+                                    std::wstring reslookup = std::wstring(resource_str) + package->Id->FullName->Data() + L"?ms-resource://" + package->Id->Name->Data() + L"/" + res_name + L"}";
+                                    PCWSTR res_str = reslookup.c_str();
+                                    hr = SHLoadIndirectString(res_str, appNameBuf, 512, NULL);
+                                }
+                            }
+
+                            if (!SUCCEEDED(hr))
+                                AppName = QString::fromWCharArray(package->Id->Name->Data());
+                            else
+                                AppName = QString::fromWCharArray(appNameBuf);
+                            free(appNameBuf);
+                        }
+                        else
+                        {
+                            appNameBuf = manifestAppName;
+                            AppName = QString::fromWCharArray(appNameBuf);
+                        }
+
+                    }
+                    else {
+                        AppName = QString::fromWCharArray(package->Id->Name->Data());
+                    }
+
+                    QString PRAID = QString::fromWCharArray(appId);
+                    CoTaskMemFree(appId);
+                    if (!PRAID.isEmpty()) {
+                        AppUMId = AppUMId.append("!");
+                        AppUMId = AppUMId.append(PRAID);
+                    }
+                    QVariantMap uwpPair;
+                    uwpPair.insert("AppName", AppName);
+                    uwpPair.insert("AppUMId", AppUMId);
+
+                    free(pathBuf);
+
+                    pairs.push_back(uwpPair);
+                }
+            }
+            currPackage += 1;
+        });
+    return pairs;
+}
+#endif
 
 bool UIModel::getIsWindows() const
 {

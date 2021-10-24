@@ -19,7 +19,6 @@ limitations under the License.
 #include <QWindow>
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <Windows.h>
 #include <dwmapi.h>
 #include <VersionHelpers.h>
@@ -98,19 +97,22 @@ int main(int argc, char* argv[])
     SetWindowLong(hwnd, GWL_STYLE, style);
 
     // Enable blurbehind (not needed?) anyway gives nice background on win7 and 8
-    DWM_BLURBEHIND bb{ .dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr };
+    DWM_BLURBEHIND bb{};
+    bb.dwFlags = DWM_BB_ENABLE; bb.fEnable = true; bb.hRgnBlur = nullptr;
     DwmEnableBlurBehindWindow(hwnd, &bb);
 
     if (IsWindows10OrGreater())
     {
         // undoc stuff for aero >= Win10
         int color = (0 << 24) + (0x21 << 16) + (0x11 << 8) + (0x11);
-        AccentPolicy accPol = { .AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND, .AccentFlags = 2, .GradientColor = color, .AnimationId = 0 };
-        WindowCompositionAttributeData data = {
-            .Attribute = WindowCompositionAttribute::WCA_ACCENT_POLICY,
-            .Data = &accPol,
-            .SizeOfData = sizeof(accPol)
-        };
+        AccentPolicy accPol{};
+        accPol.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND;
+        accPol.AccentFlags = 2; accPol.GradientColor = color;
+        accPol.AnimationId = 0;
+        WindowCompositionAttributeData data{};
+        data.Attribute = WindowCompositionAttribute::WCA_ACCENT_POLICY;
+            data.Data = &accPol;
+            data.SizeOfData = sizeof(accPol);
         auto user32dll = GetModuleHandle(L"user32.dll");
         if (user32dll) {
             PSetWindowCompositionAttribute SetWindowCompositionAttribute = (

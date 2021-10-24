@@ -25,6 +25,7 @@ class UIModel : public QObject
         Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
         Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
         Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
+        Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
 
 public:
     UIModel();
@@ -33,6 +34,10 @@ public:
     Q_INVOKABLE QVariantList getTargetList() const;
     Q_INVOKABLE void addTarget(QVariant shortcut);
     Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
+    Q_INVOKABLE void deleteTarget(int index);
+#ifdef _WIN32
+    Q_INVOKABLE QVariantList uwpApps();
+#endif
 
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
@@ -57,4 +62,3 @@ private:
 #endif
     bool has_acrylic_affect_ = false;
 };
-
