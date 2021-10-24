@@ -66,8 +66,6 @@ TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::stri
     style |= WS_POPUP;
     SetWindowLong(hwnd, GWL_STYLE, style);
 
-    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
-    DwmEnableBlurBehindWindow(hwnd, &bb);
     MARGINS margins;
     margins.cxLeftWidth = -1;
     DwmExtendFrameIntoClientArea(hwnd, &margins);
