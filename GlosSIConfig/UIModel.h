@@ -16,6 +16,7 @@ limitations under the License.
 #pragma once
 #include <filesystem>
 #include <QObject>
+#include <QVariant>
 
 class UIModel : public QObject
 {
@@ -23,11 +24,15 @@ class UIModel : public QObject
 
         Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
         Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
+        Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
 
 public:
     UIModel();
 
-    Q_INVOKABLE QStringList getTargetList() const;
+    Q_INVOKABLE void readConfigs();
+    Q_INVOKABLE QVariantList getTargetList() const;
+    Q_INVOKABLE void addTarget(QVariant shortcut);
+    Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
 
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
@@ -35,10 +40,14 @@ public:
 
 signals:
     void acrylicChanged();
+    void targetListChanged();
 
 private:
     std::filesystem::path config_path_;
     QString config_dir_name_;
+
+    QVariantList targets_;
+
 #ifdef _WIN32
     bool is_windows_ = true;
 #else

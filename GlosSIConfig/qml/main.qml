@@ -16,13 +16,12 @@ limitations under the License.
 import QtQuick 6.2
 import QtQuick.Layouts 6.2
 import QtQuick.Controls.Material 6.2
-import QtQuick.Dialogs
 
 Window {
     id: window
     visible: true
-    width: 1280
-    height: 719
+    width: 1049
+    height: 700
     Material.theme: Material.Dark
     Material.accent: Material.color(Material.Blue, Material.Shade900)
 
@@ -30,7 +29,7 @@ Window {
 
     title: qsTr("GlosSI - Config")
 
-    color: uiModel.hasAcrlyicEffect ? "transparent" : colorAlpha(Material.background, 0.9)
+    color: uiModel.hasAcrlyicEffect ? colorAlpha(Qt.darker(Material.background, 2), 0.7) : colorAlpha(Qt.darker(Material.background, 1.5), 0.98)
 
     function toggleMaximized() {
         if (window.visibility === Window.Maximized || window.visibility === Window.FullScreen) {
@@ -104,92 +103,127 @@ Window {
     }
 
     Item {
+        id: windowContent
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: titleBar.bottom
         anchors.bottom: parent.bottom
+        clip: true
 
-        RPane {
-            id: existingTargetsPane
-            anchors.left: parent.left
-            width:window.width / 3.301 + 16
-            Component.onCompleted: console.log(width)
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            Material.elevation: 6
-            anchors.leftMargin: -16
-            radius: 16
-            color: Qt.lighter(Material.background, 1.6)
-            bgOpacity: 0.3
+        property int editedIndex: -1
 
-            Item {
+        Item {
+            id: homeContent
+            anchors.fill: parent
+            opacity: 1
+            visible: opacity === 0 ? false : true
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 300
+                    easing.type: opacity === 0 ? Easing.OutQuad : Easing.InOutQuad
+                }
+            }
+            Label {
+                anchors.centerIn: parent
+                text: qsTr("No shortcuts yet.\nClick \"+\" to get started")
+                font.bold: true
+                font.pixelSize: 24
+                horizontalAlignment: Text.AlignHCenter
+                visible: shortcutgrid.model.length == 0
+            }
+
+            ShortcutCards {
+                id: shortcutgrid
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
-                anchors.left: parent.left
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.topMargin: margins
+                visible: model.length > 0
+                margins: 16
+                model: uiModel.targetList
+                onEditClicked: function(index, shortcutInfo){
+                    shortcutProps.opacity = 1;
+                    homeContent.opacity = 0;
+                    console.log(index)
+                    Object.keys(shortcutInfo).forEach((key) => console.log(key, shortcutInfo[key]))
+                    props.shortcutInfo = shortcutInfo
+                    windowContent.editedIndex = index;
+                }
+            }
+            RoundButton {
+                id: addBtn
                 anchors.right: parent.right
-                anchors.leftMargin: 16
-                clip: true
-                ListView {
-                    anchors.fill: parent
-                    spacing: 0
-                    model: uiModel.getTargetList();
-                    delegate: Item {
-                        width: parent.width
-                        height: lbl.height + lbl.anchors.topMargin + lbl.anchors.bottomMargin
-                        // TODO: Left size App icon
-                        Label {
-                            id: lbl
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.rightMargin: 48
-                            anchors.topMargin: 8
-                            anchors.bottomMargin: 8
-                            anchors.leftMargin: 4
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: modelData
-                            font.pixelSize: 16
-                        }
-                        // TODO: Right side icon if in steam
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            anchors.bottom: parent.bottom
-                            color: Qt.rgba(1,1,1,0.3)
-                        }
+                anchors.bottom: parent.bottom
+                anchors.margins: 24
+                width: 64
+                height: 64
+                text: "+"
+                contentItem: Label {
+                    anchors.centerIn: parent
+                    text: addBtn.text
+                    font.pixelSize: 32
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                }
+                highlighted: true
+                onClicked: selectTypeDialog.open()
+            }
+        }
+
+        Item {
+            id: shortcutProps
+            height: parent.height
+            width: parent.width
+            opacity: 0
+            property real animMarg: opacity == 0 ? parent.height : 0 
+            y: animMarg
+            visible: opacity === 0 ? false : true
+            Behavior on opacity {
+                ParallelAnimation {
+                    NumberAnimation {
+                        duration: 300
+                        property: "opacity"
+                        easing.type: opacity === 0 ? Easing.OutQuad : Easing.InOutQuad
+                    }
+                    PropertyAnimation {
+                        duration: 300
+                        target: shortcutProps
+                        property: "animMarg";
+                        from: shortcutProps.animMarg
+                        to: shortcutProps.animMarg > 0 ? 0 : shortcutProps.parent.height;
+                        easing.type: opacity === 0 ? Easing.OutQuad : Easing.InOutQuad
+                    }
+                }
+            }
+            ShortcutProps {
+                id: props
+                anchors.fill: parent
+                onCancel: function() {
+                    shortcutProps.opacity = 0;
+                    homeContent.opacity = 1;
+                }
+                onDone: function(shortcut) {
+                    shortcutProps.opacity = 0;
+                    homeContent.opacity = 1;
+                    if (windowContent.editedIndex < 0) {
+                        uiModel.addTarget(shortcut)
+                    } else {
+                        uiModel.updateTarget(windowContent.editedIndex, shortcut)
                     }
                 }
             }
         }
 
-        RoundButton {
-            id: addBtn
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 24
-            width: 64
-            height: 64
-            text: "+"
-            contentItem: Label {
-                anchors.centerIn: parent
-                text: addBtn.text
-                font.pixelSize: 32
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-            highlighted: true
-            onClicked: fileDialog.open();
-        }
-
-        FileDialog {
-            id: fileDialog
-            title: qsTr("Please choose a Program to Launch")
-            nameFilters: uiModel.isWindows ? ["Executable files (*.exe *.bat *.ps1)"] : []
-            onAccepted: {
-                console.log("You chose: " + fileDialog.selectedFile)
-            }
-            onRejected: {
-                console.log("Canceled")
+        AddSelectTypeDialog {
+            id: selectTypeDialog
+            visible: false
+            onConfirmed: function(param) {
+                shortcutProps.opacity = 1;
+                homeContent.opacity = 0;
+                // TODO Which dialog
+                props.resetInfo()
+                windowContent.editedIndex = -1
             }
         }
 

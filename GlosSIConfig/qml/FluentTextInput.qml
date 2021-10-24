@@ -13,24 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 2.9
-import QtQuick.Controls 2.9
-import QtQuick.Controls.Material 2.9
-import QtQuick.Controls.Material.impl 2.9
+import QtQuick 6.2
+import QtQuick.Controls 6.2
+import QtQuick.Controls.Material 6.2
 
-Pane {
+TextField {
     id: control
-    property int radius: 0
-    property color color: control.Material.backgroundColor
-    property real bgOpacity: 1
+    selectByMouse: true
+    padding: 16
+    bottomInset: padding/2
     background: Rectangle {
-        color: parent.color
-        opacity: parent.bgOpacity
-        radius: control.Material.elevation > 0 ? control.radius : 0
-
-        layer.enabled: control.enabled && control.Material.elevation > 0
-        layer.effect: ElevationEffect {
-            elevation: control.Material.elevation
-        }
+        implicitWidth: control.width + control.padding*2
+        radius: 4
+        color: control.enabled ? Qt.rgba(0,0,0,0.3) : Qt.rgba(0.2,0.2,0.2,0.3)
+        border.color: control.enabled ? Qt.rgba(0.5,0.5,0.5,0.5) :  Qt.rgba(0.3,0.3,0.3,0.5)
     }
 }

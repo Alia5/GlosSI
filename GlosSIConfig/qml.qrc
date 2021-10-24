@@ -2,5 +2,9 @@
     <qresource prefix="/">
         <file>qml/main.qml</file>
         <file>qml/RPane.qml</file>
+        <file>qml/AddSelectTypeDialog.qml</file>
+        <file>qml/ShortcutCards.qml</file>
+        <file>qml/ShortcutProps.qml</file>
+        <file>qml/FluentTextInput.qml</file>
     </qresource>
 </RCC>

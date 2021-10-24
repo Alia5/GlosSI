@@ -106,8 +106,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TargetConfig.cpp" />
     <ClCompile Include="UIModel.cpp" />
+    <None Include="qml\AddSelectTypeDialog.qml" />
+    <None Include="qml\FluentTextInput.qml" />
     <None Include="qml\RPane.qml" />
+    <None Include="qml\ShortcutCards.qml" />
+    <None Include="qml\ShortcutProps.qml" />
     <QtRcc Include="qml.qrc" />
     <None Include="qml\main.qml" />
   </ItemGroup>
@@ -116,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qml\WinEventFilter.h" />
+    <QtMoc Include="TargetConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />
