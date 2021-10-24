@@ -49,11 +49,21 @@ GridView {
             font.pixelSize: 16
         }
 
-        Button {
-            text: qsTr("Edit")
+        Row {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            onClicked: editClicked(index, modelData)
+            spacing: 4
+
+            Button {
+                text: qsTr("Add to Steam") // TODO
+                onClicked: console.log("TODO") // TODO
+                highlighted: true
+            }
+
+            Button {
+                text: qsTr("Edit")
+                onClicked: editClicked(index, modelData)
+            }
         }
 
     }   

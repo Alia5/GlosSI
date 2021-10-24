@@ -20,9 +20,6 @@ limitations under the License.
 #include <QJsonDocument>
 
 
-#include "TargetConfig.h"
-
-
 UIModel::UIModel() : QObject(nullptr)
 {
     auto path = std::filesystem::temp_directory_path()
@@ -99,6 +96,12 @@ void UIModel::updateTarget(int index, QVariant shortcut)
     auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
 
     writeTarget(wtf, map["name"].toString());
+
+    auto oldName = targets_[index].toMap()["name"].toString() + ".json";
+    auto path = config_path_;
+    path /= config_dir_name_.toStdString();
+    path /= (oldName).toStdString();
+    std::filesystem::remove(path);
 
     targets_.replace(index, json.toVariant());
     emit targetListChanged();
