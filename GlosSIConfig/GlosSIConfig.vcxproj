@@ -106,7 +106,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TargetConfig.cpp" />
     <ClCompile Include="UIModel.cpp" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
@@ -121,7 +120,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qml\WinEventFilter.h" />
-    <QtMoc Include="TargetConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />

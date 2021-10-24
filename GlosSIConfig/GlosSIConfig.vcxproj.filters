@@ -34,9 +34,6 @@
     <ClCompile Include="UIModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TargetConfig.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="qml\main.qml">
@@ -60,9 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="TargetConfig.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

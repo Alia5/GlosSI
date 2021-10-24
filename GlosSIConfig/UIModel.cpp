@@ -16,8 +16,12 @@ limitations under the License.
 #include "UIModel.h"
 
 #include <QDir>
+#include <QJsonObject>
+#include <QJsonDocument>
+
 
 #include "TargetConfig.h"
+
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -33,6 +37,11 @@ UIModel::UIModel() : QObject(nullptr)
 
     config_path_ = path;
     config_dir_name_ = (path /= "Targets").string().data();
+
+    if (!std::filesystem::exists(path))
+        std::filesystem::create_directories(path);
+
+    readConfigs();
 }
 
 void UIModel::readConfigs()
@@ -40,17 +49,25 @@ void UIModel::readConfigs()
     QDir dir(config_dir_name_);
     auto entries = dir.entryList(QDir::Files, QDir::SortFlag::Name);
     entries.removeIf([](const auto& entry) {
-        return entry.endsWith(".json");
-        });
-    QStringList fileNames;
-    std::ranges::transform(fileNames, std::back_inserter(fileNames), [](const auto& entry)
-        {
-            return entry.mid(0, entry.lastIndexOf(".json"));
+        return !entry.endsWith(".json");
         });
 
-    std::ranges::for_each(fileNames, [this](const auto& name)
+    std::ranges::for_each(entries, [this](const auto& name)
         {
-            targets_.append(QMap<QString, QVariant>{ { "name", name }});
+            auto path = config_path_;
+            path /= config_dir_name_.toStdString();
+            path /= name.toStdString();
+            QFile file(path);
+            if (!file.open(QIODevice::Text | QIODevice::ReadOnly))
+            {
+                // meh
+                return;
+            }
+            const auto data = file.readAll();
+            file.close();
+            const auto jsondoc = QJsonDocument::fromJson(data);
+            const auto json = jsondoc.object();
+            targets_.append(json.toVariantMap());
         });
 
 
@@ -65,40 +82,25 @@ QVariantList UIModel::getTargetList() const
 void UIModel::addTarget(QVariant shortcut)
 {
     // TODO: write config
-    auto map = shortcut.toMap();
+    const auto map = shortcut.toMap();
+    const auto json = QJsonDocument(QJsonObject::fromVariantMap(map));
+    auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
 
-    QVariantMap copy;
-    copy.insert("name", map["name"].toString());
-    copy.insert("launch", map["launch"].toBool());
-    copy.insert("launchPath", map["launchPath"].toString());
-    copy.insert("launchAppArgs", map["launchAppArgs"].toString());
-    copy.insert("closeOnExit", map["closeOnExit"].toBool());
-    copy.insert("hideDevices", map["hideDevices"].toBool());
-    copy.insert("windowMode", map["windowMode"].toBool());
-    copy.insert("maxFps", map["maxFps"].toInt());
-    copy.insert("scale", map["scale"].toInt());
+    writeTarget(wtf, map["name"].toString());
 
-    targets_.append(copy);
+    targets_.append(json.toVariant());
     emit targetListChanged();
 }
 
 void UIModel::updateTarget(int index, QVariant shortcut)
 {
+    const auto map = shortcut.toMap();
+    const auto json = QJsonDocument(QJsonObject::fromVariantMap(map));
+    auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
 
-    auto map = shortcut.toMap();
+    writeTarget(wtf, map["name"].toString());
 
-    QVariantMap copy;
-    copy.insert("name", map["name"].toString());
-    copy.insert("launch", map["launch"].toBool());
-    copy.insert("launchPath", map["launchPath"].toString());
-    copy.insert("launchAppArgs", map["launchAppArgs"].toString());
-    copy.insert("closeOnExit", map["closeOnExit"].toBool());
-    copy.insert("hideDevices", map["hideDevices"].toBool());
-    copy.insert("windowMode", map["windowMode"].toBool());
-    copy.insert("maxFps", map["maxFps"].toInt());
-    copy.insert("scale", map["scale"].toInt());
-
-    targets_.replace(index, copy);
+    targets_.replace(index, json.toVariant());
     emit targetListChanged();
 }
 
@@ -117,3 +119,19 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     has_acrylic_affect_ = has_acrylic_affect;
     emit acrylicChanged();
 }
+
+void UIModel::writeTarget(const std::string& json, const QString& name)
+{
+    auto path = config_path_;
+    path /= config_dir_name_.toStdString();
+    path /= (name + ".json").toStdString();
+    QFile file(path);
+    if (!file.open(QIODevice::Text | QIODevice::ReadWrite))
+    {
+        // meh
+        return;
+    }
+    file.write(json.data());
+    file.close();
+}
+

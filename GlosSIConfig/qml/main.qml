@@ -144,8 +144,6 @@ Window {
                 onEditClicked: function(index, shortcutInfo){
                     shortcutProps.opacity = 1;
                     homeContent.opacity = 0;
-                    console.log(index)
-                    Object.keys(shortcutInfo).forEach((key) => console.log(key, shortcutInfo[key]))
                     props.shortcutInfo = shortcutInfo
                     windowContent.editedIndex = index;
                 }

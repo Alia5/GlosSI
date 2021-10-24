@@ -46,6 +46,8 @@ private:
     std::filesystem::path config_path_;
     QString config_dir_name_;
 
+    void writeTarget(const std::string& json, const QString& name);
+
     QVariantList targets_;
 
 #ifdef _WIN32
