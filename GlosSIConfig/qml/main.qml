@@ -30,7 +30,7 @@ Window {
 
     title: qsTr("GlosSI - Config")
 
-    color: colorAlpha(Material.background, 0.98)
+    color: uiModel.hasAcrlyicEffect ? "transparent" : colorAlpha(Material.background, 0.9)
 
     function toggleMaximized() {
         if (window.visibility === Window.Maximized || window.visibility === Window.FullScreen) {
@@ -120,7 +120,7 @@ Window {
             anchors.leftMargin: -16
             radius: 16
             color: Qt.lighter(Material.background, 1.6)
-            bgOpacity: 0.8
+            bgOpacity: 0.3
 
             Item {
                 anchors.top: parent.top

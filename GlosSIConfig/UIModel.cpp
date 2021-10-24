@@ -38,3 +38,14 @@ bool UIModel::getIsWindows() const
 {
     return is_windows_;
 }
+
+bool UIModel::hasAcrylicEffect() const
+{
+    return has_acrylic_affect_;
+}
+
+void UIModel::setAcrylicEffect(bool has_acrylic_affect)
+{
+    has_acrylic_affect_ = has_acrylic_affect;
+    emit acrylicChanged();
+}

@@ -20,6 +20,9 @@
     <Filter Include="qml">
       <UniqueIdentifier>{4abd6243-b275-40c0-8927-27cebe0e7b5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="manifest">
+      <UniqueIdentifier>{ace69ddb-7744-4e80-a55b-7beb33f0cc81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -49,5 +52,10 @@
     <ClInclude Include="qml\WinEventFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="manifest.xml">
+      <Filter>manifest</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

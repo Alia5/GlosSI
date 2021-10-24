@@ -21,7 +21,8 @@ class UIModel : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
+        Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
+        Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
 
 public:
     UIModel();
@@ -29,6 +30,11 @@ public:
     Q_INVOKABLE QStringList getTargetList() const;
 
     bool getIsWindows() const;
+    [[nodiscard]] bool hasAcrylicEffect() const;
+    void setAcrylicEffect(bool has_acrylic_affect);
+
+signals:
+    void acrylicChanged();
 
 private:
     std::filesystem::path config_path_;
@@ -38,5 +44,6 @@ private:
 #else
     bool is_windows_ = false;
 #endif
+    bool has_acrylic_affect_ = false;
 };
 
