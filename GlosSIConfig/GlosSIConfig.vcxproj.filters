@@ -54,6 +54,9 @@
     <None Include="qml\FluentTextInput.qml">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="qml\UWPSelectDialog.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
@@ -61,7 +64,7 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="qml\WinEventFilter.h">
+    <ClInclude Include="WinEventFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

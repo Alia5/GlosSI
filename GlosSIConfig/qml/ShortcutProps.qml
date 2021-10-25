@@ -25,6 +25,7 @@ Item {
     anchors.fill: parent
 
     property alias fileDialog: fileDialog
+    property alias uwpSelectDialog: uwpSelectDialog
     signal cancel()
     signal done(var shortcut)
 
@@ -163,6 +164,7 @@ Item {
                 Layout.alignment: Qt.AlignBottom
                 text: qsTr("UWP")
                 visible: uiModel.isWindows
+                onClicked: uwpSelectDialog.open();
             }
             Item {
                 height: 1
@@ -278,6 +280,15 @@ Item {
         }
     }
 
-    // UWPSelectDialog {}
+    UWPSelectDialog {
+        id: uwpSelectDialog
+        onConfirmed: function(modelData) {
+            if (nameInput.text == "") {
+                    nameInput.text = modelData.AppName
+            }
+            pathInput.text = modelData.AppUMId
+            launchApp.checked = true
+        }
+    }
 
 }

@@ -126,6 +126,7 @@
     <None Include="qml\RPane.qml" />
     <None Include="qml\ShortcutCards.qml" />
     <None Include="qml\ShortcutProps.qml" />
+    <None Include="qml\UWPSelectDialog.qml" />
     <QtRcc Include="qml.qrc" />
     <None Include="qml\main.qml" />
   </ItemGroup>
@@ -133,7 +134,7 @@
     <QtMoc Include="UIModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="qml\WinEventFilter.h" />
+    <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />

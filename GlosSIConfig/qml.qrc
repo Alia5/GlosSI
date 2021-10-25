@@ -9,5 +9,6 @@
         <file>svg/delete_white_24dp.svg</file>
         <file>svg/edit_white_24dp.svg</file>
         <file>svg/steam.svg</file>
+        <file>qml/UWPSelectDialog.qml</file>
     </qresource>
 </RCC>

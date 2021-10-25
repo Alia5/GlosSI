@@ -31,6 +31,9 @@ limitations under the License.
 #pragma comment(lib, "Shlwapi.lib")
 using namespace Windows::Management::Deployment;
 using namespace Windows::Foundation::Collections;
+
+#include <QGuiApplication>
+
 #endif
 
 UIModel::UIModel() : QObject(nullptr)
@@ -135,13 +138,24 @@ void UIModel::deleteTarget(int index)
 #ifdef _WIN32
 QVariantList UIModel::uwpApps()
 {
+    // TODO really should do this async, and notify gui when complete...
     if (!IsWindows10OrGreater())
     {
         return QVariantList();
     }
 
-    QVariantList pairs;
+    std::vector<std::wstring> logoNames{
+        L"Square150x150Logo",
+        L"Square310x310Logo",
+        L"Square44x44Logo",
+        L"Square71x71Logo",
+        L"Square70x70Logo",
+        L"Logo",
+        L"SmallLogo",
+        L"Square30x30Logo",
+    };
 
+    QVariantList pairs;
     // is it considered stealing when you take code that was pull-requested by someone else into your own repo?
     // Anyway... Stolen from: https://github.com/Thracky/GloSC/commit/3cd92e058498e3ab9d73ced140bbd7e490f639a7
     // https://github.com/Alia5/GloSC/commit/3cd92e058498e3ab9d73ced140bbd7e490f639a7
@@ -149,7 +163,7 @@ QVariantList UIModel::uwpApps()
 
         // TODO: only return apps for current user.
         // TODO: I have no clue how this WinRT shit works; HELP MEH!
-        
+
     PackageManager^ packageManager = ref new PackageManager();
     IIterable<Windows::ApplicationModel::Package^>^ packages = packageManager->FindPackages();
 
@@ -166,6 +180,7 @@ QVariantList UIModel::uwpApps()
     std::for_each(Windows::Foundation::Collections::begin(packages), Windows::Foundation::Collections::end(packages),
         [&](Windows::ApplicationModel::Package^ package)
         {
+            QGuiApplication::processEvents();
             HRESULT hr = S_OK;
             IStream* inputStream = NULL;
             UINT32 pathLen = 0;
@@ -173,6 +188,7 @@ QVariantList UIModel::uwpApps()
             IAppxFactory* appxFactory = NULL;
             LPWSTR appId = NULL;
             LPWSTR manifestAppName = NULL;
+            LPWSTR iconName = NULL;
 
             // Get the package path on disk so we can load the manifest XML and get the PRAID
             GetPackagePathByFullName(package->Id->FullName->Data(), &pathLen, NULL);
@@ -241,6 +257,14 @@ QVariantList UIModel::uwpApps()
                             if (SUCCEEDED(hr)) {
                                 application->GetStringValue(L"Id", &appId);
                                 application->GetStringValue(L"DisplayName", &manifestAppName);
+                                for (auto & logoNameStr : logoNames)
+                                {
+                                    application->GetStringValue(logoNameStr.c_str(), &iconName);
+                                    if (!std::wstring(iconName).empty())
+                                    {
+                                        break;
+                                    }
+                                }
                                 application->Release();
                             }
                         }
@@ -258,6 +282,8 @@ QVariantList UIModel::uwpApps()
                     PWSTR appNameBuf;
                     QString AppUMId = QString::fromWCharArray(package->Id->FamilyName->Data());
                     QString AppName;
+                    QString Path = QString::fromWCharArray(package->EffectivePath->Data());
+                    // QString thumbToken = QString::fromWCharArray(package->GetThumbnailToken()->Data());
                     if (manifestAppName != NULL)
                     {
                         // If the display name is an indirect string, we'll try and load it using SHLoadIndirectString
@@ -283,7 +309,7 @@ QVariantList UIModel::uwpApps()
                             }
 
                             if (!SUCCEEDED(hr))
-                                AppName = QString::fromWCharArray(package->Id->Name->Data());
+                                AppName = QString::fromWCharArray(package->DisplayName->Data());
                             else
                                 AppName = QString::fromWCharArray(appNameBuf);
                             free(appNameBuf);
@@ -296,7 +322,7 @@ QVariantList UIModel::uwpApps()
 
                     }
                     else {
-                        AppName = QString::fromWCharArray(package->Id->Name->Data());
+                        AppName = QString::fromWCharArray(package->DisplayName->Data());
                     }
 
                     QString PRAID = QString::fromWCharArray(appId);
@@ -308,6 +334,27 @@ QVariantList UIModel::uwpApps()
                     QVariantMap uwpPair;
                     uwpPair.insert("AppName", AppName);
                     uwpPair.insert("AppUMId", AppUMId);
+                    uwpPair.insert("Path", Path);
+
+                    QString icoFName = Path + "/" + QString::fromWCharArray(iconName);
+                    std::filesystem::path icoPath(icoFName.toStdString());
+
+                    std::vector<QString> possibleextensions = { ".scale-100", ".scale-125", ".scale-150", ".scale-200" };
+                    if (!std::filesystem::exists(icoPath))
+                    {
+                        for (const auto& ext: possibleextensions)
+                        {
+                            QString maybeFname = QString(icoFName).replace(".png", ext + ".png");
+                            std::filesystem::path maybePath(maybeFname.toStdString());
+                            if (std::filesystem::exists(maybePath))
+                            {
+                                icoPath = maybePath;
+                                break;
+                            }
+                        }
+                    }
+
+                    uwpPair.insert("IconPath", QString::fromStdString(icoPath.string()));
 
                     free(pathBuf);
 

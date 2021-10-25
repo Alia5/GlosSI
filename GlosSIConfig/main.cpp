@@ -26,7 +26,7 @@ limitations under the License.
 #endif
 
 #include "UIModel.h"
-#include "qml/WinEventFilter.h"
+#include "WinEventFilter.h"
 
 #ifdef _WIN32
 // Some undocument stuff to enable aero on win10 or higher...

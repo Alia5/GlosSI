@@ -225,7 +225,7 @@ Window {
                     props.fileDialog.open();
                 }
                 if (param == "uwp") {
-                   // props.fileDIalog.open();
+                    props.uwpSelectDialog.open();
                 }
             }
         }

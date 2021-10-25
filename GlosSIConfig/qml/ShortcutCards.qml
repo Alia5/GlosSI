@@ -27,6 +27,8 @@ GridView {
     anchors.topMargin: margins
     visible: model.length > 0
     signal editClicked(var index, var shortcutInfo)
+    ScrollBar.vertical: ScrollBar {
+    }
 
 
     property real margins: 16
@@ -75,10 +77,10 @@ GridView {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            wrapMode: Text.WordWrap
             text: modelData.name
             font.bold: true
             font.pixelSize: 16
+            elide: Text.ElideRight
         }
 
         Column {
@@ -91,6 +93,7 @@ GridView {
                 spacing: 8
                 visible: modelData.launchPath && modelData.launchPath.length > 0
                 Label {
+                    id: typeLabel
                     text: uiModel.isWindows && modelData.launchPath
                         ? modelData.launchPath.replace(/^.{1,3}:/, "").length < modelData.launchPath.length
                             ? "Win32"
@@ -103,6 +106,8 @@ GridView {
                         ? modelData.launchPath.replace(/.*(\\|\/)/gm, "")
                         : ""
                     text: uiModel.isWindows ? te : te.replace(/\..{3}$/, "")
+                    width: 292 - typeLabel.width - 72
+                    elide: Text.ElideRight
                 }
             }
         }

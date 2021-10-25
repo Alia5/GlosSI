@@ -95,7 +95,6 @@ Dialog {
 				onClicked: function(){
 					close()
 					confirmed("uwp")
-					const wtf = uiModel.uwpList;
 				}
 			}
 		}
