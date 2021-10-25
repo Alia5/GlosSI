@@ -67,6 +67,9 @@
     <ClInclude Include="WinEventFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VDFParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml">

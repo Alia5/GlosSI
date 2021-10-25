@@ -53,6 +53,13 @@ private:
 
     void writeTarget(const std::string& json, const QString& name);
 
+
+    std::filesystem::path getSteamPath() const;
+    std::wstring getSteamUserId() const;
+    void parseShortcutVDF();
+    QString shortcutsfile_ = "/config/shortcuts.vdf";
+    QString user_data_path_ = "/userdata/";
+
     QVariantList targets_;
 
 #ifdef _WIN32

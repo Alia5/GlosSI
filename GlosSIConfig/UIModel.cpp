@@ -34,6 +34,11 @@ using namespace Windows::Foundation::Collections;
 
 #include <QGuiApplication>
 
+#include "VDFParser.h"
+#ifdef _WIN32
+#include <WinReg/WinReg.hpp>
+#endif
+
 #endif
 
 UIModel::UIModel() : QObject(nullptr)
@@ -54,7 +59,9 @@ UIModel::UIModel() : QObject(nullptr)
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
 
+    parseShortcutVDF();
     readConfigs();
+
 }
 
 void UIModel::readConfigs()
@@ -396,5 +403,39 @@ void UIModel::writeTarget(const std::string& json, const QString& name)
     }
     file.write(json.data());
     file.close();
+}
+
+std::filesystem::path UIModel::getSteamPath() const
+{
+#ifdef _WIN32
+    // TODO: check if keys/value exist
+    // steam should always be open and have written reg values...
+    winreg::RegKey key{ HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam" };
+    const auto res = key.GetStringValue(L"SteamPath");
+    return res;
+#else
+    return L""; // TODO
+#endif
+}
+
+std::wstring UIModel::getSteamUserId() const
+{
+#ifdef _WIN32
+    // TODO: check if keys/value exist
+    // steam should always be open and have written reg values...
+    winreg::RegKey key{ HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess" };
+    const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+    return res;
+#else
+    return L""; // TODO
+#endif
+}
+
+void UIModel::parseShortcutVDF()
+{
+    const auto config_path = getSteamPath() /= user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    auto wtf = VDFParser::Parser::parseShortcuts(config_path);
+
+    int a = 0;
 }
 
