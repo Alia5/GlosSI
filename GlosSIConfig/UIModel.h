@@ -17,6 +17,9 @@ limitations under the License.
 #include <filesystem>
 #include <QObject>
 #include <QVariant>
+#include <QJsonObject>
+#include "VDFParser.h"
+
 
 class UIModel : public QObject
 {
@@ -35,6 +38,9 @@ public:
     Q_INVOKABLE void addTarget(QVariant shortcut);
     Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
+    Q_INVOKABLE bool isInSteam(QVariant shortcut);
+    Q_INVOKABLE bool addToSteam(QVariant shortcut);
+    Q_INVOKABLE bool removeFromSteam(const QString& name);
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
@@ -51,7 +57,7 @@ private:
     std::filesystem::path config_path_;
     QString config_dir_name_;
 
-    void writeTarget(const std::string& json, const QString& name);
+    void writeTarget(const QJsonObject& json, const QString& name);
 
 
     std::filesystem::path getSteamPath() const;
@@ -61,6 +67,8 @@ private:
     QString user_data_path_ = "/userdata/";
 
     QVariantList targets_;
+
+    VDFParser::VDFFile shortcuts_vdf_;
 
 #ifdef _WIN32
     bool is_windows_ = true;

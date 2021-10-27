@@ -16,7 +16,6 @@ limitations under the License.
 #include "UIModel.h"
 
 #include <QDir>
-#include <QJsonObject>
 #include <QJsonDocument>
 
 #ifdef _WIN32
@@ -34,7 +33,6 @@ using namespace Windows::Foundation::Collections;
 
 #include <QGuiApplication>
 
-#include "VDFParser.h"
 #ifdef _WIN32
 #include <WinReg/WinReg.hpp>
 #endif
@@ -86,7 +84,22 @@ void UIModel::readConfigs()
             const auto data = file.readAll();
             file.close();
             const auto jsondoc = QJsonDocument::fromJson(data);
-            const auto json = jsondoc.object();
+            const auto filejson = jsondoc.object();
+
+            QJsonObject json;
+            json["version"] = filejson["version"];
+            json["icon"] = filejson["icon"];
+            json["launch"] = filejson["launch"]["launch"];
+            json["launchPath"] = filejson["launch"]["launchPath"];
+            json["launchAppArgs"] = filejson["launch"]["launchAppArgs"];
+            json["closeOnExit"] = filejson["launch"]["closeOnExit"];
+            json["hideDevices"] = filejson["devices"]["hideDevices"];
+            json["windowMode"] = filejson["window"]["windowMode"];
+            json["maxFps"] = filejson["window"]["maxFps"];
+            json["scale"] = filejson["window"]["scale"];
+
+            json["name"] = QString(name).replace(QRegularExpression("\.json"), "");
+
             targets_.append(json.toVariantMap());
         });
 
@@ -101,22 +114,17 @@ QVariantList UIModel::getTargetList() const
 
 void UIModel::addTarget(QVariant shortcut)
 {
-    // TODO: write config
     const auto map = shortcut.toMap();
-    const auto json = QJsonDocument(QJsonObject::fromVariantMap(map));
-    auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
-
-    writeTarget(wtf, map["name"].toString());
-
-    targets_.append(json.toVariant());
+    const auto json = QJsonObject::fromVariantMap(map);
+    writeTarget(json, map["name"].toString());
+    targets_.append(QJsonDocument(json).toVariant());
     emit targetListChanged();
 }
 
 void UIModel::updateTarget(int index, QVariant shortcut)
 {
     const auto map = shortcut.toMap();
-    const auto json = QJsonDocument(QJsonObject::fromVariantMap(map));
-    auto wtf = json.toJson(QJsonDocument::Indented).toStdString();
+    const auto json = QJsonObject::fromVariantMap(map);
 
     auto oldName = targets_[index].toMap()["name"].toString() + ".json";
     auto path = config_path_;
@@ -124,10 +132,9 @@ void UIModel::updateTarget(int index, QVariant shortcut)
     path /= (oldName).toStdString();
     std::filesystem::remove(path);
 
-    writeTarget(wtf, map["name"].toString());
+    writeTarget(json, map["name"].toString());
 
-
-    targets_.replace(index, json.toVariant());
+    targets_.replace(index, QJsonDocument(json).toVariant());
     emit targetListChanged();
 }
 
@@ -140,6 +147,94 @@ void UIModel::deleteTarget(int index)
     std::filesystem::remove(path);
     targets_.remove(index);
     emit targetListChanged();
+}
+
+bool UIModel::isInSteam(QVariant shortcut)
+{
+    const auto map = shortcut.toMap();
+    for (auto& steam_shortcut : shortcuts_vdf_.shortcuts)
+    {
+        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appName.value))
+        {
+            if (QString::fromStdString(steam_shortcut.exe.value).toLower().contains("glossitarget.exe"))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool UIModel::addToSteam(QVariant shortcut)
+{
+    QDir appDir = QDir::current();
+    const auto map = shortcut.toMap();
+    const auto name = map["name"].toString();
+    const auto maybeLaunchPath = map["launchPath"].toString();
+    const auto launch = map["launch"].toBool();
+
+    VDFParser::Shortcut vdfshortcut;
+    vdfshortcut.idx = shortcuts_vdf_.shortcuts.size();
+    vdfshortcut.appName.value = name.toStdString();
+    vdfshortcut.exe.value = ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\"").toStdString();
+    vdfshortcut.StartDir.value = (
+        launch && !maybeLaunchPath.isEmpty()
+            ? (std::string("\"") + std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string() + "\"")
+            : ("\"" + appDir.absolutePath() + "\"").toStdString()
+        );
+    vdfshortcut.appId.value = VDFParser::Parser::calculateAppId(vdfshortcut);
+    // ShortcutPath; default
+    vdfshortcut.LaunchOptions.value = (name + ".json").toStdString();
+    // IsHidden; default
+    // AllowDesktopConfig; default
+    // AllowOverlay; default
+    // openvr; default
+    // Devkit; default
+    // DevkitGameID; default
+    // DevkitOverrideAppID; default
+    // LastPlayTime; default
+    auto maybeIcon = map["icon"].toString();
+    if (maybeIcon.isEmpty())
+    {
+        if (launch && !maybeLaunchPath.isEmpty())
+            vdfshortcut.icon.value = maybeLaunchPath.toStdString();
+    } else {
+        vdfshortcut.icon.value = maybeIcon.toStdString();
+    }
+    // Add installed locally and GlosSI tag
+    VDFParser::ShortcutTag locallyTag;
+    locallyTag.idx = 0;
+    locallyTag.value = "Installed locally";
+    vdfshortcut.tags.value.push_back(locallyTag);
+
+    VDFParser::ShortcutTag glossitag;
+    glossitag.idx = 1;
+    glossitag.value = "GlosSI";
+    vdfshortcut.tags.value.push_back(glossitag);
+
+    shortcuts_vdf_.shortcuts.push_back(vdfshortcut);
+
+    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+
+}
+bool UIModel::removeFromSteam(const QString& name)
+{
+    auto& scuts = shortcuts_vdf_.shortcuts;
+    scuts.erase(std::remove_if(scuts.begin(), scuts.end(), [&name](const auto& shortcut)
+    {
+            return shortcut.appName.value == name.toStdString();
+    }), scuts.end());
+    for (int i = 0; i < scuts.size(); i++)
+    {
+        if (scuts[i].idx != i)
+        {
+            scuts[i].idx = i;
+        }
+    }
+    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
 }
 
 #ifdef _WIN32
@@ -264,7 +359,7 @@ QVariantList UIModel::uwpApps()
                             if (SUCCEEDED(hr)) {
                                 application->GetStringValue(L"Id", &appId);
                                 application->GetStringValue(L"DisplayName", &manifestAppName);
-                                for (auto & logoNameStr : logoNames)
+                                for (auto& logoNameStr : logoNames)
                                 {
                                     application->GetStringValue(logoNameStr.c_str(), &iconName);
                                     if (!std::wstring(iconName).empty())
@@ -349,7 +444,7 @@ QVariantList UIModel::uwpApps()
                     std::vector<QString> possibleextensions = { ".scale-100", ".scale-125", ".scale-150", ".scale-200" };
                     if (!std::filesystem::exists(icoPath))
                     {
-                        for (const auto& ext: possibleextensions)
+                        for (const auto& ext : possibleextensions)
                         {
                             QString maybeFname = QString(icoFName).replace(".png", ext + ".png");
                             std::filesystem::path maybePath(maybeFname.toStdString());
@@ -390,7 +485,7 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     emit acrylicChanged();
 }
 
-void UIModel::writeTarget(const std::string& json, const QString& name)
+void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 {
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
@@ -401,7 +496,29 @@ void UIModel::writeTarget(const std::string& json, const QString& name)
         // meh
         return;
     }
-    file.write(json.data());
+    QJsonObject fileJson;
+    fileJson["version"] = json["version"];
+    fileJson["icon"] = json["icon"];
+
+    QJsonObject launchObject;
+    launchObject["launch"] = json["launch"];
+    launchObject["launchPath"] = json["launchPath"];
+    launchObject["launchAppArgs"] = json["launchAppArgs"];
+    launchObject["closeOnExit"] = json["closeOnExit"];
+    fileJson["launch"] = launchObject;
+
+    QJsonObject devicesObject;
+    devicesObject["hideDevices"] = json["hideDevices"];
+    fileJson["devices"] = devicesObject;
+
+    QJsonObject windowObject;
+    windowObject["windowMode"] = json["windowMode"];
+    windowObject["maxFps"] = json["maxFps"];
+    windowObject["scale"] = json["scale"];
+    fileJson["window"] = windowObject;
+
+    auto wtf = QString(QJsonDocument(fileJson).toJson(QJsonDocument::Indented)).toStdString();
+    file.write(wtf.data());
     file.close();
 }
 
@@ -414,7 +531,7 @@ std::filesystem::path UIModel::getSteamPath() const
     const auto res = key.GetStringValue(L"SteamPath");
     return res;
 #else
-    return L""; // TODO
+    return L""; // TODO LINUX
 #endif
 }
 
@@ -427,15 +544,12 @@ std::wstring UIModel::getSteamUserId() const
     const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
     return res;
 #else
-    return L""; // TODO
+    return L""; // TODO LINUX
 #endif
 }
 
 void UIModel::parseShortcutVDF()
 {
-    const auto config_path = getSteamPath() /= user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
-    auto wtf = VDFParser::Parser::parseShortcuts(config_path);
-
-    int a = 0;
+    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path);
 }
-

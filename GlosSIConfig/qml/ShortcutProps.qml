@@ -39,7 +39,8 @@ Item {
             hideDevices: true,
             windowMode: false,
             maxFps: null,
-            scale: null
+            scale: null,
+            icon: null,
         })
 
     function resetInfo() {
@@ -53,7 +54,8 @@ Item {
             hideDevices: true,
             windowMode: false,
             maxFps: null,
-            scale: null
+            scale: null,
+            icon: null,
         })
     }
 
@@ -285,6 +287,9 @@ Item {
         onConfirmed: function(modelData) {
             if (nameInput.text == "") {
                     nameInput.text = modelData.AppName
+            }
+            if (modelData.IconPath) {
+                shortcutInfo.icon = modelData.IconPath
             }
             pathInput.text = modelData.AppUMId
             launchApp.checked = true

@@ -65,6 +65,7 @@ GridView {
     }
 
     delegate: RPane {
+        id: delegateRoot
         color: Qt.lighter(Material.background, 1.6)
         bgOpacity: 0.3
         radius: 8
@@ -72,6 +73,7 @@ GridView {
         height: 190
         Material.elevation: 4
         clip: true
+        property bool isInSteam: uiModel.isInSteam(modelData);
         Label {
             id: label
             anchors.top: parent.top
@@ -86,7 +88,7 @@ GridView {
         Column {
             anchors.top: label.bottom
             anchors.left: parent.left
-            anchors.bottom: row.top
+            anchors.bottom: buttonrow.top
             anchors.margins: 12
             spacing: 4
             Row {
@@ -112,17 +114,45 @@ GridView {
             }
         }
 
+        Image {
+            anchors.right: parent.right
+            anchors.bottom: buttonrow.top
+            id: maybeIcon
+            anchors.bottomMargin: 8
+            source: modelData.icon ? "file:///" + modelData.icon : null
+            // TODO: extract exe icons.
+            width: 48
+            height: 48
+            visible: modelData.icon
+        }
+
         Button {
+            id: steambutton
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             width: 72
-            onClicked: console.log("TODO") // TODO
+            onClicked: function(){
+                if (delegateRoot.isInSteam) {
+                    if (!uiModel.removeFromSteam(modelData.name)) {
+                        // TODO: show error
+                        return;
+                    }                
+                } else {
+                    if (!uiModel.addToSteam(modelData)) {
+                        // TODO: show error
+                        return;
+                    }
+                }
+                delegateRoot.isInSteam = uiModel.isInSteam(modelData)
+            }
+            highlighted: delegateRoot.isInSteam
+            Material.accent: Material.color(Material.Red, Material.Shade400)
             Row {
                 anchors.centerIn: parent
                 spacing: 8
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "+"
+                    text: delegateRoot.isInSteam ? "-" : "+"
                     font.bold: true
                     font.pixelSize: 24
                 }
@@ -143,7 +173,7 @@ GridView {
         }
 
         Row {
-            id: row
+            id: buttonrow
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             spacing: 4

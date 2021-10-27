@@ -68,7 +68,7 @@
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
       <AdditionalManifestFiles>$(ProjectDir)manifest.xml %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
     <Link>
@@ -86,7 +86,7 @@
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
       <AdditionalManifestFiles>$(ProjectDir)manifest.xml %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
     <Link>
