@@ -87,12 +87,40 @@ namespace VDFParser
         const uint8_t type_id = _TID;
         const char* const key = _KEY;
         type value;
+        VDFKeyPair(const VDFKeyPair& other)
+        {
+            value = other.value;
+        };
+        VDFKeyPair(VDFKeyPair&& other)
+        {
+            value = std::move(other.value);
+        };
+        VDFKeyPair& operator=(const VDFKeyPair& other)
+        {
+            value = other.value;
+            return *this;
+        }
+        VDFKeyPair& operator=(VDFKeyPair&& other)
+        {
+            value = std::move(other.value);
+            return *this;
+        }
     };
 
     template<uint8_t initialByte>
     struct VDFIdx
     {
         VDFIdx() {};
+        VDFIdx(const VDFIdx& other)
+        {
+            data[0] = other.data[0];
+            data[1] = other.data[1];
+        };
+        VDFIdx(VDFIdx&& other)
+        {
+            data[0] = std::move(other.data[0]);
+            data[1] = std::move(other.data[1]);
+        };
         VDFIdx(int idx)
         {
             if (idx > 99)
@@ -120,18 +148,50 @@ namespace VDFParser
                 return res;
             }
             int res = 0;
-            data[0] -= initialByte;
-            std::from_chars(&data[0], &data[1], res);
-            data[0] += initialByte;
+            char copy[2] = { data[0] - initialByte, data[1]};
+            std::from_chars(&copy[0], &copy[1], res);
             return res;
+        }
+
+        VDFIdx& operator=(const VDFIdx& other)
+        {
+            data[0] = other.data[0];
+            data[1] = other.data[1];
+            return *this;
+        }
+        VDFIdx& operator=(VDFIdx&& other)
+        {
+            data[0] = std::move(other.data[0]);
+            data[1] = std::move(other.data[1]);
+            return *this;
         }
     };
 
     struct ShortcutTag
     {
+        ShortcutTag() {};
+        ShortcutTag(const ShortcutTag& other)
+        {
+            value = other.value;
+        };
+        ShortcutTag(ShortcutTag&& other)
+        {
+            value = std::move(other.value);
+        };
         VDFIdx<0x01> idx; // I Hope this is how it works... See VDFIdx
         std::string value;
         const uint16_t end_marker = 0x0808;
+
+        ShortcutTag& operator=(const ShortcutTag& other)
+        {
+            value = other.value;
+            return *this;
+        }
+        ShortcutTag& operator=(ShortcutTag&& other)
+        {
+            value = std::move(other.value);
+            return *this;
+        }
     };
 
     struct Shortcut
@@ -153,14 +213,55 @@ namespace VDFParser
         VDFKeyPair<k_DevkitOverrideAppID, uint32_t, VDFTypeId::Number> DevkitOverrideAppID{ 0 }; // 
         VDFKeyPair<k_LastPlayTime, uint32_t, VDFTypeId::Number> LastPlayTime{ 0 }; // 
         VDFKeyPair<k_tags, std::vector<ShortcutTag>, VDFTypeId::StringList> tags{ };
+        Shortcut& operator=(const Shortcut& other)
+        {
+            idx = other.idx;
+            appId = other.appId;
+            appName = other.appName;
+            exe = other.exe;
+            StartDir = other.StartDir;
+            icon = other.icon;
+            ShortcutPath = other.ShortcutPath;
+            LaunchOptions = other.LaunchOptions;
+            LaunchOptions = other.LaunchOptions;
+            IsHidden = other.IsHidden;
+            AllowDesktopConfig = other.AllowDesktopConfig;
+            AllowOverlay = other.AllowOverlay;
+            openvr = other.openvr;
+            Devkit = other.Devkit;
+            DevkitGameID = other.DevkitGameID;
+            DevkitOverrideAppID = other.DevkitOverrideAppID;
+            LastPlayTime = other.LastPlayTime;
+            tags = other.tags;
+            return *this;
+        }
     };
 
     struct VDFFile
     {
+        VDFFile(){};
+        VDFFile(const VDFFile& other)
+        {
+            shortcuts = other.shortcuts;
+        };
+        VDFFile(VDFFile&& other)
+        {
+            shortcuts = std::move(other.shortcuts);
+        };
         const uint8_t first_byte = 0x00;
         const std::string identifier = "shortcuts";
         std::vector<Shortcut> shortcuts;
         const uint16_t end_marker = 0x0808;
+        VDFFile& operator=(const VDFFile& other)
+        {
+            shortcuts = other.shortcuts;
+            return *this;
+        }
+        VDFFile& operator=(VDFFile&& other)
+        {
+            shortcuts = std::move(other.shortcuts);
+            return *this;
+        }
     };
 
     class Parser
