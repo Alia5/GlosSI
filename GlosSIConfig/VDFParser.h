@@ -13,15 +13,47 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// "Shitty shortcuts.vdf Parser"�
+
 #pragma once
 #include <filesystem>
-#include <QString>
-#include <QVariant>
-#include <QList>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <charconv>
 
 namespace VDFParser
 {
-    static constexpr const char k_appId[] = { "appId" };
+    namespace crc
+    {
+        template<typename CONT>
+        uint32_t calculate_crc(CONT container)
+        {
+            uint32_t crc32_table[256];
+            for (uint32_t i = 0; i < 256; i++) {
+                uint32_t ch = i;
+                uint32_t crc = 0;
+                for (size_t j = 0; j < 8; j++) {
+                    uint32_t b = (ch ^ crc) & 1;
+                    crc >>= 1;
+                    if (b) crc = crc ^ 0xEDB88320;
+                    ch >>= 1;
+                }
+                crc32_table[i] = crc;
+            }
+            uint32_t crc = 0xFFFFFFFF;
+            for (size_t i = 0; i < container.size(); i++) {
+                char ch = container.data()[i];
+                uint32_t t = (ch ^ crc) & 0xFF;
+                crc = (crc >> 8) ^ crc32_table[t];
+            }
+            return ~crc;
+        }
+    }
+
+    static constexpr const char k_appid[] = { "appid" };
     static constexpr const char k_appname[] = { "appname" };
     static constexpr const char k_exe[] = { "exe" };
     static constexpr const char k_StartDir[] = { "StartDir" };
@@ -38,6 +70,13 @@ namespace VDFParser
     static constexpr const char k_LastPlayTime[] = { "LastPlayTime" };
     static constexpr const char k_tags[] = { "tags" };
 
+    enum VDFTypeId
+    {
+        StringList = 0,
+        String,
+        Number,
+    };
+
     template<const char* const keyname, typename type, const uint8_t const _type_id>
     struct VDFKeyPair
     {
@@ -50,88 +89,420 @@ namespace VDFParser
         type value;
     };
 
-    static constexpr uint32_t idx_begin_ = 0x30;
-    struct ShortcutTags
+    template<uint8_t initialByte>
+    struct VDFIdx
     {
-        const char idx[2] = "0";
-        std::vector<const char*> tags;
+        VDFIdx() {};
+        VDFIdx(int idx)
+        {
+            if (idx > 99)
+            {
+                data[0] = initialByte;
+                data[1] = 0;
+            }
+            else if (idx < 10)
+            {
+                data[1] = std::to_string(idx).c_str()[0];
+            }
+            else
+            {
+                auto meh = std::to_string(idx).c_str();
+                data[0] = meh[0] + initialByte;
+                data[1] = meh[1];
+            }
+        }
+        char data[2] = { initialByte, 0x0 };
+        operator int() const {
+            if (data[0] == initialByte)
+            {
+                int res = 0;
+                std::from_chars(&data[1], &data[1], res);
+                return res;
+            }
+            int res = 0;
+            data[0] -= initialByte;
+            std::from_chars(&data[0], &data[1], res);
+            data[0] += initialByte;
+            return res;
+        }
+    };
+
+    struct ShortcutTag
+    {
+        VDFIdx<0x01> idx; // I Hope this is how it works... See VDFIdx
+        std::string value;
         const uint16_t end_marker = 0x0808;
     };
 
     struct Shortcut
     {
-        const char idx[2] = "0";
-        VDFKeyPair<k_appId, uint32_t, 0x02> appId{ 0x000000 }; // TODO ???
-        VDFKeyPair<k_appname, const char*, 0x01> appName{ "" };
-        VDFKeyPair<k_exe, const char*, 0x01> exe{ "\"\"" }; // Qouted
-        VDFKeyPair<k_StartDir, const char*, 0x01> StartDir{ "\"\"" }; // Qouted
-        VDFKeyPair<k_icon, const char*, 0x01> icon{ "" }; // Qouted or empty
-        VDFKeyPair<k_ShortcutPath, const char*, 0x01> ShortcutPath{ "" }; // Qouted or empty?
-        VDFKeyPair<k_LaunchOptions, const char*, 0x01> LaunchOptions{ "" }; // UNQOUTED or empty
-        VDFKeyPair<k_IsHidden, uint32_t, 0x02> IsHidden{ 0 };
-        VDFKeyPair<k_AllowDesktopConfig, uint32_t, 0x02> AllowDesktopConfig{ 1 }; 
-        VDFKeyPair<k_AllowOverlay, uint32_t, 0x02> AllowOverlay{ 1 }; 
-        VDFKeyPair<k_openvr, uint32_t, 0x02> openvr{ 0 };
-        VDFKeyPair<k_Devkit, uint32_t, 0x02> Devkit{ 0 };
-        VDFKeyPair<k_DevkitGameID, const char*, 0x01> DevkitGameID{ "" };
-        VDFKeyPair<k_DevkitOverrideAppID, uint32_t, 0x02> DevkitOverrideAppID{ 0 }; // 
-        VDFKeyPair<k_LastPlayTime, uint32_t, 0x02> LastPlayTime{ 0 }; // 
-        VDFKeyPair<k_tags, ShortcutTags, 0x00> tags{ }; 
+        VDFIdx<0x00> idx;
+        VDFKeyPair<k_appid, uint32_t, VDFTypeId::Number> appId{ 0x000000 };
+        VDFKeyPair<k_appname, std::string, VDFTypeId::String> appName{ "" };
+        VDFKeyPair<k_exe, std::string, VDFTypeId::String> exe{ "\"\"" }; // Qouted
+        VDFKeyPair<k_StartDir, std::string, VDFTypeId::String> StartDir{ "\"\"" }; // Qouted
+        VDFKeyPair<k_icon, std::string, VDFTypeId::String> icon{ "" }; // Qouted or empty
+        VDFKeyPair<k_ShortcutPath, std::string, VDFTypeId::String> ShortcutPath{ "" }; // Qouted or empty?
+        VDFKeyPair<k_LaunchOptions, std::string, VDFTypeId::String> LaunchOptions{ "" }; // UNQOUTED or empty
+        VDFKeyPair<k_IsHidden, uint32_t, VDFTypeId::Number> IsHidden{ 0 };
+        VDFKeyPair<k_AllowDesktopConfig, uint32_t, VDFTypeId::Number> AllowDesktopConfig{ 1 };
+        VDFKeyPair<k_AllowOverlay, uint32_t, VDFTypeId::Number> AllowOverlay{ 1 };
+        VDFKeyPair<k_openvr, uint32_t, VDFTypeId::Number> openvr{ 0 };
+        VDFKeyPair<k_Devkit, uint32_t, VDFTypeId::Number> Devkit{ 0 };
+        VDFKeyPair<k_DevkitGameID, std::string, VDFTypeId::String> DevkitGameID{ "" };
+        VDFKeyPair<k_DevkitOverrideAppID, uint32_t, VDFTypeId::Number> DevkitOverrideAppID{ 0 }; // 
+        VDFKeyPair<k_LastPlayTime, uint32_t, VDFTypeId::Number> LastPlayTime{ 0 }; // 
+        VDFKeyPair<k_tags, std::vector<ShortcutTag>, VDFTypeId::StringList> tags{ };
     };
 
     struct VDFFile
     {
         const uint8_t first_byte = 0x00;
-        const char* const identifier = "shortcuts";
-        std::vector<Shortcut> shortcuts; // only use data...
+        const std::string identifier = "shortcuts";
+        std::vector<Shortcut> shortcuts;
         const uint16_t end_marker = 0x0808;
     };
 
-
     class Parser
     {
-    public:
-        static inline QList<QVariantMap> parseShortcuts(std::filesystem::path path)
+    private:
+        static inline std::ifstream ifile;
+        static inline std::ofstream ofile;
+
+        template<typename typ, typename size>
+        static inline auto readVDFBuffer(typ& buff,size sz)
         {
-
-            VDFFile vdffile;
-            vdffile.shortcuts.emplace_back();
-            vdffile.shortcuts[0].tags.value.tags.emplace_back();
-
-            QList<QVariantMap> res;
-
-            QFile shortcuts_file(QString::fromStdWString(path.wstring()));
-            if (!shortcuts_file.open(QFile::ReadWrite))
+            if (ifile.eof())
             {
-                // TODO: try to create file...
-                return res;
+
+                return;
             }
-            //const QByteArray content = shortcuts_file.readAll();
-            //const QByteArray header = QByteArray(content.data(), 11);
-            //if (file_header.compare(header) != 0)
-            //{
-            //    // TODO: invalid header
-            //}
-
-            shortcuts_file.close();
-
-            return res;
+            ifile.read((char*)buff, sz);
         }
+
+        template<typename typ>
+        static inline auto readVDFValue()
+        {
+            uint8_t buff[sizeof(typ)];
+            ifile.read((char*)buff, sizeof(typ));
+            return *reinterpret_cast<typ*>(buff);
+        }
+
+        static inline std::string readVDFString()
+        {
+            std::string str;
+            char ch = '\x0';
+            do
+            {
+                if (ifile.eof())
+                {
+                    return str;
+                }
+                ifile.read(&ch, sizeof(char));
+                if (ch != '\x0')
+                    str.push_back(ch);
+            } while (ch != '\x0');
+            return str;
+        }
+
+    public:
+        static inline uint32_t calculateAppId(const Shortcut& shortcut)
+        {
+            std::string buff = shortcut.exe.value + shortcut.appName.value;
+            auto checksum = crc::calculate_crc(buff);
+            return checksum | 0x80000000;
+        }
+
+        static inline VDFFile parseShortcuts(std::filesystem::path path)
+        {
+            VDFFile vdffile;
+
+            ifile.open(path.string(), std::ios::binary | std::ios::in);
+            if (!ifile.is_open())
+            {
+                return {};
+            }
+
+            auto firsty = readVDFValue<uint8_t>();
+            if (vdffile.first_byte != firsty)
+            {
+                // TODO: invalid
+                ifile.close();
+                return vdffile;
+            }
+
+            auto headername = readVDFString();
+            if (vdffile.identifier != headername)
+            {
+                // TODO: invalid
+                ifile.close();
+                return vdffile;
+            }
+
+
+            char buff[3];
+            while(true)
+            {
+                if (ifile.eof())
+                {
+                    break;
+                }
+                readVDFBuffer(buff, 3); // 2 bytes idx, 0x00 delmiter
+                if (buff[0] == 0x08 && buff[1] == 0x08)
+                {
+                    break;
+                }
+                Shortcut shortcut;
+                shortcut.idx.data[0] = buff[0]; shortcut.idx.data[1] = buff[1];
+                while (true) // TODO;
+                {
+                    if (ifile.eof())
+                    {
+                        break;
+                    }
+                    VDFTypeId tid = static_cast<VDFTypeId>(readVDFValue<uint8_t>());
+                    if (tid == 0x08)
+                    {
+                        auto nextbyte = readVDFValue<uint8_t>();
+                        if (nextbyte == 0x08)
+                        {
+                            break;
+                        } else {
+                            // WTF?!
+                            // TODO:
+                            throw std::exception("WTF");
+                        }
+                    }
+                    auto key = readVDFString();
+                    if ((tid == 0x08 && key[0] == 0x08) || key == "\x08\x08")
+                    {
+                        break;
+                    }
+                    if (key == shortcut.appId.key)
+                    {
+                        shortcut.appId.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.appName.key)
+                    {
+                        shortcut.appName.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.exe.key)
+                    {
+                        shortcut.exe.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.StartDir.key)
+                    {
+                        shortcut.StartDir.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.icon.key)
+                    {
+                        shortcut.icon.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.ShortcutPath.key)
+                    {
+                        shortcut.ShortcutPath.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.LaunchOptions.key)
+                    {
+                        shortcut.LaunchOptions.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.IsHidden.key)
+                    {
+                        shortcut.IsHidden.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.AllowDesktopConfig.key)
+                    {
+                        shortcut.AllowDesktopConfig.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.AllowOverlay.key)
+                    {
+                        shortcut.AllowOverlay.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.openvr.key)
+                    {
+                        shortcut.openvr.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.Devkit.key)
+                    {
+                        shortcut.Devkit.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.DevkitGameID.key)
+                    {
+                        shortcut.DevkitGameID.value = readVDFString();
+                        continue;
+                    }
+                    if (key == shortcut.DevkitOverrideAppID.key)
+                    {
+                        shortcut.DevkitOverrideAppID.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.LastPlayTime.key)
+                    {
+                        shortcut.LastPlayTime.value = readVDFValue<uint32_t>();
+                        continue;
+                    }
+                    if (key == shortcut.tags.key)
+                    {
+                        // TODO: read tags
+                        ShortcutTag tag;
+                        while (true)
+                        {
+                            if (ifile.eof())
+                            {
+                                break;
+                            }
+                            char tbuff[2];
+                            readVDFBuffer(tbuff, 2); // 2 bytes idx
+                            if (tbuff[0] == 0x08 && tbuff[1] == 0x08)
+                            {
+                                ifile.seekg(-2, std::ios_base::cur);
+                                break;
+                            }
+                            tag.idx.data[0] = tbuff[0]; tag.idx.data[1] = tbuff[1];
+                            ifile.seekg(1, std::ios_base::cur);
+                            tag.value = readVDFString();
+                            shortcut.tags.value.push_back(tag);
+                        }
+                        continue;
+                    }
+
+                }
+                if (!(shortcut.idx.data[0] == 0x0 && shortcut.idx.data[1] == 0x0))
+                {
+                    vdffile.shortcuts.push_back(shortcut);
+                }
+            }
+
+            ifile.close();
+
+            return vdffile;
+        }
+
+        static inline bool writeShortcuts(std::filesystem::path path, const VDFFile& vdffile)
+        {
+            ofile.open(path.string(), std::ios::binary | std::ios::out);
+            if (!ofile.is_open())
+            {
+                return false;
+            }
+            ofile.write((char*)&vdffile.first_byte, 1);
+            ofile.write(vdffile.identifier.data(), vdffile.identifier.length());
+            ofile.write("\x00", 1);
+            for (auto& shortcut : vdffile.shortcuts)
+            {
+                ofile.write(shortcut.idx.data, 2);
+                ofile.write("\x00", 1);
+                //
+                ofile.write((char*)&shortcut.appId.type_id, 1);
+                ofile.write(shortcut.appId.key, 6);
+                ofile.write((char*)&shortcut.appId.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.appName.type_id, 1);
+                ofile.write(shortcut.appName.key, 8);
+                ofile.write(shortcut.appName.value.data(), shortcut.appName.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.exe.type_id, 1);
+                ofile.write(shortcut.exe.key, 4);
+                ofile.write(shortcut.exe.value.data(), shortcut.exe.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.StartDir.type_id, 1);
+                ofile.write(shortcut.StartDir.key, 9);
+                ofile.write(shortcut.StartDir.value.data(), shortcut.StartDir.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.icon.type_id, 1);
+                ofile.write(shortcut.icon.key, 5);
+                ofile.write(shortcut.icon.value.data(), shortcut.icon.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.ShortcutPath.type_id, 1);
+                ofile.write(shortcut.ShortcutPath.key, 13);
+                ofile.write(shortcut.ShortcutPath.value.data(), shortcut.ShortcutPath.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.LaunchOptions.type_id, 1);
+                ofile.write(shortcut.LaunchOptions.key, 14);
+                ofile.write(shortcut.LaunchOptions.value.data(), shortcut.LaunchOptions.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.IsHidden.type_id, 1);
+                ofile.write(shortcut.IsHidden.key, 9);
+                ofile.write((char*)&shortcut.IsHidden.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.AllowDesktopConfig.type_id, 1);
+                ofile.write(shortcut.AllowDesktopConfig.key, 19);
+                ofile.write((char*)&shortcut.AllowDesktopConfig.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.AllowOverlay.type_id, 1);
+                ofile.write(shortcut.AllowOverlay.key, 13);
+                ofile.write((char*)&shortcut.AllowOverlay.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.openvr.type_id, 1);
+                ofile.write(shortcut.openvr.key, 7);
+                ofile.write((char*)&shortcut.openvr.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.Devkit.type_id, 1);
+                ofile.write(shortcut.Devkit.key, 7);
+                ofile.write((char*)&shortcut.Devkit.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.DevkitGameID.type_id, 1);
+                ofile.write(shortcut.DevkitGameID.key, 13);
+                ofile.write(shortcut.DevkitGameID.value.data(), shortcut.DevkitGameID.value.length());
+                ofile.write("\x00", 1);
+
+                //
+                ofile.write((char*)&shortcut.DevkitOverrideAppID.type_id, 1);
+                ofile.write(shortcut.DevkitOverrideAppID.key, 20);
+                ofile.write((char*)&shortcut.DevkitOverrideAppID.value, 4);
+
+                //
+                ofile.write((char*)&shortcut.LastPlayTime.type_id, 1);
+                ofile.write(shortcut.LastPlayTime.key, 13);
+                ofile.write((char*)&shortcut.LastPlayTime.value, 4);
+
+
+                //
+                ofile.write((char*)&shortcut.tags.type_id, 1);
+                ofile.write(shortcut.tags.key, 5);
+                for (auto& tag : shortcut.tags.value)
+                {
+                    ofile.write(tag.idx.data, 2);
+                    ofile.write("\x00", 1);
+                    ofile.write(tag.value.data(), tag.value.length());
+                    ofile.write("\x00", 1);
+                }
+                ofile.write("\x08\x08", 2);
+            }
+            ofile.write("\x08\x08", 2);
+            ofile.close();
+            return true;
+        }
+
     };
 }
-
-//AppName = app.Name,
-//Exe = exePath,
-//StartDir = exeDir,
-//LaunchOptions = app.Aumid,
-//AllowDesktopConfig = 1,
-//AllowOverlay = 1,
-//Icon = app.Icon,
-//Index = shortcuts.Length,
-//IsHidden = 0,
-//OpenVR = 0,
-//ShortcutPath = "",
-//Tags = tags,
-//Devkit = 0,
-//DevkitGameID = "",
-//LastPlayTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
