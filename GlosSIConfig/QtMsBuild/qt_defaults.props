@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+/****************************************************************************
+**
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the Qt VS Tools.
+**
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+-->
+
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Default values of Qt settings
+// -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <QtDefaultsLoaded>true</QtDefaultsLoaded>
+
+    <!--// Path of Qt binary files -->
+    <QtPathBinaries Condition="'$(QtPathBinaries)' == ''"
+      >bin</QtPathBinaries>
+    <QtPathLibraryExecutables Condition="'$(QtPathLibraryExecutables)' == ''"
+      >bin</QtPathLibraryExecutables>
+
+    <!--// Extract Qt variables from qmake-generated Makefile
+        //     Syntax: < var_name > [ = [ makefile_name ] / < pattern > / < replace > / ] -->
+    <QMake_DEFINES_
+>DEFINES=/-D([^\s=]+(=(\x22(\\\\|\\\x22|[^\x22])*\x22|\S+))?)/$1/</QMake_DEFINES_>
+    <QMake_INCLUDEPATH_
+>INCLUDEPATH=INCPATH/-(?:iquote|isystem|idirafter|I)\s*(\x22[^\x22]+\x22|[^\s]+)/$1/</QMake_INCLUDEPATH_>
+    <QMake_LIBS_
+>LIBS=/(?:(?:\/LIBPATH:|-L)(?:\x22[^\x22]+\x22|[^\s]+))|(\x22[^\x22]+\x22|[^\s]+)/$1/</QMake_LIBS_>
+    <QMake_LIBPATH_
+>LIBPATH=LIBS/(?:\/LIBPATH:|-L)(\x22[^\x22]+\x22|[^\s]+)/$1/</QMake_LIBPATH_>
+    <QtVars
+      Condition="'$(QtVars)' == ''"
+      >$(QMake_DEFINES_);$(QMake_INCLUDEPATH_);$(QMake_LIBS_);$(QMake_LIBPATH_)</QtVars>
+
+    <!--// Default Qt version -->
+    <QtVersionsRegKey Condition="'$(QtVersionsRegKey)' == ''"
+      >HKEY_CURRENT_USER\Software\Digia\Versions</QtVersionsRegKey>
+    <DefaultQtVersion Condition="'$(DefaultQtVersion)' == ''"
+      >$([MSBuild]::GetRegistryValue('$(QtVersionsRegKey)','DefaultQtVersion'))</DefaultQtVersion>
+
+    <!--// Qt build config -->
+    <QtBuildConfig Condition="'$(Configuration)' == 'Debug'">debug</QtBuildConfig>
+    <QtBuildConfig Condition="'$(Configuration)' != 'Debug'">release</QtBuildConfig>
+  </PropertyGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Default item metadata
+  // -->
+  <ItemDefinitionGroup>
+
+    <!--// C++ -->
+    <ClCompile>
+      <PreprocessorDefinitions
+      >$(Qt_DEFINES_);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(QtQMLDebugEnable)' == 'true'"
+        >QT_QML_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories
+      >$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+
+    <!--// Linker (.obj files) -->
+    <Link>
+      <AdditionalDependencies
+      >$(Qt_LIBS_);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories
+      >$(Qt_LIBPATH_);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SharedLibrarySearchPath
+      >$(Qt_LIBPATH_);%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Read subfolder dependencies (qt_import.props)
+  // -->
+  <PropertyGroup
+    Condition="'$(VisualStudioVersion)' != '12.0' AND '$(VisualStudioVersion)' != '14.0'">
+    <SubFolder>$([System.IO.Directory]::GetDirectories('$(MSBuildThisFileDirectory)'))</SubFolder>
+    <SubFolderImports Condition="'$(SubFolder)' != ''"
+      >
+      $([System.String]::Join(
+      '\qt_import.props;',
+      $(SubFolder.Split(';'))))\qt_import.props
+    </SubFolderImports>
+    <QtImports>$(SubFolderImports.Split(';'))</QtImports>
+    <SubFolder/>
+    <SubFolderImports/>
+  </PropertyGroup>
+  <Import
+    Condition="'$(VisualStudioVersion)' != '12.0' AND '$(VisualStudioVersion)' != '14.0'"
+    Project="$(QtImports)"/>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import subfolder props
+  // -->
+  <Import
+    Condition="'$(VisualStudioVersion)' != '12.0' AND '$(VisualStudioVersion)' != '14.0'"
+    Project="$(QtMsBuildProps)"/>
+  <ImportGroup
+    Condition="'$(VisualStudioVersion)' == '12.0' OR '$(VisualStudioVersion)' == '14.0'">
+    <!--
+        // WORKAROUND: In VS 2013 and VS 2015 importing a list of files does not work
+        // REMOVE when support for VS 2015 is dropped
+    -->
+    <Import Project="$(MSBuildThisFileDirectory)\moc\qtmoc.props"/>
+    <Import Project="$(MSBuildThisFileDirectory)\rcc\qtrcc.props"/>
+    <Import Project="$(MSBuildThisFileDirectory)\qml\qtqml.props"/>
+    <Import Project="$(MSBuildThisFileDirectory)\repc\qtrepc.props"/>
+    <Import Project="$(MSBuildThisFileDirectory)\uic\qtuic.props"/>
+    <Import Project="$(MSBuildThisFileDirectory)\translation\qttranslation.props"/>
+  </ImportGroup>
+
+</Project>

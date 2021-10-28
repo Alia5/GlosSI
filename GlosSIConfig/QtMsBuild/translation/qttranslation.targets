@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the Qt VS Tools.
+**
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+-->
+
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Definitions specific to translation
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import pre-requisites
+  // -->
+  <Import
+    Condition="'$(QtMsBuildTargets_BeforeTranslation)' != ''"
+    Project="$(QtMsBuildTargets_BeforeTranslation)"/>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Qt/MSBuild global properties
+  // -->
+  <PropertyGroup>
+    <QtDependsOn>$(QtDependsOn);QtTranslation</QtDependsOn>
+  </PropertyGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Build integration
+  // -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      QtTranslation
+    </BuildDependsOn>
+    <CleanDependsOn>
+      $(CleanDependsOn);
+      QtTranslationClean
+    </CleanDependsOn>
+  </PropertyGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Setup item type and property page
+  // -->
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)qttranslation.xml" />
+    <AvailableItemName Include="QtTranslation">
+      <Targets>QtTranslation</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslationPrepare
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Calculate paths to input and output files
+  // -->
+  <Target Name="QtTranslationPrepare">
+    <ItemGroup>
+      <QtTranslation Include="@(None)" Condition="'%(None.Extension)' == '.ts'" />
+      <QtTranslation>
+        <InputFiles
+          >$(QtTranslationInput)</InputFiles>
+        <LUpdate
+          >$(QtToolsPath)/lupdate</LUpdate>
+        <LRelease
+          >$(QtToolsPath)/lrelease</LRelease>
+        <TsFile
+          >%(Identity)</TsFile>
+        <QmFile
+          >$([System.IO.Path]::Combine('%(QmOutputDir)', '%(QmOutputFile)'))</QmFile>
+        <InputListFile
+          >$([System.IO.Path]::Combine('$(IntDir)', '%(Filename).in.txt'))</InputListFile>
+      </QtTranslation>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslationSelect
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Select files to include in build
+  // -->
+  <Target Name="QtTranslationSelect"
+    DependsOnTargets="QtTranslationPrepare">
+    <PropertyGroup>
+      <QtHasTranslation Condition="'@(QtTranslation)' != ''">true</QtHasTranslation>
+    </PropertyGroup>
+    <ItemGroup>
+      <selected_files Include="$(SelectedFiles)"/>
+    </ItemGroup>
+    <ItemGroup Condition="'@(selected_files)' != ''">
+      <QtTranslation Remove="@(QtTranslation)" Condition="'%(Identity)' != '@(selected_files)'"/>
+      <QtTranslation>
+        <ForceRebuild>####### Don't skip this target #######</ForceRebuild>
+      </QtTranslation>
+    </ItemGroup>
+    <ItemGroup>
+      <QtTranslationUpdate
+        Include="@(QtTranslation)"
+        Condition="'$(QtTranslationForceUpdate)' == 'true'
+                OR $([System.String]::Copy('%(BuildAction)').Contains('lupdate'))">
+        <Force Condition="'$(QtTranslationForceUpdate)' == 'true'">true</Force>
+      </QtTranslationUpdate>
+      <QtTranslationRelease
+        Include="@(QtTranslation)"
+        Condition="'$(QtTranslationForceRelease)' == 'true'
+                OR $([System.String]::Copy('%(BuildAction)').Contains('lrelease'))">
+        <Force Condition="'$(QtTranslationForceRelease)' == 'true'">true</Force>
+      </QtTranslationRelease>
+      <selected_files Remove="@(selected_files)"/>
+    </ItemGroup>
+    <Delete
+      Condition="'%(QtTranslationUpdate.Force)' == 'true'"
+      Files="%(QtTranslationUpdate.InputListFile)"
+      TreatErrorsAsWarnings="true"/>
+    <Delete
+      Condition="'%(QtTranslationRelease.Force)' == 'true'"
+      Files="%(QtTranslationRelease.QmFile)"
+      TreatErrorsAsWarnings="true"/>
+    <Message Importance="high"
+      Condition="'$(SelectedFiles)' != ''
+             AND '$(QtHasTranslation)' == 'true'
+             AND '@(QtTranslationUpdate)' == ''
+             AND '@(QtTranslationRelease)' == ''"
+      Text="Translation disabled during build; skipping."/>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslationUpdate
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Run lupdate on .ts files
+  // -->
+  <Target Name="QtTranslationUpdate"
+    DependsOnTargets="QtTranslationSelect"
+    Condition="'@(QtTranslationUpdate)' != ''"
+    Inputs="%(QtTranslationUpdate.InputFiles);
+            %(QtTranslationUpdate.InputListFile);
+            $(MSBuildProjectFile)"
+    Outputs="%(QtTranslationUpdate.TsFile);%(QtTranslationUpdate.ForceRebuild)">
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Flatten metadata: items => list of (item, metadata name, metadata value)
+    // -->
+    <Flatten Items="@(QtTranslationUpdate)"
+      Metadata="LUpdate;
+                TsFile;
+                QmFile;
+                InputListFile;
+                InputFiles;
+                IncludePath;
+                SourceLanguage;
+                TargetLanguage;
+                NoObsolete;
+                PluralOnly;
+                UpdateSilent;
+                NoSort;
+                Locations;
+                NoUiLines;
+                DisableSameTextHeuristic;
+                DisableSimilarTextHeuristic;
+                DisableNumberHeuristic;
+                FunctionAliases">
+      <Output
+        TaskParameter="Result" ItemName="LocalOptions" />
+    </Flatten>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Translate local paths to build host paths
+    // -->
+    <HostTranslatePaths
+      Items="@(LocalOptions)"
+      Names="TsFile;QmFile;InputListFile;InputFiles;IncludePath">
+      <Output
+        TaskParameter="Result" ItemName="Options" />
+    </HostTranslatePaths>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Sanitize paths
+    // -->
+    <ItemGroup>
+      <!-- Remove quotes from paths -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LUpdate'
+                        OR '%(Name)' == 'InputFiles'
+                        OR '%(Name)' == 'InputListFile'
+                        OR '%(Name)' == 'IncludePath')"
+          >$([System.String]::Copy('%(Value)').Replace('&quot;', ''))</Value>
+      </Options>
+      <!-- Escape trailing back-slash in paths with spaces -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LUpdate'
+                        OR '%(Name)' == 'InputListFile'
+                        OR '%(Name)' == 'IncludePath')
+                        AND $([System.String]::Copy('%(Value)').Contains(' '))
+                        AND $([System.String]::Copy('%(Value)').EndsWith('\'))"
+          >%(Value)\</Value>
+      </Options>
+      <!-- Add quotes to paths with spaces -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LUpdate'
+                        OR '%(Name)' == 'IncludePath')
+                        AND $([System.String]::Copy('%(Value)').Contains(' '))"
+          >&quot;%(Value)&quot;</Value>
+      </Options>
+    </ItemGroup>
+
+    <!--
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Format lupdate command line arguments
+    // -->
+    <ItemGroup>
+      <Options>
+        <InputFiles Condition="'%(Name)' == 'InputFiles' AND Exists('%(Value)')"
+                    >%(Value)</InputFiles>
+      </Options>
+      <Options>
+        <CmdExec Condition="'%(Name)' == 'LUpdate'"
+                 >%(Value)</CmdExec>
+      </Options>
+      <Options>
+        <CmdOutput Condition="'%(Name)' == 'TsFile'"
+                   >-ts %(Value)</CmdOutput>
+        <OutputFile Condition="'%(Name)' == 'TsFile'"
+                   >%(Value)</OutputFile>
+      </Options>
+      <Options>
+        <CmdList Condition="'%(Name)' == 'InputListFile'"
+                 >&quot;@%(Value)&quot;</CmdList>
+        <InputListFile Condition="'%(Name)' == 'InputListFile'"
+                       >%(Value)</InputListFile>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'SourceLanguage' AND '%(Value)' != 'default'"
+                   >-source-language %(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'TargetLanguage' AND '%(Value)' != 'default'"
+                   >-target-language %(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'NoObsolete' AND '%(Value)' == 'true'"
+                   >-no-obsolete</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'PluralOnly' AND '%(Value)' == 'true'"
+                   >-pluralonly</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'UpdateSilent' AND '%(Value)' == 'true'"
+                   >-silent</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'NoSort' AND '%(Value)' == 'true'"
+                   >-no-sort</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'Locations' AND '%(Value)' == 'absolute'"
+                   >-locations %(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'Locations' AND '%(Value)' == 'relative'"
+                   >-locations %(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'Locations' AND '%(Value)' == 'none'"
+                   >-locations %(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'NoUiLines' AND '%(Value)' == 'true'"
+                   >-no-ui-lines</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'DisableSameTextHeuristic' AND '%(Value)' == 'true'"
+                   >-disable-heuristic sametext</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'DisableSimilarTextHeuristic' AND '%(Value)' == 'true'"
+                   >-disable-heuristic similartext</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'DisableNumberHeuristic' AND '%(Value)' == 'true'"
+                   >-disable-heuristic number</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'IncludePath'"
+                   >-I%(Value)</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'FunctionAliases'"
+                   >-tr-function-alias %(Value)</CmdOption>
+      </Options>
+    </ItemGroup>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Write list of input files
+    // -->
+    <WriteLinesToFile
+      Overwrite="true"
+      File="@(Options->'%(InputListFile)')"
+      Lines="@(Options->'%(InputFiles)')"/>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Run lupdate
+    // -->
+    <PropertyGroup>
+      <!-- Generate command line -->
+      <Cmd>
+        @(Options->'%(CmdExec)', '')
+        @(Options->'%(CmdOption)', ' ')
+        @(QtTranslationUpdate->'%(UpdateAdditionalOptions)')
+        @(Options->'%(CmdList)', '')
+        @(Options->'%(CmdOutput)', '')
+      </Cmd>
+      <Cmd>$([System.Text.RegularExpressions.Regex]::Replace('$(Cmd)', '[\s\r\n]+', ' '))</Cmd>
+      <Cmd>$(Cmd.Trim())</Cmd>
+    </PropertyGroup>
+    <HostExec
+      Message="%(QtTranslationUpdate.UpdateDescription)"
+      Command="$(Cmd)"
+      Inputs="@(Options->'%(InputListFile)');@(Options->'%(InputFiles)')"
+      Outputs="@(Options->'%(OutputFile)')"
+      RemoteTarget="$(ResolvedRemoteTarget)"
+      RemoteProjectDir="$(_ResolvedRemoteProjectDir)">
+    </HostExec>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Clean-up
+    // -->
+    <PropertyGroup>
+      <Cmd/>
+    </PropertyGroup>
+    <ItemGroup>
+      <LocalOptions Remove="@(LocalOptions)"/>
+      <Options Remove="@(Options)"/>
+      <QtTranslationUpdate Remove="@(QtTranslationUpdate)"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslationRelease
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Run lrelease on .ts files
+  // -->
+  <Target Name="QtTranslationRelease"
+    DependsOnTargets="QtTranslationSelect;
+                      QtTranslationUpdate"
+    Condition="'@(QtTranslationRelease)' != ''"
+    Inputs="%(QtTranslationRelease.TsFile);
+            $(MSBuildProjectFile)"
+    Outputs="%(QtTranslationRelease.QmFile);
+             %(QtTranslationRelease.ForceRebuild)">
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Flatten metadata: items => list of (item, metadata name, metadata value)
+    // -->
+    <Flatten Items="@(QtTranslationRelease)"
+      Metadata="LRelease;
+                TsFile;
+                QmFile;
+                IdBased;
+                Compress;
+                NoUnfinished;
+                RemoveIdentical;
+                ReleaseSilent;
+                UntranslatedPrefix">
+      <Output
+        TaskParameter="Result" ItemName="LocalOptions" />
+    </Flatten>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Translate local paths to build host paths
+    // -->
+    <HostTranslatePaths
+      Items="@(LocalOptions)"
+      Names="LRelease;TsFile;QmFile">
+      <Output
+        TaskParameter="Result" ItemName="Options" />
+    </HostTranslatePaths>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Sanitize paths
+    // -->
+    <ItemGroup>
+      <!-- Remove quotes from paths -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LRelease')"
+          >$([System.String]::Copy('%(Value)').Replace('&quot;', ''))</Value>
+      </Options>
+      <!-- Escape trailing back-slash in paths with spaces -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LRelease')
+                        AND $([System.String]::Copy('%(Value)').Contains(' '))
+                        AND $([System.String]::Copy('%(Value)').EndsWith('\'))"
+          >%(Value)\</Value>
+      </Options>
+      <!-- Add quotes to paths with spaces -->
+      <Options>
+        <Value Condition="('%(Name)' == 'TsFile'
+                        OR '%(Name)' == 'QmFile'
+                        OR '%(Name)' == 'LRelease')
+                        AND $([System.String]::Copy('%(Value)').Contains(' '))"
+          >&quot;%(Value)&quot;</Value>
+      </Options>
+    </ItemGroup>
+
+    <!--
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Format lrelease command line arguments
+    // -->
+    <ItemGroup>
+      <Options>
+        <CmdExec Condition="'%(Name)' == 'LRelease'"
+                 >%(Value)</CmdExec>
+      </Options>
+      <Options>
+        <CmdInput Condition="'%(Name)' == 'TsFile'"
+                  >%(Value)</CmdInput>
+        <InputFile Condition="'%(Name)' == 'TsFile'"
+                   >%(Value)</InputFile>
+      </Options>
+      <Options>
+        <CmdOutput Condition="'%(Name)' == 'QmFile'"
+                   >-qm %(Value)</CmdOutput>
+        <OutputFile Condition="'%(Name)' == 'QmFile'"
+                   >%(Value)</OutputFile>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'IdBased' AND '%(Value)' == 'true'"
+                   >-idbased</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'Compress' AND '%(Value)' == 'true'"
+                   >-compress</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'NoUnfinished' AND '%(Value)' == 'true'"
+                   >-nounfinished</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'RemoveIdentical' AND '%(Value)' == 'true'"
+                   >-removeidentical</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'ReleaseSilent' AND '%(Value)' == 'true'"
+                   >-silent</CmdOption>
+      </Options>
+      <Options>
+        <CmdOption Condition="'%(Name)' == 'UntranslatedPrefix'"
+                   >-markuntranslated %(Value)</CmdOption>
+      </Options>
+    </ItemGroup>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Run lrelease
+    // -->
+    <PropertyGroup>
+      <!-- Generate command line -->
+      <Cmd>
+        @(Options->'%(CmdExec)', '')
+        @(Options->'%(CmdOption)', ' ')
+        @(QtTranslationRelease->'%(ReleaseAdditionalOptions)')
+        @(Options->'%(CmdInput)', '')
+        @(Options->'%(CmdOutput)', '')
+      </Cmd>
+      <Cmd>$([System.Text.RegularExpressions.Regex]::Replace('$(Cmd)', '[\s\r\n]+', ' '))</Cmd>
+      <Cmd>$(Cmd.Trim())</Cmd>
+    </PropertyGroup>
+    <HostExec
+      Message="%(QtTranslationRelease.ReleaseDescription)"
+      Command="$(Cmd)"
+      Inputs="@(Options->'%(InputFile)')"
+      Outputs="@(Options->'%(OutputFile)')"
+      RemoteTarget="$(ResolvedRemoteTarget)"
+      RemoteProjectDir="$(_ResolvedRemoteProjectDir)">
+    </HostExec>
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Clean-up
+    // -->
+    <PropertyGroup>
+      <Cmd/>
+    </PropertyGroup>
+    <ItemGroup>
+      <LocalOptions Remove="@(LocalOptions)"/>
+      <Options Remove="@(Options)"/>
+      <QtTranslationRelease Remove="@(QtTranslationRelease)"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslation
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // -->
+  <Target Name="QtTranslation"
+    DependsOnTargets="$(QtTranslationDependsOn);
+                      QtTranslationSelect;
+                      QtTranslationUpdate;
+                      QtTranslationRelease"
+    BeforeTargets="$(QtTranslationBeforeTargets)"
+    AfterTargets="Link;
+                  $(QtTranslationAfterTargets)">
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Clean-up
+    // -->
+    <ItemGroup>
+      <QtTranslationUpdate Remove="@(QtTranslationUpdate)"/>
+      <QtTranslationRelease Remove="@(QtTranslationRelease)"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  /// TARGET QtTranslationClean
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // -->
+  <Target Name="QtTranslationClean"
+    DependsOnTargets="QtTranslationPrepare">
+    <Delete
+      Files="@(QtTranslation->'%(InputListFile)');@(QtTranslation->'%(QmFile)')"
+      TreatErrorsAsWarnings="true"/>
+  </Target>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import dependants
+  // -->
+  <Import
+    Condition="'$(QtMsBuildTargets_AfterTranslation)' != ''"
+    Project="$(QtMsBuildTargets_AfterTranslation)"/>
+
+</Project>

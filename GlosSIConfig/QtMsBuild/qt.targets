@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+/****************************************************************************
+**
+** Copyright (C) 2018 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the Qt VS Tools.
+**
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+-->
+
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Qt/MSBuild
+// -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Fail-safe import of private definitions
+  // -->
+  <Import
+    Condition="'$(QtPrivateLoaded)' != 'true'"
+    Project="$(MSBuildThisFileDirectory)\qt_private.props"/>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Defaults for project version constants
+  // -->
+  <PropertyGroup>
+    <QtVsProjectVersion
+      Condition="'$(QtVsProjectVersion)' == ''"
+      >0</QtVsProjectVersion>
+    <QtVsProjectMinVersion_Settings
+      Condition="'$(QtVsProjectMinVersion_Settings)' == ''"
+      >0</QtVsProjectMinVersion_Settings>
+    <QtVsProjectMinVersion_ClProperties
+      Condition="'$(QtVsProjectMinVersion_ClProperties)' == ''"
+      >0</QtVsProjectMinVersion_ClProperties>
+  </PropertyGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Qt Common Targets
+  // -->
+  <Import Project="qt_globals.targets"/>
+  <Import Project="qt_settings.targets"/>
+  <Import Project="qt_tasks.targets"/>
+  <Import Project="qt_vars.targets"/>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import subfolder targets
+  // -->
+  <Import
+    Condition="'$(VisualStudioVersion)' != '12.0' AND '$(VisualStudioVersion)' != '14.0'"
+    Project="$(QtMsBuildTargets)"/>
+  <ImportGroup
+    Condition="'$(VisualStudioVersion)' == '12.0' OR '$(VisualStudioVersion)' == '14.0'">
+    <!--
+        // WORKAROUND: In VS 2013 and VS 2015 importing a list of files does not work
+        // REMOVE when support for VS 2015 is dropped
+    -->
+    <Import Project="$(MSBuildThisFileDirectory)\moc\qtmoc.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)\rcc\qtrcc.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)\qml\qtqml.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)\repc\qtrepc.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)\uic\qtuic.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)\translation\qttranslation.targets"/>
+  </ImportGroup>
+
+</Project>

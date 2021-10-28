@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+/****************************************************************************
+**
+** Copyright (C) 2021 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the Qt VS Tools.
+**
+** $QT_BEGIN_LICENSE:GPL-EXCEPT$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3 as published by the Free Software
+** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-3.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+-->
+
+<!--
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Qt/MSBuild Translation property definitions
+// -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import pre-requisites
+  // -->
+  <Import
+    Condition="'$(QtMsBuildProps_BeforeTranslation)' != ''"
+    Project="$(QtMsBuildProps_BeforeTranslation)"/>
+
+  <!--
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  // Default values of Translation settings
+  // -->
+  <PropertyGroup>
+    <QtTranslationInput Condition="'$(QtTranslationInput)' == ''"
+      >@(ClCompile);@(ClInclude);@(QtMoc);@(QtUic)</QtTranslationInput>
+  </PropertyGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // QtTranslation item template
+  // -->
+  <ItemDefinitionGroup>
+    <QtTranslation>
+      <BuildAction>false</BuildAction>
+      <!-- lupdate -->
+      <UpdateDescription>lupdate %(Identity)</UpdateDescription>
+      <UpdateAdditionalOptions>$(QtLUpdateOptions)</UpdateAdditionalOptions>
+      <SourceLanguage>default</SourceLanguage>
+      <TargetLanguage>default</TargetLanguage>
+      <NoObsolete>false</NoObsolete>
+      <PluralOnly>false</PluralOnly>
+      <UpdateSilent>false</UpdateSilent>
+      <NoSort>false</NoSort>
+      <Locations>false</Locations>
+      <NoUiLines>false</NoUiLines>
+      <DisableSameTextHeuristic>false</DisableSameTextHeuristic>
+      <DisableSimilarTextHeuristic>false</DisableSimilarTextHeuristic>
+      <DisableNumberHeuristic>false</DisableNumberHeuristic>
+      <!-- lrelease -->
+      <ReleaseDescription>lrelease %(Identity)</ReleaseDescription>
+      <QmOutputDir>$(OutDir)</QmOutputDir>
+      <QmOutputFile>%(Filename).qm</QmOutputFile>
+      <ReleaseAdditionalOptions>$(QtLReleaseOptions)</ReleaseAdditionalOptions>
+      <IdBased>false</IdBased>
+      <Compress>false</Compress>
+      <NoUnfinished>false</NoUnfinished>
+      <RemoveIdentical>false</RemoveIdentical>
+      <ReleaseSilent>false</ReleaseSilent>
+    </QtTranslation>
+  </ItemDefinitionGroup>
+
+  <!--
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  // Import dependants
+  // -->
+  <Import
+    Condition="'$(QtMsBuildProps_AfterTranslation)' != ''"
+    Project="$(QtMsBuildProps_AfterTranslation)"/>
+
+</Project>
