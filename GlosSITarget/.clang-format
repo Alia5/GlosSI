@@ -5,3 +5,4 @@ AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 ColumnLimit: 0
 PointerAlignment: "Left"
+SortIncludes: false

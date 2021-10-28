@@ -1,7 +1,8 @@
 #pragma once
 
-
+#include <spdlog/spdlog.h>
 #include "Overlay.h"
+
 
 namespace spdlog {
 namespace sinks {
@@ -31,7 +32,6 @@ class overlay_sink : public spdlog::sinks::base_sink<Mutex> {
     {
         // Don't format log message.
     }
-
 };
 
 using overlay_sink_mt = overlay_sink<std::mutex>;
