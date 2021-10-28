@@ -75,7 +75,7 @@ class SteamTarget {
     InputRedirector input_redirector_;
 #endif
     TargetWindow window_;
-    Overlay& overlay_;
+    std::weak_ptr<Overlay> overlay_;
     SteamOverlayDetector detector_;
     AppLauncher launcher_;
     WindowHandle last_foreground_window_ = nullptr;

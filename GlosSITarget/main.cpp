@@ -73,10 +73,10 @@ int main(int argc, char* argv[])
     logger->flush_on(spdlog::level::info);
     spdlog::set_default_logger(logger);
 #ifdef _WIN32
-    Settings::Parse(__argv[1]);
+    Settings::Parse(__argc > 1 ? __argv[1] : "");
     SteamTarget target(__argc, __argv);
 #else
-    Settings::Parse(argv[1]);
+    Settings::Parse(argc > 1 ? argv[1] : "");
     SteamTarget target(argc, argv);
 #endif
     const auto exit = target.run();

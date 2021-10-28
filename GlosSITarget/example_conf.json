@@ -1,7 +1,7 @@
 {
   "version":  1,
   "launch": {
-    "launch": true,
+    "launch": false,
     "launchPath": "C:\\Users\\Alia5\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
     "launchAppArgs": "--new-window",
     "closeOnExit": true

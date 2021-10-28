@@ -26,7 +26,13 @@ limitations under the License.
 #include <vdf_parser.hpp>
 
 SteamTarget::SteamTarget(int argc, char* argv[])
-    : window_([this] { run_ = false; }, getScreenshotHotkey()),
+    : window_(
+          [this] { run_ = false; },
+          getScreenshotHotkey(),
+          [this]() {
+              target_window_handle_ = window_.getSystemHandle();
+              overlay_ = window_.getOverlay();
+          }),
       overlay_(window_.getOverlay()),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
       launcher_([this] {
@@ -43,22 +49,25 @@ int SteamTarget::run()
         spdlog::warn("Steam-overlay not detected. Showing GlosSI-overlay!\n\
 Application will not function!");
         window_.setClickThrough(false);
-        overlay_.setEnabled(true);
+        if (!overlay_.expired())
+            overlay_.lock()->setEnabled(true);
         steam_overlay_present_ = false;
-    } else {
+    }
+    else {
         spdlog::info("Steam-overlay detected.");
         spdlog::warn("Open/Close Steam-overlay twice to show GlosSI-overlay"); // Just to color output and really get users attention
         window_.setClickThrough(true);
-        overlay_.setEnabled(false);
+        if (!overlay_.expired())
+            overlay_.lock()->setEnabled(false);
         steam_overlay_present_ = true;
     }
     getXBCRebindingEnabled();
 
     run_ = true;
 
-#ifdef  _WIN32
+#ifdef _WIN32
     hidhide_.hideDevices(steam_path_);
-    input_redirector_.run();   
+    input_redirector_.run();
 #endif
 
     if (Settings::launch.launch) {
@@ -68,14 +77,15 @@ Application will not function!");
     keepControllerConfig(true);
     while (run_) {
         detector_.update();
-        window_.update();
         overlayHotkeyWorkaround();
+        window_.update();
         // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
         if (delayed_shutdown_) {
             if (delay_shutdown_clock_.getElapsedTime().asSeconds() >= 3) {
                 run_ = false;
             }
-        } else {
+        }
+        else {
             launcher_.update();
         }
     }
@@ -102,19 +112,20 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
         }
         else {
             if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
-                const auto ov_opened = overlay_.toggle();
+                const auto ov_opened = overlay_.expired() ? false : overlay_.lock()->toggle();
                 window_.setClickThrough(!ov_opened);
                 if (ov_opened) {
                     spdlog::info("Opened GlosSI-overlay");
                     focusWindow(target_window_handle_);
-                } else {
+                }
+                else {
                     focusWindow(last_foreground_window_);
                     spdlog::info("Closed GlosSI-overlay");
                 }
             }
             overlay_trigger_flag_ = false;
         }
-        if (!overlay_.isEnabled()) {
+        if (!( overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
             window_.setClickThrough(!overlay_open);
             focusWindow(last_foreground_window_);
         }
@@ -124,7 +135,6 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
 void SteamTarget::focusWindow(WindowHandle hndl)
 {
 #ifdef _WIN32
-
     if (hndl == target_window_handle_) {
         spdlog::debug("Bring own window to foreground");
     }
@@ -136,7 +146,7 @@ void SteamTarget::focusWindow(WindowHandle hndl)
     const auto current_fgw = GetForegroundWindow();
     if (current_fgw != target_window_handle_) {
         last_foreground_window_ = current_fgw;
-    } 
+    }
     const auto fg_thread = GetWindowThreadProcessId(current_fgw, nullptr);
 
     keepControllerConfig(true); // re-hook GetForegroundWindow
@@ -177,7 +187,7 @@ std::filesystem::path SteamTarget::getSteamPath() const
 #endif
 }
 
- std::wstring SteamTarget::getSteamUserId() const
+std::wstring SteamTarget::getSteamUserId() const
 {
 #ifdef _WIN32
     // TODO: check if keys/value exist

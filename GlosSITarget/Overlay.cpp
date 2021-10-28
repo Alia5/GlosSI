@@ -18,7 +18,13 @@ limitations under the License.
 #include <filesystem>
 #include <utility>
 
-Overlay::Overlay(sf::RenderWindow& window, std::function<void()> on_close) : window_(window), on_close_(std::move(on_close))
+Overlay::Overlay(
+    sf::RenderWindow& window,
+    std::function<void()> on_close,
+    bool force_enable)
+    : window_(window),
+      on_close_(std::move(on_close)),
+      force_enable_(force_enable)
 {
     ImGui::SFML::Init(window_);
 
@@ -134,7 +140,7 @@ void Overlay::update()
 
     showLogs();
 
-    if (enabled_) {
+    if (enabled_ || force_enable_) {
         window_.clear(sf::Color(0, 0, 0, 64)); // make window slightly dim screen with overlay
 
         std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });

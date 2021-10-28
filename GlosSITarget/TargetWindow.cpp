@@ -36,68 +36,24 @@ limitations under the License.
 
 #endif
 
-TargetWindow::TargetWindow(std::function<void()> on_close, std::vector<std::string> screenshot_hotkey)
+TargetWindow::TargetWindow(
+    std::function<void()> on_close,
+    std::vector<std::string> screenshot_hotkey,
+    std::function<void()> on_window_changed)
     : on_close_(std::move(on_close)),
       screenshot_keys_(std::move(screenshot_hotkey)),
-      overlay_(window_, [this]() { close(); })
+      on_window_changed_(std::move(on_window_changed))
 {
-    auto desktop_mode = sf::VideoMode::getDesktopMode();
-    if (Settings::window.windowMode) {
-        window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
-    } else {
-#ifdef _WIN32
-        // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
-        // Scaling down by 1px each direction is barely noticeable and works.
-        window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
-#else
-        window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
-#endif   
-    }
-    window_.setActive(true);
+    createWindow(Settings::window.windowMode);
 
-#ifdef _WIN32
-    HWND hwnd = window_.getSystemHandle();
-    auto dpi = GetWindowDPI(hwnd);
-    spdlog::debug("Screen DPI: {}", dpi);
-
-    // transparent windows window...
-    auto style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~WS_OVERLAPPED;
-    style |= WS_POPUP;
-    SetWindowLong(hwnd, GWL_STYLE, style);
-
-    MARGINS margins;
-    margins.cxLeftWidth = -1;
-    DwmExtendFrameIntoClientArea(hwnd, &margins);
-
-    DEVMODE dev_mode = {};
-    dev_mode.dmSize = sizeof(DEVMODE);
-    dev_mode.dmDriverExtra = 0;
-
-    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
-        setFpsLimit(60);
-    }
-    else {
-        setFpsLimit(dev_mode.dmDisplayFrequency);
-    }
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.FontGlobalScale = dpi / 96.f;
-    ImGui::SFML::UpdateFontTexture();
-
-#else
-    setFpsLimit(60);
-#endif
-
-    if (Settings::window.maxFps > 0) {
-        setFpsLimit(Settings::window.maxFps);
-    }
-    if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
-        ImGuiIO& io = ImGui::GetIO();
-        io.FontGlobalScale = Settings::window.scale;
-        ImGui::SFML::UpdateFontTexture();
-    }
-
+    Overlay::AddOverlayElem([this]() {
+        bool windowed_copy = windowed_;
+        ImGui::Begin("Window mode");
+        if (ImGui::Checkbox("Window mode", &windowed_copy)) {
+            toggle_window_mode_after_frame_ = true;
+        }
+        ImGui::End();
+    });
 }
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
@@ -134,11 +90,17 @@ void TargetWindow::update()
             return;
         }
     }
-
-    window_.clear(sf::Color(0,0,0,0));
-    overlay_.update();
+    if (windowed_) {
+        window_.clear(sf::Color(23, 23, 23, 255));
+    } else {
+        window_.clear(sf::Color(0, 0, 0, 0));
+    }
     screenShotWorkaround();
+    overlay_->update();
     window_.display();
+    if (toggle_window_mode_after_frame_) {
+        createWindow(!windowed_);
+    }
 }
 
 void TargetWindow::close()
@@ -148,7 +110,7 @@ void TargetWindow::close()
     on_close_();
 }
 
-Overlay& TargetWindow::getOverlay()
+std::shared_ptr<Overlay> TargetWindow::getOverlay() const
 {
     return overlay_;
 }
@@ -261,5 +223,79 @@ WORD TargetWindow::GetWindowDPI(HWND hWnd)
 
     return static_cast<WORD>(iDpiX);
 }
-
 #endif
+
+void TargetWindow::createWindow(bool window_mode)
+{
+    toggle_window_mode_after_frame_ = false;
+
+    auto desktop_mode = sf::VideoMode::getDesktopMode();
+    if (window_mode) {
+        window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
+        windowed_ = true;
+    }
+    else {
+#ifdef _WIN32
+        // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
+        // Scaling down by 1px each direction is barely noticeable and works.
+        window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
+#else
+        window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
+#endif
+        windowed_ = false;
+    }
+    window_.setActive(true);
+
+#ifdef _WIN32
+    HWND hwnd = window_.getSystemHandle();
+    auto dpi = GetWindowDPI(hwnd);
+    spdlog::debug("Screen DPI: {}", dpi);
+
+    //if (windowed_) {
+    //    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
+    //    DwmEnableBlurBehindWindow(hwnd, &bb);
+    //} // semi-transparent in window mode, but deprecated api
+    // TODO: MAYBE: use undocumented acrylic api as in GlosSI-Config
+    // On Linux the window will (should) automagically be semi-transparent
+
+    // transparent windows window...
+    auto style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~WS_OVERLAPPED;
+    style |= WS_POPUP;
+    SetWindowLong(hwnd, GWL_STYLE, style);
+
+    MARGINS margins;
+    margins.cxLeftWidth = -1;
+    DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+    DEVMODE dev_mode = {};
+    dev_mode.dmSize = sizeof(DEVMODE);
+    dev_mode.dmDriverExtra = 0;
+
+    if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
+        setFpsLimit(60);
+    }
+    else {
+        setFpsLimit(dev_mode.dmDisplayFrequency);
+    }
+
+    overlay_ = std::make_shared<Overlay>(window_, [this]() { close(); }, windowed_);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = dpi / 96.f;
+    ImGui::SFML::UpdateFontTexture();
+
+#else
+    setFpsLimit(60);
+#endif
+
+    if (Settings::window.maxFps > 0) {
+        setFpsLimit(Settings::window.maxFps);
+    }
+    if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
+        ImGuiIO& io = ImGui::GetIO();
+        io.FontGlobalScale = Settings::window.scale;
+        ImGui::SFML::UpdateFontTexture();
+    }
+    on_window_changed_();
+}

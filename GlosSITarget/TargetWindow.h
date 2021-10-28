@@ -31,14 +31,17 @@ using WindowHandle = int; // ???
 class TargetWindow {
   public:
     explicit TargetWindow(
-        std::function<void()> on_close = []() {}, std::vector<std::string> screenshot_hotkey = {"KEY_F12"});
+        std::function<void()> on_close = []() {},
+        std::vector<std::string> screenshot_hotkey = {"KEY_F12"},
+        std::function<void()> on_window_changed = []() {}
+    );
 
     void setFpsLimit(unsigned int fps_limit);
     void setClickThrough(bool click_through);
     void update();
     void close();
 
-    Overlay& getOverlay();
+    std::shared_ptr<Overlay> getOverlay() const;
 
     /*
      * Run once per frame
@@ -63,6 +66,13 @@ class TargetWindow {
     const std::function<void()> on_close_;
     sf::RenderWindow window_;
     std::vector<std::string> screenshot_keys_;
+    const std::function<void()> on_window_changed_;
 
-    Overlay overlay_;
+
+    std::shared_ptr<Overlay> overlay_;
+
+    void createWindow(bool window_mode);
+
+    bool windowed_ = false;
+    bool toggle_window_mode_after_frame_ = false;
 };
