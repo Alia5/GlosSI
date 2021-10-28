@@ -38,7 +38,7 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
     std::wsmatch m;
     if (!std::regex_search(path, m, std::wregex(L"^.{1,3}:"))) {
         spdlog::info("LaunchApp is UWP, launching...");
-        launchUWPApp(path.data());
+        launchUWPApp(path.data(), args);
     }
     else {
         spdlog::info("LaunchApp is Win32, launching...");
@@ -153,7 +153,7 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     }
 }
 
-void AppLauncher::launchUWPApp(const LPCWSTR package_full_name)
+void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstring& args)
 {
     HRESULT result = CoInitialize(nullptr);
     if (SUCCEEDED(result)) {
@@ -175,7 +175,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name)
             }
 
             // Launch the app
-            result = sp_app_activation_manager->ActivateApplication(package_full_name, nullptr, AO_NONE, &uwp_pid_);
+            result = sp_app_activation_manager->ActivateApplication(package_full_name, args.empty() ? nullptr : args.data(), AO_NONE, &uwp_pid_);
             if (!SUCCEEDED(result)) {
                 spdlog::error("ActivateApplication failed: Code {}", result);
             } else {

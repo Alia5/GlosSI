@@ -45,7 +45,7 @@ private:
     static inline const std::string CREATE_PROC_ORIG_BYTES = "\x4C\x8B\xDC\x48\x83";
     static void UnPatchValveHooks();
     void launchWin32App(const std::wstring& path, const std::wstring& args = L"");
-    void launchUWPApp(LPCWSTR package_full_name);
+    void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
     STARTUPINFO info{sizeof(info)};
     PROCESS_INFORMATION process_info{};
     DWORD uwp_pid_ = 0;
