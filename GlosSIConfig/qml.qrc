@@ -10,5 +10,6 @@
         <file>svg/edit_white_24dp.svg</file>
         <file>svg/steam.svg</file>
         <file>qml/UWPSelectDialog.qml</file>
+        <file>qml/InfoDialog.qml</file>
     </qresource>
 </RCC>

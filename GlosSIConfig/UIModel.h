@@ -14,23 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #pragma once
-#include <filesystem>
+#include "VDFParser.h"
+#include <QJsonObject>
 #include <QObject>
 #include <QVariant>
-#include <QJsonObject>
-#include "VDFParser.h"
+#include <filesystem>
 
-
-class UIModel : public QObject
-{
+class UIModel : public QObject {
     Q_OBJECT
 
-        Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
-        Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
-        Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
-        Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
+    Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
+    Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
+    Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
+    Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
 
-public:
+  public:
     UIModel();
 
     Q_INVOKABLE void readConfigs();
@@ -49,16 +47,15 @@ public:
     [[nodiscard]] bool hasAcrylicEffect() const;
     void setAcrylicEffect(bool has_acrylic_affect);
 
-signals:
+  signals:
     void acrylicChanged();
     void targetListChanged();
 
-private:
+  private:
     std::filesystem::path config_path_;
     QString config_dir_name_;
 
     void writeTarget(const QJsonObject& json, const QString& name);
-
 
     std::filesystem::path getSteamPath() const;
     std::wstring getSteamUserId() const;

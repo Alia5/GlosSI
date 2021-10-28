@@ -19,9 +19,9 @@ limitations under the License.
 #include <QWindow>
 
 #ifdef _WIN32
+#include <VersionHelpers.h>
 #include <Windows.h>
 #include <dwmapi.h>
-#include <VersionHelpers.h>
 #pragma comment(lib, "Dwmapi.lib")
 #endif
 
@@ -30,8 +30,7 @@ limitations under the License.
 
 #ifdef _WIN32
 // Some undocument stuff to enable aero on win10 or higher...
-enum AccentState
-{
+enum AccentState {
     ACCENT_DISABLED = 0,
     ACCENT_ENABLE_GRADIENT = 1,
     ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
@@ -40,8 +39,7 @@ enum AccentState
     ACCENT_ENABLE_HOSTBACKDROP = 5, // RS5 1809
     ACCENT_INVALID_STATE = 6
 };
-struct AccentPolicy
-{
+struct AccentPolicy {
 
     AccentState AccentState;
     int AccentFlags;
@@ -49,14 +47,12 @@ struct AccentPolicy
     int AnimationId;
 };
 
-enum WindowCompositionAttribute
-{
+enum WindowCompositionAttribute {
     // ...
     WCA_ACCENT_POLICY = 19
     // ...
 };
-struct WindowCompositionAttributeData
-{
+struct WindowCompositionAttributeData {
     WindowCompositionAttribute Attribute;
     void* Data;
     int SizeOfData;
@@ -65,7 +61,6 @@ struct WindowCompositionAttributeData
 typedef HRESULT(__stdcall* PSetWindowCompositionAttribute)(HWND hwnd, WindowCompositionAttributeData* pattrs);
 
 #endif
-
 
 int main(int argc, char* argv[])
 {
@@ -98,31 +93,29 @@ int main(int argc, char* argv[])
 
     // Enable blurbehind (not needed?) anyway gives nice background on win7 and 8
     DWM_BLURBEHIND bb{};
-    bb.dwFlags = DWM_BB_ENABLE; bb.fEnable = true; bb.hRgnBlur = nullptr;
+    bb.dwFlags = DWM_BB_ENABLE;
+    bb.fEnable = true;
+    bb.hRgnBlur = nullptr;
     DwmEnableBlurBehindWindow(hwnd, &bb);
 
-    if (IsWindows10OrGreater())
-    {
+    if (IsWindows10OrGreater()) {
         // undoc stuff for aero >= Win10
         int color = (0 << 24) + (0x21 << 16) + (0x11 << 8) + (0x11);
         AccentPolicy accPol{};
         accPol.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND;
-        accPol.AccentFlags = 2; accPol.GradientColor = color;
+        accPol.AccentFlags = 2;
+        accPol.GradientColor = color;
         accPol.AnimationId = 0;
         WindowCompositionAttributeData data{};
         data.Attribute = WindowCompositionAttribute::WCA_ACCENT_POLICY;
-            data.Data = &accPol;
-            data.SizeOfData = sizeof(accPol);
+        data.Data = &accPol;
+        data.SizeOfData = sizeof(accPol);
         auto user32dll = GetModuleHandle(L"user32.dll");
         if (user32dll) {
-            PSetWindowCompositionAttribute SetWindowCompositionAttribute = (
-                reinterpret_cast<PSetWindowCompositionAttribute>(GetProcAddress(user32dll, "SetWindowCompositionAttribute"))
-                );
-            if (SetWindowCompositionAttribute)
-            {
+            PSetWindowCompositionAttribute SetWindowCompositionAttribute = (reinterpret_cast<PSetWindowCompositionAttribute>(GetProcAddress(user32dll, "SetWindowCompositionAttribute")));
+            if (SetWindowCompositionAttribute) {
                 auto res = SetWindowCompositionAttribute(hwnd, &data);
-                if (SUCCEEDED(res))
-                {
+                if (SUCCEEDED(res)) {
                     uimodel.setAcrylicEffect(true);
                 }
             }
@@ -130,7 +123,7 @@ int main(int argc, char* argv[])
     }
 
     // extend the frame fully into the client area => draw all outside the window frame.
-    MARGINS margins = { -1 };
+    MARGINS margins = {-1};
     DwmExtendFrameIntoClientArea(hwnd, &margins);
 
     // To Fix top window frame, install native event filter
@@ -144,10 +137,10 @@ int main(int argc, char* argv[])
 
     // Inform the application of the frame change.
     SetWindowPos(hwnd,
-        NULL,
-        rcClient.left, rcClient.top,
-        rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
-        SWP_FRAMECHANGED);
+                 NULL,
+                 rcClient.left, rcClient.top,
+                 rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
+                 SWP_FRAMECHANGED);
 
 #endif
 

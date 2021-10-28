@@ -51,12 +51,16 @@
     <None Include="qml\ShortcutProps.qml">
       <Filter>qml</Filter>
     </None>
-    <None Include="qml\FluentTextInput.qml">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="qml\UWPSelectDialog.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\InfoDialog.qml">
+      <Filter>qml</Filter>
+    </None>
+    <None Include="qml\FluentTextInput.qml">
+      <Filter>qml</Filter>
+    </None>
+    <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
@@ -68,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VDFParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UWPFetch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

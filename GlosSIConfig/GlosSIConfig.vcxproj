@@ -123,8 +123,10 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIModel.cpp" />
+    <None Include=".clang-format" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
+    <None Include="qml\InfoDialog.qml" />
     <None Include="qml\RPane.qml" />
     <None Include="qml\ShortcutCards.qml" />
     <None Include="qml\ShortcutProps.qml" />
@@ -136,6 +138,7 @@
     <QtMoc Include="UIModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="UWPFetch.h" />
     <ClInclude Include="VDFParser.h" />
     <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>

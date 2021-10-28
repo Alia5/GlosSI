@@ -20,12 +20,11 @@ limitations under the License.
 
 #include "SteamTarget.h"
 
+#include "OverlayLogSink.h"
+#include "Settings.h"
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include "OverlayLogSink.h"
-#include "Settings.h"
-
 
 #ifdef _WIN32
 #ifdef CONSOLE

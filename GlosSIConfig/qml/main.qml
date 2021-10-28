@@ -43,6 +43,17 @@ Window {
         return Qt.rgba(color.r, color.g, color.b, alpha);
     }
 
+    property bool steamShortcutsChanged: false
+
+    InfoDialog {
+        id: steamChangedDialog
+        titleText: qsTr("Attention!")
+        text: qsTr("Please restart Steam to reload your changes!")
+        onConfirmed: function (callback) {
+            callback();
+        }
+    }
+
     Rectangle {
         id: titleBar
         visible: uiModel.isWindows
@@ -83,7 +94,14 @@ Window {
             ToolButton {
                 id: closbtn
                 text: "🗙"
-                onClicked: window.close()
+                onClicked: steamShortcutsChanged
+                    ? (function(){
+                        steamChangedDialog.confirmedParam = () => {
+                            window.close()
+                        }
+                        steamChangedDialog.open()
+                    })()
+                    : window.close()
                 background: Rectangle {
                     implicitWidth: 32
                     implicitHeight: 32
@@ -99,7 +117,6 @@ Window {
                 }
             }
         }
-
     }
 
     Item {
@@ -229,6 +246,5 @@ Window {
                 }
             }
         }
-
     }
 }

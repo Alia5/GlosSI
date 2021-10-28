@@ -19,9 +19,8 @@ limitations under the License.
 #define NOMINMAX
 #include <Windows.h>
 
-class WinEventFilter : public QAbstractNativeEventFilter
-{
-public:
+class WinEventFilter : public QAbstractNativeEventFilter {
+  public:
     WinEventFilter() = default;
 
     /*
@@ -37,8 +36,7 @@ public:
             auto msg = static_cast<MSG*>(message)->message;
             auto lParam = static_cast<MSG*>(message)->lParam;
             auto hwnd = static_cast<MSG*>(message)->hwnd;
-            if (msg == WM_NCCALCSIZE)
-            {
+            if (msg == WM_NCCALCSIZE) {
                 auto sz = reinterpret_cast<LPNCCALCSIZE_PARAMS>(lParam);
                 sz->rgrc[0].top -= 6;
             }

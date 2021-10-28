@@ -17,6 +17,7 @@ import QtQuick 6.2
 import QtQuick.Layouts 6.2
 import QtQuick.Controls 6.2
 import QtQuick.Controls.Material 6.2
+import QtQuick.Dialogs 6.2
 import Qt5Compat.GraphicalEffects
 
 GridView {
@@ -64,6 +65,12 @@ GridView {
         NumberAnimation { properties: "x,y"; duration: 300; easing.type: Easing.InQuad }
     }
 
+    InfoDialog {
+        id: writeErrorDialog
+        titleText: qsTr("Error")
+        text: qsTr("Error writing shortcuts.vdf...")
+    }
+
     delegate: RPane {
         id: delegateRoot
         color: Qt.lighter(Material.background, 1.6)
@@ -90,7 +97,7 @@ GridView {
             anchors.left: parent.left
             anchors.bottom: buttonrow.top
             anchors.margins: 12
-            spacing: 4
+            spacing: 8
             Row {
                 spacing: 8
                 visible: modelData.launchPath && modelData.launchPath.length > 0
@@ -108,6 +115,37 @@ GridView {
                         ? modelData.launchPath.replace(/.*(\\|\/)/gm, "")
                         : ""
                     text: uiModel.isWindows ? te : te.replace(/\..{3}$/, "")
+                    width: 292 - typeLabel.width - 72
+                    elide: Text.ElideRight
+                }
+            }
+            Row {
+                visible: false // TODO: dunno about this...
+                spacing: 4
+                Label {
+                    text: qsTr("Is in")
+                    font.bold: true
+                }
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "qrc:/svg/steam.svg"
+                    width: 16
+                    height: 16
+                    smooth: true
+                    mipmap: true
+                    ColorOverlay {
+                        anchors.fill: parent
+                        source: parent
+                        color: "white"
+                    }
+                }
+                Item {
+                    width: 4
+                    height: 1
+                }
+                Label {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: delegateRoot.isInSteam ? qsTr("Yes") : qsTr("No")
                     width: 292 - typeLabel.width - 72
                     elide: Text.ElideRight
                 }
@@ -134,19 +172,20 @@ GridView {
             onClicked: function(){
                 if (delegateRoot.isInSteam) {
                     if (!uiModel.removeFromSteam(modelData.name)) {
-                        // TODO: show error
+                        writeErrorDialog.open();
                         return;
                     }                
                 } else {
                     if (!uiModel.addToSteam(modelData)) {
-                        // TODO: show error
+                        writeErrorDialog.open();
                         return;
                     }
                 }
                 delegateRoot.isInSteam = uiModel.isInSteam(modelData)
+                steamShortcutsChanged = true
             }
             highlighted: delegateRoot.isInSteam
-            Material.accent: Material.color(Material.Red, Material.Shade400)
+            Material.accent: Material.color(Material.Red, Material.Shade800)
             Row {
                 anchors.centerIn: parent
                 spacing: 8
