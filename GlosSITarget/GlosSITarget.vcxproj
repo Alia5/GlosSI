@@ -81,7 +81,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>..\deps\SFML\out\build\x64-Debug\lib;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\deps\SFML\out\Debug\lib\Debug;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
@@ -89,7 +89,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>..\deps\SFML\out\build\x64-Release\lib;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\deps\SFML\out\Release\lib\RelWithDebInfo;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -156,7 +156,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;sfml-window.lib;sfml-system.lib;sfml-graphics.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
