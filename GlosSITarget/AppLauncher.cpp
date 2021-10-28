@@ -126,13 +126,13 @@ void AppLauncher::UnPatchValveHooks()
 void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& args)
 {
     const auto native_seps_path = std::regex_replace(path, std::wregex(L"(\\/|\\\\)"), L"\\");
-    std::wstring launch_dir;
-    std::wsmatch m;
-    if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
-        spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
-    } else {
-        launch_dir = m[0];
-    }
+    //std::wstring launch_dir;
+    //std::wsmatch m;
+    //if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
+    //    spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
+    //} else {
+    //    launch_dir = m[0];
+    //}
     std::wstring args_cpy(args);
     if (CreateProcessW(native_seps_path.data(),
                        args_cpy.data(),
@@ -141,13 +141,15 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        TRUE,
                        0,
                        nullptr,
-                       launch_dir.empty() ? nullptr : launch_dir.data(),
+                       nullptr, //launch_dir.empty() ? nullptr : launch_dir.data(),
                        &info,
                        &process_info)) {
-        spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        spdlog::info(L"Started Program: \"{}\"", native_seps_path);
     }
     else {
-        spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path);
     }
 }
 
