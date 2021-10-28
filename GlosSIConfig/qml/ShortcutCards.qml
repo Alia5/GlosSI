@@ -81,10 +81,26 @@ GridView {
         Material.elevation: 4
         clip: true
         property bool isInSteam: uiModel.isInSteam(modelData);
+
+        Image {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            id: maybeIcon
+            source: modelData.icon
+                ? modelData.icon.endsWith(".exe")
+                    ? "image://exe/" + modelData.icon
+                    : "file:///" + modelData.icon
+                : null
+            width: 48
+            height: 48
+            visible: modelData.icon
+        }
+
         Label {
             id: label
             anchors.top: parent.top
-            anchors.left: parent.left
+            anchors.leftMargin: 8
+            anchors.left: maybeIcon.right
             anchors.right: parent.right
             text: modelData.name
             font.bold: true
@@ -93,7 +109,7 @@ GridView {
         }
 
         Column {
-            anchors.top: label.bottom
+            anchors.top: maybeIcon.bottom
             anchors.left: parent.left
             anchors.bottom: buttonrow.top
             anchors.margins: 12
@@ -150,18 +166,6 @@ GridView {
                     elide: Text.ElideRight
                 }
             }
-        }
-
-        Image {
-            anchors.right: parent.right
-            anchors.bottom: buttonrow.top
-            id: maybeIcon
-            anchors.bottomMargin: 8
-            source: modelData.icon ? "file:///" + modelData.icon : null
-            // TODO: extract exe icons.
-            width: 48
-            height: 48
-            visible: modelData.icon
         }
 
         Button {

@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExeImageProvider.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIModel.cpp" />
     <None Include=".clang-format" />
@@ -149,6 +150,7 @@
     <QtMoc Include="UIModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ExeImageProvider.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="UWPFetch.h" />

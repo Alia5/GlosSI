@@ -133,6 +133,23 @@ Item {
             id: launchlayout
             spacing: 4
             width: parent.width
+            Image {
+                id: maybeIcon
+                source: shortcutInfo.icon
+                    ? shortcutInfo.icon.endsWith(".exe")
+                        ? "image://exe/" + shortcutInfo.icon
+                        : "file:///" + shortcutInfo.icon
+                    : null
+                Layout.preferredWidth: 48
+                Layout.preferredHeight: 48
+                visible: shortcutInfo.icon
+                Layout.alignment: Qt.AlignVCenter
+            }
+            Item {
+                Layout.preferredWidth: 8
+                Layout.preferredHeight: 8
+                visible: shortcutInfo.icon
+            }
             Item {
                 Layout.preferredWidth: parent.width / 2
                 Layout.fillWidth: true
@@ -273,6 +290,7 @@ Item {
                 pathInput.text = fileDialog.selectedFile.toString().replace("file:///", "")
                 if (nameInput.text == "") {
                     nameInput.text = pathInput.text.replace(/.*(\\|\/)/,"").replace(/\.[0-z]*$/, "")
+                    shortcutInfo.icon = nameInput.text
                 }
                 launchApp.checked = true
             }

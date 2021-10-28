@@ -23,6 +23,7 @@ limitations under the License.
 #include <Windows.h>
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
+#include "ExeImageProvider.h"
 #endif
 
 #include "UIModel.h"
@@ -72,6 +73,9 @@ int main(int argc, char* argv[])
 
     QQmlApplicationEngine engine;
     UIModel uimodel;
+#ifdef _WIN32
+    engine.addImageProvider(QLatin1String("exe"), new ExeImageProvider());
+#endif
     engine.rootContext()->setContextProperty("uiModel", QVariant::fromValue(&uimodel));
     engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty())
