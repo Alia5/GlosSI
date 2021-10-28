@@ -150,7 +150,7 @@ void Overlay::update()
     showLogs();
 
     if (enabled_ || force_enable_) {
-        window_.clear(sf::Color(0, 0, 0, 64)); // make window slightly dim screen with overlay
+        window_.clear(sf::Color(0, 0, 0, 128)); // make window slightly dim screen with overlay
 
         std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });
 

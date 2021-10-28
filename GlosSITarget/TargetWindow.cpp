@@ -90,11 +90,8 @@ void TargetWindow::update()
             return;
         }
     }
-    if (windowed_) {
-        window_.clear(sf::Color(23, 23, 23, 255));
-    } else {
-        window_.clear(sf::Color(0, 0, 0, 0));
-    }
+    // windows clear always handled in overlay. => non fully transparent
+    window_.clear(sf::Color(0, 0, 0, 0));
     screenShotWorkaround();
     overlay_->update();
     window_.display();
