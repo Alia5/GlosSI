@@ -147,7 +147,7 @@ bool UIModel::isInSteam(QVariant shortcut)
 
 bool UIModel::addToSteam(QVariant shortcut)
 {
-    QDir appDir = QDir::current();
+    QDir appDir = QGuiApplication::applicationDirPath();
     const auto map = shortcut.toMap();
     const auto name = map["name"].toString();
     const auto maybeLaunchPath = map["launchPath"].toString();
@@ -174,10 +174,20 @@ bool UIModel::addToSteam(QVariant shortcut)
     auto maybeIcon = map["icon"].toString();
     if (maybeIcon.isEmpty()) {
         if (launch && !maybeLaunchPath.isEmpty())
-            vdfshortcut.icon.value = maybeLaunchPath.toStdString();
+            vdfshortcut.icon.value =
+                "\"" + (
+                    is_windows_
+                        ? QString(maybeLaunchPath).replace(QRegularExpression("\/"), "\\").toStdString()
+                        : maybeLaunchPath.toStdString()
+                    ) + "\"";
     }
     else {
-        vdfshortcut.icon.value = maybeIcon.toStdString();
+        vdfshortcut.icon.value =
+            "\"" + (
+                is_windows_
+                    ? QString(maybeIcon).replace(QRegularExpression("\/"), "\\").toStdString()
+                    : maybeIcon.toStdString()
+                ) + "\"";
     }
     // Add installed locally and GlosSI tag
     VDFParser::ShortcutTag locallyTag;
