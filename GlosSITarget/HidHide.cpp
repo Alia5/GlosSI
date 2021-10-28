@@ -273,7 +273,7 @@ void HidHide::enableOverlayElement()
             overlay_elem_clock_.restart();
         }
         ImGui::Begin("Hidden Devices");
-        ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 48}, true);
+        ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 64}, true);
         std::ranges::for_each(avail_devices_, [this](const auto& device) {
             std::string label = (std::string(device.name.begin(), std::ranges::find(device.name, L'\0')) + "##" + std::string(device.device_instance_path.begin(), device.device_instance_path.end()));
             const auto findDeviceFn = [&device](const auto& blackdev) {

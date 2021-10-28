@@ -18,6 +18,8 @@ limitations under the License.
 #include <filesystem>
 #include <utility>
 
+#include "Roboto.h"
+
 Overlay::Overlay(
     sf::RenderWindow& window,
     std::function<void()> on_close,
@@ -28,9 +30,16 @@ Overlay::Overlay(
 {
     ImGui::SFML::Init(window_);
 
+
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
+    auto fontconf = ImFontConfig{};
+    fontconf.FontDataOwnedByAtlas = false;
+    io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf, Roboto_Regular_ttf_len, 24, &fontconf);
+    ImGui::SFML::UpdateFontTexture(); // important call: updates font texture
 
 #ifdef _WIN32
     auto config_path = std::filesystem::temp_directory_path()
@@ -226,9 +235,9 @@ bool Overlay::closeButton() const
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.6f, 0.f, 0.f, 0.9f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 0.16f, 0.16f, 1.00f));
     ImGui::Begin("##CloseButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-    ImGui::SetWindowSize({56 + 24, 32 + 24});
-    ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 24, -24});
-    if (ImGui::Button("X##Close", {56, 48})) {
+    ImGui::SetWindowSize({56 + 32, 32 + 32});
+    ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 32, -32});
+    if (ImGui::Button("X##Close", {56, 32})) {
         on_close_();
         return true;
     }

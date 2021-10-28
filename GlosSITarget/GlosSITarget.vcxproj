@@ -193,6 +193,7 @@
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="OverlayLogSink.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Roboto.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SteamOverlayDetector.h" />
     <ClInclude Include="SteamTarget.h" />
@@ -214,6 +215,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Roboto-Regular.ttf">
+      <DeploymentContent>true</DeploymentContent>
+    </Font>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
