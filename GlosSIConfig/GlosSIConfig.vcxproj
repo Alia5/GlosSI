@@ -55,8 +55,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -75,6 +77,10 @@
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
+    <CustomBuildStep>
+      <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
+      <Outputs>Upading version based on git;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -93,6 +99,10 @@
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
+    <CustomBuildStep>
+      <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
+      <Outputs>Upading version based on git;%(Outputs)</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
@@ -138,12 +148,17 @@
     <QtMoc Include="UIModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="UWPFetch.h" />
     <ClInclude Include="VDFParser.h" />
     <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

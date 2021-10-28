@@ -14,19 +14,19 @@
     </application>
   </compatibility>
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
-    <!--<security>
+    <security>
       <requestedPrivileges>
-        --><!--
+        <!--
                   UAC settings:
                   - app should run at same integrity level as calling process
                   - app does not need to manipulate windows belonging to
                     higher-integrity-level processes
-                  --><!--
+                  -->
         <requestedExecutionLevel
-          level="asInvoker"
+          level="requireAdministrator"
           uiAccess="false"
         />
       </requestedPrivileges>
-    </security>-->
+    </security>
   </trustInfo>
 </assembly>
