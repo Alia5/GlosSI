@@ -42,8 +42,20 @@ inline struct Window {
 
 inline void Parse(const std::string& arg1)
 {
+    std::filesystem::path path(arg1);
+    if (path.has_extension() && !std::filesystem::exists(path)) {
+        path = std::filesystem::temp_directory_path()
+                        .parent_path()
+                        .parent_path()
+                        .parent_path();
+
+        path /= "Roaming";
+        path /= "GlosSI";
+        path /= "Targets";
+        path /= arg1;
+    }
     std::ifstream json_file;
-    json_file.open(arg1);
+    json_file.open(path);
     if (!json_file.is_open()) {
         spdlog::error("Couldn't open settings file {}", arg1);
         return;
