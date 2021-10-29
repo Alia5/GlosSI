@@ -106,7 +106,7 @@ void InputRedirector::runLoop()
                             driver_,
                             vt_x360_[i],
                             &InputRedirector::controllerCallback,
-                            nullptr);
+                            reinterpret_cast<LPVOID>(i));
                         if (!VIGEM_SUCCESS(callback_register_res)) {
                             spdlog::error("Registering controller {}, {} for notification failed with error code: {:#x}", i, vigem_target_get_index(vt_x360_[i]), callback_register_res);
                         }
@@ -136,6 +136,6 @@ void InputRedirector::controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Tar
     vibration.wLeftMotorSpeed = LargeMotor * 0xff;  //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
     vibration.wRightMotorSpeed = SmallMotor * 0xff; //Yeah yeah I do know about bitshifting and the multiplication not being 100% correct...
 
-    XInputSetState(vigem_target_get_index(Target) - 1, &vibration);
+    XInputSetState(reinterpret_cast<int>(UserData), &vibration);
 }
 #endif
