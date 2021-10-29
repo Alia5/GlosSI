@@ -6,7 +6,8 @@ TODO: Logo
 # ATTENTION: GloSC is currently being rewritten, and renamed to GlosSI ([Glo]bal ([s]ystemwide) [S]team [I]nput)
 
 No ETA when it's done  
-No support until then.
+No support until then.  
+The Issue-Tracker is currently closed
 
 **Looking for contributors!**  
 As the past has shown, I have way to less time on hand too maintain such a project.  
