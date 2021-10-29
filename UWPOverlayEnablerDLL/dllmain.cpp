@@ -34,8 +34,8 @@ There are two (known to me, at time of writing) ways to get a working overlay fo
 	
 	"The magic":
 		Hook SetWindowBand
-		One called, find GlosSI Window
-		Set GlosSI Window to notification ZBID (Doesn't seem to require any special stuff)
+		Once called, find GlosSI Window
+		Set GlosSI Window to ZBID_SYSTEM_TOOLS (Doesn't seem to require any special stuff)
 		Self-Eject
 		
 		**PROFIT!**
