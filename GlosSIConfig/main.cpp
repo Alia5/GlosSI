@@ -96,6 +96,8 @@ int main(int argc, char* argv[])
     SetWindowLong(hwnd, GWL_STYLE, style);
 
     // Enable blurbehind (not needed?) anyway gives nice background on win7 and 8
+    // LOL.. just realizing < Win 10 is not supported by HidHide driver...
+    // let's see what users think...
     DWM_BLURBEHIND bb{};
     bb.dwFlags = DWM_BB_ENABLE;
     bb.fEnable = true;

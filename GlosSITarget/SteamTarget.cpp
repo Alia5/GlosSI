@@ -25,6 +25,11 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 #include <vdf_parser.hpp>
 
+#ifdef _WIN32
+#include "UWPOverlayEnabler.h"
+#endif
+
+
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_(
           [this] { run_ = false; },
@@ -41,6 +46,9 @@ SteamTarget::SteamTarget(int argc, char* argv[])
       })
 {
     target_window_handle_ = window_.getSystemHandle();
+#ifdef _WIN32
+    UWPOverlayEnabler::AddUwpOverlayOvWidget();
+#endif
 }
 
 int SteamTarget::run()

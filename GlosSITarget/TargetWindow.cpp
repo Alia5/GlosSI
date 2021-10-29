@@ -48,6 +48,7 @@ TargetWindow::TargetWindow(
 
     Overlay::AddOverlayElem([this]() {
         bool windowed_copy = windowed_;
+        ImGui::SetNextWindowPos({650, 450}, ImGuiCond_FirstUseEver);
         ImGui::Begin("Window mode");
         if (ImGui::Checkbox("Window mode", &windowed_copy)) {
             toggle_window_mode_after_frame_ = true;

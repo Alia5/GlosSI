@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     const auto overlay_sink = std::make_shared<spdlog::sinks::overlay_sink_mt>();
 #ifdef _DEBUG
-    overlay_sink->set_level(spdlog::level::debug); // TODO: make configurable
+    overlay_sink->set_level(spdlog::level::debug);
 #else
     overlay_sink->set_level(spdlog::level::info);
 #endif

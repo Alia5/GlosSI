@@ -125,6 +125,12 @@
     <ClInclude Include="Roboto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DllInjector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UWPOverlayEnabler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll" />

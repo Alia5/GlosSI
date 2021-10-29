@@ -84,7 +84,7 @@ Overlay::Overlay(
     colors[ImGuiCol_FrameBgActive] = ImVec4(0.09f, 0.12f, 0.14f, 1.00f);
     colors[ImGuiCol_TitleBg] = ImVec4(0.18f, 0.21f, 0.24f, 0.94f);
     colors[ImGuiCol_TitleBgActive] = ImVec4(0.26f, 0.29f, 0.34f, 0.93f);
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.16f, 0.19f, 0.22f, 0.81f);
     colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.18f, 0.22f, 1.00f);
     colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
     colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
@@ -151,8 +151,9 @@ void Overlay::update()
 
     if (enabled_ || force_enable_) {
         window_.clear(sf::Color(0, 0, 0, 128)); // make window slightly dim screen with overlay
-
-        std::ranges::for_each(OVERLAY_ELEMS_, [](const auto& fn) { fn(); });
+        std::ranges::for_each(OVERLAY_ELEMS_, [this](const auto& fn) {
+            fn();
+        });
 
         // ImGui::ShowDemoWindow();
 
@@ -199,6 +200,7 @@ void Overlay::showLogs() const
     }
     if (logs.empty())
         return;
+    ImGui::SetNextWindowSizeConstraints({150, 150}, {1000, window_.getSize().y - 250.f});
     if (!enabled_) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {32.f, 32.f});
         ImGui::Begin("Log", nullptr,
@@ -222,6 +224,7 @@ void Overlay::showLogs() const
             ImGui::Text(msg.payload.data());
         }
     });
+    ImGui::SetScrollY(ImGui::GetScrollMaxY());
     ImGui::End();
     if (!enabled_) {
         ImGui::PopStyleVar();
