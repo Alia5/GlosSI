@@ -14,7 +14,7 @@ Reach out via Discord/E-Mail (But get to the point right away, please, I get way
 
 # GlosSI
 
-GlosSI or [Glo]bal ([s]ystemwide) [S]team [I]nput is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
+GlosSI or [Glo]bal ([s]ystemwide) [S]team [I]nput, formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
 All complete with **per application bindings and working rumble emulation.**  
 GlosSI can, but isn't required to, launch any of your favorite games or applications and directly add them to Steam, be it Win32 or UWP!  
 It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your Steam-Input needs  
@@ -93,7 +93,7 @@ Device Hiding via [HidHide](https://vigem.org/projects/HidHide/)
 ## License
 
 ```license
-Copyright 2017-2018 Peter Repukat - FlatspotSoftware
+Copyright 2017-2021 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
