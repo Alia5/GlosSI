@@ -86,14 +86,16 @@ BOOL WINAPI SetGlosSIWindowBand(HWND hWnd, HWND hwndInsertAfter, DWORD dwBand)
 	if (glossi_hwnd)
 	{
 		// Most window bands don't really seem to work.
-		// However, notification does!
-		SetWindowBand(glossi_hwnd, nullptr, ZBID_IMMERSIVE_NOTIFICATION);
+		// However, notification and system_tools does!
+		// use system tools, as that allows the steam overlay to be interacted with
+		// without UWP apps minimizing
+		SetWindowBand(glossi_hwnd, nullptr, ZBID_SYSTEM_TOOLS);
 		allow_exit = true;
 	}
 	return SetWindowBand(hWnd, hwndInsertAfter, dwBand);
 }
 
-DWORD WINAPI HackThread(HMODULE hModule)
+DWORD WINAPI WaitThread(HMODULE hModule)
 {
 	while (!allow_exit)
 	{
@@ -116,7 +118,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		{
 			SetWindowBand = reinterpret_cast<fSetWindowBand>(GetProcAddress(hpath, "SetWindowBand"));
 			SetWindowBandHook.Install(GetProcAddress(hpath, "SetWindowBand"), &SetGlosSIWindowBand, subhook::HookFlags::HookFlag64BitOffset);
-			CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)HackThread, hModule, 0, nullptr));
+			CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)WaitThread, hModule, 0, nullptr));
 		}
 	}
 	else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
