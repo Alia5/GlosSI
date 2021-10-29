@@ -1,3 +1,6 @@
+---
+---
+
 [![Build status](https://ci.appveyor.com/api/projects/status/l9hq9qglvn6q5wdg/branch/main?svg=true)](https://ci.appveyor.com/project/Alia5/glossi/branch/main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Github All Releases](https://img.shields.io/github/downloads/Alia5/GloSC/total.svg)]() [![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y)
 
 TODO: Logo
@@ -28,49 +31,22 @@ It is **the tool** to enjoy any game that has trouble with Steam and/or *add ext
 
 GlosSI creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears in which you can use the Steam-overlay. You also get access to touch- and radial-menus and other functionality normally only present in Games
 
-In addition to that, Gamecontroller-inputs are redirected to the whole operating system, so that they will work with any game or application
+In addition to that, Gamecontroller-inputs are redirected to the whole operating system, so that they will work with any game or application  
+Real Gamecontrollers are hidden from other applications, so that they can't interfere with your game.
 
 This brings full Steam-Input functionality to the desktop and any other application Steam-Input might not have worked before
 
----
-
-**Cleaning up misconceptions**
-
-GlosSI doesn't hook into any of your games, launched programs or any system-component, except into Steam itself to keep the controller from switching to the desktop-config (if not disabled)
-
 Games do not need to be launched using GlosSI.  
-
 If the "Start Application" option does not work, launch any GlosSI-Shortcut from Steam, followed by a game or application.
 
 ---
 
-## FAQ / Troubleshooting
-
-* **Q: The overlay isn't showing up!**
-
-  A: The overlay only works for windowed or borderless windowed mode applications.  
-     This is even true for UWP-Games! While it's true that UWP doesn't run exclusive fullscreen, some Windows bullshit prevents unsigned apps from drawing over them.  
-     Try running your games in borderless window mode
-
-  A: Enable Xbox360 controller rebinding in Steam! It's in the "Controller" section in the Steam Settings.
-
-* **Q: GlosSI overlay causes the screen to be black**
-
-  A: If running on a Laptop with NVidia-GPU, open up NVidia control panel (right click your Desktop and select it). Manage the 3D-settings and have it auto select your graphics processor.
-
-  Alternatively there is the option to run GlosSI in windowed mode.
-  Simply open the GlosSI overlay by toggling Steams overlay twice; You cna change it from there.
-  This will, unfortunately, also somewhat prevent you from using touch- and radial-menus.
-
-  Instructions for AMD GPUs should be similar, in case any issues occur.        
-
----
-
-Join the GlosSI discord here: https://discord.gg/T9b4D5y
+Join the GlosSI discord here: [https://discord.gg/T9b4D5y](https://discord.gg/T9b4D5y)
 
 ---
 
 **GlosSI consists of:**
+
 - The "GlosSITarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 - A config application ("GlosSIConfig") handling shortcut ("GlosSITarget") creation and their addition to Steam.
 
