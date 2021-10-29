@@ -38,7 +38,7 @@ Overlay::Overlay(
     io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
     auto fontconf = ImFontConfig{};
     fontconf.FontDataOwnedByAtlas = false;
-    io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf, Roboto_Regular_ttf_len, 24, &fontconf);
+    io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf.data(), Roboto_Regular_ttf.size(), 24, &fontconf);
     ImGui::SFML::UpdateFontTexture(); // important call: updates font texture
 
 #ifdef _WIN32
