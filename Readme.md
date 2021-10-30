@@ -10,7 +10,6 @@ TODO: Logo
 
 No ETA when it's done  
 No support until then.  
-The Issue-Tracker is currently closed
 
 **Looking for contributors!**  
 As the past has shown, I have way to less time on hand too maintain such a project.  
