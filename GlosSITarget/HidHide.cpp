@@ -272,8 +272,8 @@ void HidHide::enableOverlayElement()
             closeCtrlDevice();
             overlay_elem_clock_.restart();
         }
-        ImGui::SetNextWindowSizeConstraints({300, 250}, {1000, 1000});
-        ImGui::SetNextWindowPos({600, 100}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({650, 100}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
         ImGui::Begin("Hidden Devices");
         ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 64}, true);
         std::ranges::for_each(avail_devices_, [this](const auto& device) {
