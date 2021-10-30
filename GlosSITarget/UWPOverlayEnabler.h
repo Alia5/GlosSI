@@ -74,7 +74,9 @@ inline void AddUwpOverlayOvWidget()
                 else {
                     spdlog::error("UWPOverlayEnablerDLL not found");
                 }
-            }   
+            }
+            ImGui::Text("If the overlay isn't working right away:");
+            ImGui::Text("try opening Windows start menu, as this triggers the hook");
         }
         ImGui::End();
     });
