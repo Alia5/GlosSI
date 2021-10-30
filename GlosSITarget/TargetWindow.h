@@ -68,6 +68,10 @@ class TargetWindow {
     std::vector<std::string> screenshot_keys_;
     const std::function<void()> on_window_changed_;
 
+    sf::VideoMode old_desktop_mode_;
+    sf::Clock check_resolution_clock_;
+    static constexpr int RES_CHECK_SECONDS = 1;
+
 
     std::shared_ptr<Overlay> overlay_;
 

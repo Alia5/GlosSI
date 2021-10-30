@@ -83,7 +83,6 @@ void TargetWindow::setClickThrough(bool click_through)
 void TargetWindow::update()
 {
     sf::Event event{};
-
     while (window_.pollEvent(event)) {
         Overlay::ProcessEvent(event);
         if (event.type == sf::Event::Closed) {
@@ -98,6 +97,16 @@ void TargetWindow::update()
     window_.display();
     if (toggle_window_mode_after_frame_) {
         createWindow(!windowed_);
+    }
+    // As SFML screws us out of most windows-events, just poll resolution every once in a while
+    // If changed, recreate window.
+    // Fixes Blackscreen issues when user does funky stuff and still uses GlosSI in non windowed mod...
+    // (WHY?!)
+    if (check_resolution_clock_.getElapsedTime().asSeconds() > RES_CHECK_SECONDS) {
+        if (sf::VideoMode::getDesktopMode().width != old_desktop_mode_.width) {
+            createWindow(windowed_);
+        }
+        check_resolution_clock_.restart();
     }
 }
 
@@ -228,6 +237,7 @@ void TargetWindow::createWindow(bool window_mode)
     toggle_window_mode_after_frame_ = false;
 
     auto desktop_mode = sf::VideoMode::getDesktopMode();
+    old_desktop_mode_ = desktop_mode;
     if (window_mode) {
         window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
         windowed_ = true;
