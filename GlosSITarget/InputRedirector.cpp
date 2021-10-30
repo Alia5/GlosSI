@@ -91,7 +91,7 @@ void InputRedirector::runLoop()
                     // but Steam ONLY does this if it is configured to support X360 controller rebinding!!!
                     // Otherwise, this application (GloSC/GlosSI) will pickup the emulated controller as well!
                     vigem_target_set_vid(vt_x360_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                    vigem_target_set_pid(vt_x360_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                    // vigem_target_set_pid(vt_x360_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
                     //and filter out emulated controllers to support a greater amount of controllers simultaneously
 

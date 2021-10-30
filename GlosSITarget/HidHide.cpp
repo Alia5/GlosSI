@@ -540,7 +540,7 @@ HidHide::SmallHidInfo HidHide::GetDeviceInfo(const DeviceInstancePath& instance_
                     ? buffer
                     : L"");
     // Valve emulated gamepad PID/VID; mirrord by ViGEm
-    if (attributes.VendorID == 0x28de && attributes.ProductID == 0x11FF) {
+    if (attributes.VendorID == 0x28de /* && attributes.ProductID == 0x11FF*/) {
         res.name = std::wstring(L"ViGEm Emulated: ") + res.name;
     }
     res.base_container_device_instance_path = BaseContainerDeviceInstancePath(instance_path);
