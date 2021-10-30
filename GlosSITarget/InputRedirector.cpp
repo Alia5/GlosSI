@@ -56,7 +56,13 @@ void InputRedirector::run()
         ImGui::Begin("Controller Emulation");
         int countcopy = max_controller_count_;
         ImGui::Text("Max. controller count");
-        ImGui::SliderInt("##Max. controller count", &countcopy, 0, XUSER_MAX_COUNT);
+        ImGui::InputInt("##Max. controller count", &countcopy, 1, 1);
+        if (countcopy > XUSER_MAX_COUNT) {
+            countcopy = XUSER_MAX_COUNT;
+        }
+        if (countcopy < 0) {
+            countcopy = 0;
+        }
         max_controller_count_ = countcopy;
         bool enable_rumbe_copy = enable_rumble_;
         ImGui::Checkbox("Enable Rumble", &enable_rumbe_copy);
