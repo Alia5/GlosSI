@@ -29,7 +29,6 @@ InputRedirector::InputRedirector()
     }
     else {
         spdlog::error("Error initializing ViGEm");
-        // TODO: setup some mechanic to draw to window...
     }
 #endif
 }
