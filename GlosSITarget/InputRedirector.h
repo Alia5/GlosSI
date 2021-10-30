@@ -35,12 +35,21 @@ class InputRedirector {
 
     static constexpr int start_delay_ms_ = 2000;
     bool run_ = false;
-    int controller_count_ = 0;
+    int overlay_elem_id_ = -1;
 #ifdef _WIN32
     PVIGEM_CLIENT driver_;
+
+    // variables for overlay element; run in different thread
+    std::atomic<int> max_controller_count_ = XUSER_MAX_COUNT;
+    static inline std::atomic<bool> enable_rumble_ = true;
+    static inline std::atomic<bool> use_real_vid_pid_ = false;
+    static inline std::atomic<bool> use_real_vid_pid_changed_ = false;
+
     PVIGEM_TARGET vt_x360_[XUSER_MAX_COUNT]{};
     bool vigem_connected_;
     static void CALLBACK controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber, LPVOID UserData);
+    void unplugVigemX360(int idx);
+
 #endif
 
     std::thread controller_thread_;
