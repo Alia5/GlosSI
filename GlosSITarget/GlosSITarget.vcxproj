@@ -135,7 +135,7 @@
       <AdditionalDependencies>hid.lib;Cfgmgr32.lib;opengl32.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-graphics-d.lib;dwmapi.lib;xinput9_1_0.lib;setupapi.lib;ViGEmClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>true</EnableDpiAwareness>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
