@@ -91,6 +91,7 @@
     <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\Release\lib\RelWithDebInfo;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -203,17 +204,35 @@
     <ClInclude Include="UWPOverlayEnabler.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-graphics-d-2.dll">
+    <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-graphics-d-2.dll">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </None>
-    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-system-d-2.dll">
+    <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-system-d-2.dll">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
     </None>
-    <None Include="..\deps\SFML\out\build\x64-Debug\lib\sfml-window-d-2.dll">
+    <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-window-d-2.dll">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+    </None>
+    <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-graphics-2.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+    </None>
+    <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-system-2.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </None>
+    <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-window-2.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
     </None>
     <None Include=".clang-format" />
-    <None Include="example_conf.json" />
+    <None Include="example_conf.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
