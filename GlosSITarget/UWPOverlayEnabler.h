@@ -40,7 +40,7 @@ inline void AddUwpOverlayOvWidget()
 {
     Overlay::AddOverlayElem([]() {
         ImGui::SetNextWindowPos({1200, 250}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({170, 225}, {1000, 1000});
+        ImGui::SetNextWindowSizeConstraints({170, 325}, {1000, 1000});
         ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
         ImGui::Begin("UWP-Overlay");
         ImGui::Text("To enable the overlay on top of \"fullscreen\" UWP-Apps,");
