@@ -1,6 +1,3 @@
----
----
-
 [![Build status](https://ci.appveyor.com/api/projects/status/l9hq9qglvn6q5wdg/branch/main?svg=true)](https://ci.appveyor.com/project/Alia5/glossi/branch/main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Github All Releases](https://img.shields.io/github/downloads/Alia5/GloSC/total.svg)]() [![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y)
 
 TODO: Logo
@@ -13,7 +10,9 @@ No support until then.
 
 **Looking for contributors!**  
 As the past has shown, I have way to less time on hand too maintain such a project.  
-Reach out via Discord/E-Mail (But get to the point right away, please, I get way too much spam)
+Reach out via Discord/E-Mail (But get to the point right away, please, I get way too much spam)  
+
+See: [BUILDING.md](./BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
 
 # GlosSI
 
@@ -22,11 +21,11 @@ All complete with **per application bindings and working rumble emulation.**
 GlosSI can, but isn't required to, launch any of your favorite games or applications and directly add them to Steam, be it Win32 or Windows Store (UWP)!  
 It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your Steam-Input needs  
 
-*Windows Store*, *Reshade / SweetFX*, *Origin*, *Uplay*, *Emulators* and *more* with **no hassle**
+*Windows Store*, *Reshade / SweetFX*, *Origin*, *Uplay*, *Emulators* and *more* with **no hassle**™
 
 ---
 
-**How does it work? / What does it do?**
+## How does it work? / What does it do?
 
 GlosSI creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears in which you can use the Steam-overlay. You also get access to touch- and radial-menus and other functionality normally only present in Games
 
@@ -38,13 +37,19 @@ This brings full Steam-Input functionality to the desktop and any other applicat
 Games do not need to be launched using GlosSI.  
 If the "Start Application" option does not work, launch any GlosSI-Shortcut from Steam, followed by a game or application.
 
+## What this is not
+
+- a replacement for Steams controller configuration tool.
+- a Steam remote play / steam game streaming solution. (That being said, it **can** work, but is not guaranteed to.)
+- Old versions (GloSC, Global [S]team[C]ontroller) where never designed to be used with anything other than said controller, GlosSI can be used with any controller.
+
 ---
 
 Join the GlosSI discord here: [https://discord.gg/T9b4D5y](https://discord.gg/T9b4D5y)
 
 ---
 
-**GlosSI consists of:**
+## GlosSI consists of
 
 - The "GlosSITarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
 - A config application ("GlosSIConfig") handling shortcut ("GlosSITarget") creation and their addition to Steam.
@@ -55,9 +60,7 @@ Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consi
 
 GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
 
-For Building / Manual installation refer to the **TODO**
-
-GlosSI is not affiliated with Valve, Steam, or any of their partners.
+GloSC/GlosSI is not affiliated with Valve, Steam, or any of their partners.
 
 ---
 
@@ -65,6 +68,8 @@ GlosSI is built using [Qt 6.2](https://www.qt.io/) and a fork of [SFML](http://w
 
 The system wide Xbox-Controller works via [ViGEm](https://vigem.org/projects/ViGEm/)
 Device Hiding via [HidHide](https://vigem.org/projects/HidHide/)
+
+For Building instructions refer to [BUILDING.md](./BUILDING.md)
 
 ## License
 
