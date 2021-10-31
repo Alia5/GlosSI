@@ -1,0 +1,30 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+body {
+    font: 18px/1.5 "Noto Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.wrapper {
+    margin-left: 120px;
+    margin-right: 120px;
+    width: calc(100% - 548px);
+}
+
+section {
+    width: calc(100% - 294px - 96px);
+}
+
+ul.downloads {
+    height: 56px;
+    a {
+        strong {
+            position: relative;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+        }
+    }
+}

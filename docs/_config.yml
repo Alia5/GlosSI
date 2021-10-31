@@ -1,1 +1,17 @@
-theme: jekyll-theme-minimal
+plugins:
+  - jekyll-relative-links
+  - jekyll-remote-theme
+relative_links:
+  enabled: true
+  collections: true
+url: ""
+baseurl: ""
+title: GlosSI
+show_downloads: true
+#remote_theme: mmistakes/jekyll-theme-basically-basic
+remote_theme: pages-themes/minimal
+logo: assets/img/logo.png
+github:
+  release_url: https://github.com/Alia5/GlosSI/releases
+  snapshot_url: https://ci.appveyor.com/project/Alia5/glossi/build/artifacts
+  repository_url: https://www.github.com/Alia5/GlosSI

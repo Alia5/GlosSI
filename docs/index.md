@@ -1,9 +1,6 @@
 ---
 ---
 
-TODO: Logo
-<!-- ![GloSC logo](https://github.com/Alia5/GloSC/blob/master/GloSC_Icon_small.png?raw=true "GloSC logo") -->
-
 # ATTENTION: GloSC is currently being rewritten, and renamed to GlosSI ([Glo]bal ([s]ystemwide) [S]team [I]nput)
 
 No ETA when it's done  
@@ -13,7 +10,7 @@ No support until then.
 As the past has shown, I have way to less time on hand too maintain such a project.  
 Reach out via Discord/E-Mail (But get to the point right away, please, I get way too much spam)  
 
-See: [BUILDING.md](./docs/BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
+See: [BUILDING](./BUILDING.md) / [CONTRIBUTING](https://github.com/Alia5/GlosSI/blob/main/CONTRIBUTING.md)
 
 # GlosSI
 
