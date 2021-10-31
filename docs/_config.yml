@@ -4,8 +4,6 @@ plugins:
 relative_links:
   enabled: true
   collections: true
-url: ""
-baseurl: ""
 title: GlosSI
 show_downloads: true
 #remote_theme: mmistakes/jekyll-theme-basically-basic
