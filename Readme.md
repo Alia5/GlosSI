@@ -12,7 +12,7 @@ No support until then.
 As the past has shown, I have way to less time on hand too maintain such a project.  
 Reach out via Discord/E-Mail (But get to the point right away, please, I get way too much spam)  
 
-See: [BUILDING.md](./BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
+See: [BUILDING.md](./docs/BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
 
 # GlosSI
 
@@ -69,7 +69,7 @@ GlosSI is built using [Qt 6.2](https://www.qt.io/) and a fork of [SFML](http://w
 The system wide Xbox-Controller works via [ViGEm](https://vigem.org/projects/ViGEm/)
 Device Hiding via [HidHide](https://vigem.org/projects/HidHide/)
 
-For Building instructions refer to [BUILDING.md](./BUILDING.md)
+For Building instructions refer to [BUILDING.md](./docs/BUILDING.md)
 
 ## License
 
