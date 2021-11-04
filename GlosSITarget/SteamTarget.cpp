@@ -184,12 +184,17 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 std::filesystem::path SteamTarget::getSteamPath() const
 {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
-    const auto res = key.GetStringValue(L"SteamPath");
-    spdlog::info(L"Detected Steam Path: {}", res);
-    return res;
+    try {
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
+        const auto res = key.GetStringValue(L"SteamPath");
+        spdlog::info(L"Detected Steam Path: {}", res);
+        return res;   
+    } catch (winreg::RegException e) {
+        spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
+    }
+    return L"";
 #else
     return L""; // TODO
 #endif
@@ -198,12 +203,18 @@ std::filesystem::path SteamTarget::getSteamPath() const
 std::wstring SteamTarget::getSteamUserId() const
 {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-    const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
-    spdlog::info(L"Detected Steam UserId: {}", res);
-    return res;
+    try {
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
+        const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+        spdlog::info(L"Detected Steam UserId: {}", res);
+        return res;
+    }
+    catch (winreg::RegException e) {
+        spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
+    }
+    return L"";
 #else
     return L""; // TODO
 #endif
@@ -220,6 +231,10 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
     auto root = tyti::vdf::read(config_file);
 
     auto children = root.childs["system"];
+    if (children->attribs.find("InGameOverlayShortcutKey") == children->attribs.end()) {
+        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
+        return {"Shift", "KEY_TAB"}; // default
+    }
     auto hotkeys = children->attribs.at("InGameOverlayShortcutKey");
 
     // has anyone more than 4 keys to open overlay?!
@@ -257,6 +272,10 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     auto root = tyti::vdf::read(config_file);
 
     auto children = root.childs["system"];
+    if (children->attribs.find("InGameOverlayScreenshotHotKey") == children->attribs.end()) {
+        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
+        return {"KEY_F12"}; //default
+    }
     auto hotkeys = children->attribs.at("InGameOverlayScreenshotHotKey");
 
     // has anyone more than 4 keys to screenshot?!
@@ -293,6 +312,10 @@ bool SteamTarget::getXBCRebindingEnabled()
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
 
+    if (root.attribs.find("SteamController_XBoxSupport") == root.attribs.end()) {
+        spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
+        return false;
+    }
     auto xbsup = root.attribs.at("SteamController_XBoxSupport");
     if (xbsup != "1") {
         spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
