@@ -40,8 +40,11 @@ inline struct Window {
     float scale = 0.f;
 } window;
 
-inline void Parse(const std::string& arg1)
+inline void Parse(std::string arg1)
 {
+    if (!arg1.ends_with(".json")) {
+        arg1 += ".json";
+    }
     std::filesystem::path path(arg1);
     if (path.has_extension() && !std::filesystem::exists(path)) {
         path = std::filesystem::temp_directory_path()
