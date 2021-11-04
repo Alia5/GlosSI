@@ -89,7 +89,14 @@ int main(int argc, char* argv[])
     Settings::Parse(argsv);
     SteamTarget target(argc, argv);
 #endif
-    const auto exit = target.run();
+    auto exit = 1;
+    try {
+         exit = target.run();
+    } catch (std::exception& e) {
+        spdlog::error("Exception occured: {}", e.what());
+    } catch (...) {
+        spdlog::error("Unknown exception occured");
+    }
     spdlog::shutdown();
     return exit;
 }

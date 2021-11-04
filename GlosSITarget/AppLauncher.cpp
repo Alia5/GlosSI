@@ -134,6 +134,7 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     //    launch_dir = m[0];
     //}
     std::wstring args_cpy(args);
+    spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
                        args_cpy.data(),
                        nullptr,
@@ -149,12 +150,13 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     }
     else {
         //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
-        spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path);
+        spdlog::error(L"Couldn't start program: \"{}\"", native_seps_path);
     }
 }
 
 void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstring& args)
 {
+    spdlog::debug(L"Launching UWP app \"{}\"; args \"{}\"", package_full_name, args);
     HRESULT result = CoInitialize(nullptr);
     if (SUCCEEDED(result)) {
 

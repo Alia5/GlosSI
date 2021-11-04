@@ -60,7 +60,7 @@ inline void Parse(std::string arg1)
     std::ifstream json_file;
     json_file.open(path);
     if (!json_file.is_open()) {
-        spdlog::error("Couldn't open settings file {}", arg1);
+        spdlog::error("Couldn't open settings file {}", path.string());
         return;
     }
     const auto json = nlohmann::json::parse(json_file);
@@ -110,6 +110,8 @@ inline void Parse(std::string arg1)
     }
 
     json_file.close();
+
+    spdlog::debug("Read config file \"{}\"", path.string());
 }
 
 } // namespace Settings
