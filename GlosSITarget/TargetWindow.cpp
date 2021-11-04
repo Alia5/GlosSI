@@ -282,9 +282,11 @@ void TargetWindow::createWindow(bool window_mode)
 
     if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
         setFpsLimit(60);
+        spdlog::warn("Couldn't detect screen refresh rate; Limiting overlay to 60");
     }
     else {
         setFpsLimit(dev_mode.dmDisplayFrequency);
+        spdlog::debug("Limiting overlay to FPS to {}", dev_mode.dmDisplayFrequency);
     }
 
     overlay_ = std::make_shared<Overlay>(window_, [this]() { close(); }, windowed_);
@@ -299,6 +301,7 @@ void TargetWindow::createWindow(bool window_mode)
 
     if (Settings::window.maxFps > 0) {
         setFpsLimit(Settings::window.maxFps);
+        spdlog::debug("Limiting overlay to FPS from config-file to {}", Settings::window.maxFps);
     }
     if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
         ImGuiIO& io = ImGui::GetIO();
