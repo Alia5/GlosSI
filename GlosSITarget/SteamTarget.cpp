@@ -212,8 +212,11 @@ std::wstring SteamTarget::getSteamUserId() const
 std::vector<std::string> SteamTarget::getOverlayHotkey()
 {
     const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    if (!std::filesystem::exists(config_path)) {
+        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
+        return {"Shift", "KEY_TAB"}; // default
+    }
     std::ifstream config_file(config_path);
-    // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
 
     auto children = root.childs["system"];
@@ -246,8 +249,11 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
 std::vector<std::string> SteamTarget::getScreenshotHotkey()
 {
     const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    if (!std::filesystem::exists(config_path)) {
+        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
+        return {"KEY_F12"}; //default
+    }
     std::ifstream config_file(config_path);
-    // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
 
     auto children = root.childs["system"];
@@ -280,8 +286,11 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
 bool SteamTarget::getXBCRebindingEnabled()
 {
     const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
+    if (!std::filesystem::exists(config_path)) {
+        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
+        return false;
+    }
     std::ifstream config_file(config_path);
-    // TODO: check if file exists
     auto root = tyti::vdf::read(config_file);
 
     auto xbsup = root.attribs.at("SteamController_XBoxSupport");
