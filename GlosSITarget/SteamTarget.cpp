@@ -293,7 +293,13 @@ bool SteamTarget::getXBCRebindingEnabled()
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
 
-    auto xbsup = root.attribs.at("SteamController_XBoxSupport");
+    auto xbsup = std::string("0");
+    try {
+        xbsup = root.attribs.at("SteamController_XBoxSupport");
+    } catch (const std::out_of_range& ex) {
+        // Do nothing as we just didn't find this key in the map
+    }
+    
     if (xbsup != "1") {
         spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
     }
