@@ -157,14 +157,14 @@ void HidHide::UnPatchValveHooks()
         else {
             spdlog::error("failed to unpatch SetupDiEnumDeviceInfo");
         }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(setupapidll, "SetupDiGetClassDevsW"));
-        if (addr) {
-            UnPatchHook(addr, SETUP_DI_GETCLASSDEVSW_ORIG_BYTES);
-            spdlog::trace("Unpatched SetupDiGetClassDevsW");
-        }
-        else {
-            spdlog::error("failed to unpatch SetupDiGetClassDevsW");
-        }
+        //addr = reinterpret_cast<BYTE*>(GetProcAddress(setupapidll, "SetupDiGetClassDevsW"));
+        //if (addr) {
+        //    UnPatchHook(addr, SETUP_DI_GETCLASSDEVSW_ORIG_BYTES);
+        //    spdlog::trace("Unpatched SetupDiGetClassDevsW");
+        //}
+        //else {
+        //    spdlog::error("failed to unpatch SetupDiGetClassDevsW");
+        //}
     }
     auto hiddll = GetModuleHandle(L"hid.dll");
     if (hiddll) {
