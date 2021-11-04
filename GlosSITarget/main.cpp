@@ -27,6 +27,48 @@ limitations under the License.
 #include "OverlayLogSink.h"
 #include "Settings.h"
 
+
+#ifdef _WIN32
+
+LONG Win32FaultHandler(struct _EXCEPTION_POINTERS* ExInfo)
+
+{
+    std::string FaultTx = "";
+    switch (ExInfo->ExceptionRecord->ExceptionCode) {
+    case EXCEPTION_ACCESS_VIOLATION:
+        FaultTx = "ACCESS VIOLATION";
+        break;
+    case EXCEPTION_DATATYPE_MISALIGNMENT:
+        FaultTx = "DATATYPE MISALIGNMENT";
+        break;
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+        FaultTx = "FLT DIVIDE BY ZERO";
+        break;
+        default : FaultTx = "(unknown)";
+        break;
+    }
+
+    int wsFault = ExInfo->ExceptionRecord->ExceptionCode;
+    PVOID CodeAdress = ExInfo->ExceptionRecord->ExceptionAddress;
+
+
+
+    spdlog::error("*** A Program Fault occurred:");
+    spdlog::error("*** Error code {:#x}: {}", wsFault, FaultTx);
+    spdlog::error("*** Address: {:#x}", (int)CodeAdress);
+    spdlog::error("*** Flags: {:#x}", ExInfo->ExceptionRecord->ExceptionFlags);
+
+    /*if(want to continue)
+    {
+       ExInfo->ContextRecord->Eip++;
+       return EXCEPTION_CONTINUE_EXECUTION;
+    }
+    */
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+#endif
+
 #ifdef _WIN32
 #ifdef CONSOLE
 int main(int argc, char* argv[])
@@ -73,6 +115,7 @@ int main(int argc, char* argv[])
     logger->flush_on(spdlog::level::info);
     spdlog::set_default_logger(logger);
 #ifdef _WIN32
+    SetUnhandledExceptionFilter(static_cast<LPTOP_LEVEL_EXCEPTION_FILTER>(Win32FaultHandler));
     std::string argsv = "";
     if (__argc > 1) {
         for (int i = 1; i < __argc; i++)
