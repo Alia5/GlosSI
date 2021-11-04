@@ -174,6 +174,9 @@ GridView {
             anchors.bottom: parent.bottom
             width: 72
             onClicked: function(){
+                if (steamShortcutsChanged == false) {
+                    steamChangedDialog.open();
+                }
                 if (delegateRoot.isInSteam) {
                     if (!uiModel.removeFromSteam(modelData.name)) {
                         writeErrorDialog.open();
