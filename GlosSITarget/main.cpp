@@ -112,10 +112,12 @@ int main(int argc, char* argv[])
     std::vector<spdlog::sink_ptr> sinks{file_sink, console_sink, overlay_sink};
     auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
     logger->set_level(spdlog::level::trace);
-    logger->flush_on(spdlog::level::info);
+    logger->flush_on(spdlog::level::trace);
     spdlog::set_default_logger(logger);
-#ifdef _WIN32
     SetUnhandledExceptionFilter(static_cast<LPTOP_LEVEL_EXCEPTION_FILTER>(Win32FaultHandler));
+    auto exit = 1;
+    try {
+#ifdef _WIN32
     std::string argsv = "";
     if (__argc > 1) {
         for (int i = 1; i < __argc; i++)
@@ -132,8 +134,6 @@ int main(int argc, char* argv[])
     Settings::Parse(argsv);
     SteamTarget target(argc, argv);
 #endif
-    auto exit = 1;
-    try {
          exit = target.run();
     } catch (std::exception& e) {
         spdlog::error("Exception occured: {}", e.what());
