@@ -195,9 +195,12 @@ void Overlay::RemoveOverlayElem(int id)
     OVERLAY_ELEMS_.erase(id);
 }
 
-void Overlay::showLogs() const
+void Overlay::showLogs()
 {
     std::vector<Log> logs;
+    if (!enabled_ && !log_expanded_) {
+        return;
+    }
     if (enabled_) {
         logs = LOG_MSGS_;
     }
@@ -217,24 +220,26 @@ void Overlay::showLogs() const
                      ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
     }
     else {
-        ImGui::Begin("Log", nullptr);
+        log_expanded_ = ImGui::Begin("Log");
     }
-    std::ranges::for_each(LOG_MSGS_, [](const auto& msg) {
-        switch (msg.level) {
-        case spdlog::level::warn:
-            ImGui::TextColored({1.f, 0.8f, 0.f, 1.f}, msg.payload.data());
-            break;
-        case spdlog::level::err:
-            ImGui::TextColored({.8f, 0.0f, 0.f, 1.f}, msg.payload.data());
-            break;
-        case spdlog::level::debug:
-            ImGui::TextColored({.8f, 0.8f, 0.8f, .9f}, msg.payload.data());
-            break;
-        default:
-            ImGui::Text(msg.payload.data());
-        }
-    });
-    ImGui::SetScrollY(ImGui::GetScrollMaxY());
+    if (log_expanded_) {
+        std::ranges::for_each(LOG_MSGS_, [](const auto& msg) {
+            switch (msg.level) {
+            case spdlog::level::warn:
+                ImGui::TextColored({1.f, 0.8f, 0.f, 1.f}, msg.payload.data());
+                break;
+            case spdlog::level::err:
+                ImGui::TextColored({.8f, 0.0f, 0.f, 1.f}, msg.payload.data());
+                break;
+            case spdlog::level::debug:
+                ImGui::TextColored({.8f, 0.8f, 0.8f, .9f}, msg.payload.data());
+                break;
+            default:
+                ImGui::Text(msg.payload.data());
+            }
+        });
+        ImGui::SetScrollY(ImGui::GetScrollMaxY());   
+    }
     ImGui::End();
     if (!enabled_) {
         ImGui::PopStyleVar();

@@ -46,9 +46,10 @@ class Overlay {
     sf::Clock update_clock_;
     bool enabled_ = true;
     std::function<void()> on_close_;
-    void showLogs() const;
+    void showLogs();
     [[nodiscard]] bool closeButton() const;
     bool force_enable_ = false;
+    bool log_expanded_ = true;
 
     struct Log {
         std::chrono::system_clock::time_point time;
