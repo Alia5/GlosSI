@@ -49,7 +49,7 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 
 void AppLauncher::update()
 {
-    if (process_check_clock_.getElapsedTime().asSeconds() > 1) {
+    if (process_check_clock_.getElapsedTime().asSeconds() > 1 && !logged_process_died_) {
 #ifdef _WIN32
         if (process_info.dwProcessId > 0) {
             if (!IsProcessRunning(process_info.dwProcessId)) {
@@ -58,6 +58,7 @@ void AppLauncher::update()
                     spdlog::info("Configured to close on exit. Shutting down..");
                     shutdown_();
                 }
+                logged_process_died_ = true;
             }
         }
         if (uwp_pid_ > 0) {
@@ -67,6 +68,7 @@ void AppLauncher::update()
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
                 }
+                logged_process_died_ = true;
             }
         }
 #endif

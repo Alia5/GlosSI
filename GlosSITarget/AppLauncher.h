@@ -34,8 +34,8 @@ class AppLauncher {
 private:
 
     std::function<void()> shutdown_;
-
     sf::Clock process_check_clock_;
+    bool logged_process_died_ = false;
 
 #ifdef _WIN32
     static bool IsProcessRunning(DWORD pid);
