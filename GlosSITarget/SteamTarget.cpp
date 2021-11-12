@@ -195,7 +195,7 @@ std::filesystem::path SteamTarget::getSteamPath() const
         const auto res = key.GetStringValue(L"SteamPath");
         spdlog::info(L"Detected Steam Path: {}", res);
         return res;   
-    } catch (winreg::RegException e) {
+    } catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
     return L"";
@@ -215,7 +215,7 @@ std::wstring SteamTarget::getSteamUserId() const
         spdlog::info(L"Detected Steam UserId: {}", res);
         return res;
     }
-    catch (winreg::RegException e) {
+    catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
     return L"";
