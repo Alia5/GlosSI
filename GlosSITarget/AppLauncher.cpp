@@ -20,6 +20,7 @@ limitations under the License.
 #ifdef _WIN32
 #include <ShObjIdl.h>
 #include <atlbase.h>
+#include <tlhelp32.h>
 #endif
 #include "Settings.h"
 
@@ -47,26 +48,30 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 
 void AppLauncher::update()
 {
-    if (process_check_clock_.getElapsedTime().asSeconds() > 1 && !logged_process_died_) {
+    if (process_check_clock_.getElapsedTime().asMilliseconds() > 250) {
 #ifdef _WIN32
-        if (process_info.dwProcessId > 0) {
-            if (!IsProcessRunning(process_info.dwProcessId)) {
-                spdlog::info("Launched App with PID \"{}\" died", process_info.dwProcessId);
-                if (Settings::launch.closeOnExit) {
-                    spdlog::info("Configured to close on exit. Shutting down..");
-                    shutdown_();
-                }
-                logged_process_died_ = true;
+        if (launched_pid_ > 0) {
+            if (Settings::launch.waitForChildProcs) {
+                getChildPids(launched_pid_);
             }
-        }
-        if (uwp_pid_ > 0) {
-            if (!IsProcessRunning(uwp_pid_)) {
-                spdlog::info("Launched App with PID \"{}\" died", uwp_pid_);
-                if (Settings::launch.closeOnExit) {
+            if (!IsProcessRunning(launched_pid_)) {
+                spdlog::info("Launched App with PID \"{}\" died", launched_pid_);
+                if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
                 }
-                logged_process_died_ = true;
+                launched_pid_ = 0;
+            }
+        }
+        if (Settings::launch.waitForChildProcs) {
+            std::erase_if(child_pids_, [](auto pid) {
+                const auto running = IsProcessRunning(pid);
+                spdlog::info("Child process with PID \"{}\" died", pid);
+                return !running;
+            });
+            if (Settings::launch.closeOnExit && child_pids_.empty() && launched_pid_ == 0) {
+                spdlog::info("Configured to close on all children exit. Shutting down...");
+                shutdown_();
             }
         }
 #endif
@@ -83,6 +88,7 @@ void AppLauncher::close()
     }
 #endif
 }
+
 #ifdef _WIN32
 bool AppLauncher::IsProcessRunning(DWORD pid)
 {
@@ -92,6 +98,21 @@ bool AppLauncher::IsProcessRunning(DWORD pid)
     const DWORD ret = WaitForSingleObject(process, 0);
     CloseHandle(process);
     return ret == WAIT_TIMEOUT;
+}
+
+void AppLauncher::getChildPids(DWORD parent_pid)
+{
+    HANDLE hp = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    PROCESSENTRY32 pe = {0};
+    pe.dwSize = sizeof(PROCESSENTRY32);
+    if (Process32First(hp, &pe)) {
+        do {
+            if (pe.th32ParentProcessID == parent_pid) {
+                child_pids_.insert(pe.th32ProcessID);
+            }
+        } while (Process32Next(hp, &pe));
+    }
+    CloseHandle(hp);
 }
 #endif
 
@@ -147,6 +168,7 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        &process_info)) {
         //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::info(L"Started Program: \"{}\"", native_seps_path);
+        launched_pid_ = process_info.dwProcessId;
     }
     else {
         //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
@@ -177,7 +199,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             }
 
             // Launch the app
-            result = sp_app_activation_manager->ActivateApplication(package_full_name, args.empty() ? nullptr : args.data(), AO_NONE, &uwp_pid_);
+            result = sp_app_activation_manager->ActivateApplication(package_full_name, args.empty() ? nullptr : args.data(), AO_NONE, &launched_pid_);
             if (!SUCCEEDED(result)) {
                 spdlog::error("ActivateApplication failed: Code {}", result);
             } else {

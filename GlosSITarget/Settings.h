@@ -29,6 +29,7 @@ inline struct Launch {
     std::wstring launchPath;
     std::wstring launchAppArgs;
     bool closeOnExit = true;
+    bool waitForChildProcs = false;
     bool isUWP = false;
 } launch;
 
@@ -108,6 +109,7 @@ inline void Parse(std::string arg1)
         safeWStringParse(launchconf, "launchPath", launch.launchPath);
         safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
         safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
+        safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
     }
 
     if (auto devconf = json["devices"]; devconf.is_object()) {

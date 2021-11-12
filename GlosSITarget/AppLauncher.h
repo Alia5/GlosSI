@@ -21,6 +21,7 @@ limitations under the License.
 #endif
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <SFML/System/Clock.hpp>
 
 class AppLauncher {
@@ -35,10 +36,10 @@ private:
 
     std::function<void()> shutdown_;
     sf::Clock process_check_clock_;
-    bool logged_process_died_ = false;
 
 #ifdef _WIN32
     static bool IsProcessRunning(DWORD pid);
+    void getChildPids(DWORD parent_pid);
 
     // Valve also hooks "CreateProcess"
     // Unpatch that so that launched programs don't also get hooked...
@@ -48,6 +49,7 @@ private:
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
     STARTUPINFO info{sizeof(info)};
     PROCESS_INFORMATION process_info{};
-    DWORD uwp_pid_ = 0;
+    DWORD launched_pid_ = 0;
+    std::unordered_set<DWORD> child_pids_;
 #endif
 };
