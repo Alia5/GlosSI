@@ -68,20 +68,14 @@ inline void AddUwpOverlayOvWidget()
         ImGui::Text("To enable the overlay on top of \"fullscreen\" UWP-Apps,");
         ImGui::Text("a .dll has to be injected into explorer.exe");
         ImGui::Spacing();
+        ImGui::Text("This method uses undocumented windows functions");
+        ImGui::Text("and might cause issues.");
         ImGui::Spacing();
-        ImGui::Text("This method also uses undocumented windows functions");
-        ImGui::Text("and is highly experimental");
-        ImGui::Spacing();
-        ImGui::Spacing();
-        ImGui::Text("This might cause issues!!!");
-        ImGui::Spacing();
-        if (ImGui::CollapsingHeader("I am sure!")) {
-            if (ImGui::Button(/* just */ "DO IT!")) { // insert meme gif here >.<
-                EnableUwpOverlay();
-            }
-            ImGui::Text("If the overlay isn't working right away:");
-            ImGui::Text("try opening Windows start menu, as this triggers the hook");
+        if (ImGui::Button("Enable")) {
+            EnableUwpOverlay();
         }
+        ImGui::Text("If the overlay isn't working right away:");
+        ImGui::Text("try opening Windows start menu, as this triggers the hook");
         ImGui::End();
     });
 }
