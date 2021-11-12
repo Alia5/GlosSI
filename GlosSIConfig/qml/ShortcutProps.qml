@@ -36,6 +36,7 @@ Item {
             launchPath: null,
             launchAppArgs: null,
             closeOnExit: true,
+            waitForChildProcs: false,
             hideDevices: true,
             windowMode: false,
             maxFps: null,
@@ -51,6 +52,7 @@ Item {
             launchPath: null,
             launchAppArgs: null,
             closeOnExit: true,
+            waitForChildProcs: false,
             hideDevices: true,
             windowMode: false,
             maxFps: null,
@@ -65,6 +67,7 @@ Item {
         pathInput.text = shortcutInfo.launchPath || ""
         argsInput.text = shortcutInfo.launchAppArgs || ""
         closeOnExit.checked = shortcutInfo.closeOnExit || false
+        waitForChildren.checked = shortcutInfo.waitForChildProcs || false
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
     }
@@ -126,6 +129,20 @@ Item {
                     text: qsTr("Recommended to disable for launcher-games")
                     wrapMode: Text.WordWrap
                     width: parent.width
+                }
+                CheckBox {
+                    id: waitForChildren
+                    text: qsTr("Close when all children processes quit")
+                    checked: shortcutInfo.waitForChildProcs
+                    onCheckedChanged: function(){
+                        shortcutInfo.waitForChildProcs = checked
+                        if (checked) {
+                            closeOnExit.checked = true;
+                            closeOnExit.enabled = false;
+                        } else {
+                            closeOnExit.enabled = true;
+                        }
+                    }
                 }
             }
         }

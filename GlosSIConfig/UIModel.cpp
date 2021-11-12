@@ -76,6 +76,7 @@ void UIModel::readConfigs()
         json["launchPath"] = filejson["launch"]["launchPath"];
         json["launchAppArgs"] = filejson["launch"]["launchAppArgs"];
         json["closeOnExit"] = filejson["launch"]["closeOnExit"];
+        json["waitForChildProcs"] = filejson["launch"]["waitForChildProcs"];
         json["hideDevices"] = filejson["devices"]["hideDevices"];
         json["windowMode"] = filejson["window"]["windowMode"];
         json["maxFps"] = filejson["window"]["maxFps"];
@@ -263,6 +264,7 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
     launchObject["launchPath"] = json["launchPath"];
     launchObject["launchAppArgs"] = json["launchAppArgs"];
     launchObject["closeOnExit"] = json["closeOnExit"];
+    launchObject["waitForChildProcs"] = json["waitForChildProcs"];
     fileJson["launch"] = launchObject;
 
     QJsonObject devicesObject;

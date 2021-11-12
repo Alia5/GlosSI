@@ -86,14 +86,14 @@ GridView {
             anchors.top: parent.top
             anchors.left: parent.left
             id: maybeIcon
-            source: modelData.icon
+            source: !!modelData.icon
                 ? modelData.icon.endsWith(".exe")
                     ? "image://exe/" + modelData.icon
                     : "file:///" + modelData.icon
                 : null
             width: 48
             height: 48
-            visible: modelData.icon
+            visible: !!modelData.icon
         }
 
         Label {
@@ -116,10 +116,10 @@ GridView {
             spacing: 8
             Row {
                 spacing: 8
-                visible: modelData.launchPath && modelData.launchPath.length > 0
+                visible: !!modelData.launchPath && modelData.launchPath.length > 0
                 Label {
                     id: typeLabel
-                    text: uiModel.isWindows && modelData.launchPath
+                    text: uiModel.isWindows && !!modelData.launchPath
                         ? modelData.launchPath.replace(/^.{1,3}:/, "").length < modelData.launchPath.length
                             ? "Win32"
                             : "UWP"
