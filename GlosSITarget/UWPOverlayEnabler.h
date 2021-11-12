@@ -36,6 +36,28 @@ inline DWORD ExplorerPid()
 
 }
 
+inline void EnableUwpOverlay()
+{
+    const auto enabler_path = internal::EnablerPath();
+    if (std::filesystem::exists(enabler_path)) {
+        const auto explorer_pid = internal::ExplorerPid();
+        if (explorer_pid != 0) {
+            if (DllInjector::TakeDebugPrivilege()) {
+                // No need to eject, as the dll is self-ejecting.
+                if (DllInjector::Inject(explorer_pid, enabler_path.wstring())) {
+                    spdlog::info("Successfully injected UWPOverlay enabler into explorer.exe");
+                }
+            }
+        }
+        else {
+            spdlog::error("explorer not found"); // needs loglevel WTF
+        }
+    }
+    else {
+        spdlog::error("UWPOverlayEnablerDLL not found");
+    }
+}
+
 inline void AddUwpOverlayOvWidget()
 {
     Overlay::AddOverlayElem([]() {
@@ -55,25 +77,7 @@ inline void AddUwpOverlayOvWidget()
         ImGui::Spacing();
         if (ImGui::CollapsingHeader("I am sure!")) {
             if (ImGui::Button(/* just */ "DO IT!")) { // insert meme gif here >.<
-                const auto enabler_path = internal::EnablerPath();
-                if (std::filesystem::exists(enabler_path)) {
-                    const auto explorer_pid = internal::ExplorerPid();
-                    if (explorer_pid != 0) {
-                        if (DllInjector::TakeDebugPrivilege()) {
-                            // No need to eject, as the dll is self-ejecting.
-                            if (DllInjector::Inject(explorer_pid, enabler_path.wstring())) {
-                                spdlog::info("Successfully injected UWPOverlay enabler into explorer.exe");
-                                // Nesting level over 9000
-                            }
-                        }
-                    }
-                    else {
-                        spdlog::error("explorer not found"); // needs loglevel WTF
-                    }
-                }
-                else {
-                    spdlog::error("UWPOverlayEnablerDLL not found");
-                }
+                EnableUwpOverlay();
             }
             ImGui::Text("If the overlay isn't working right away:");
             ImGui::Text("try opening Windows start menu, as this triggers the hook");

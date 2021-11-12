@@ -35,12 +35,10 @@ AppLauncher::AppLauncher(std::function<void()> shutdown) : shutdown_(std::move(s
 void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 {
 #ifdef _WIN32
-    std::wsmatch m;
-    if (!std::regex_search(path, m, std::wregex(L"^.{1,3}:"))) {
+    if (Settings::launch.isUWP) {
         spdlog::info("LaunchApp is UWP, launching...");
         launchUWPApp(path.data(), args);
-    }
-    else {
+    } else {
         spdlog::info("LaunchApp is Win32, launching...");
         launchWin32App(path, args);
     }

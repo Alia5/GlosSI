@@ -47,7 +47,11 @@ SteamTarget::SteamTarget(int argc, char* argv[])
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32
-    UWPOverlayEnabler::AddUwpOverlayOvWidget();
+    if (Settings::launch.isUWP) {
+        UWPOverlayEnabler::EnableUwpOverlay();
+    } else {
+        UWPOverlayEnabler::AddUwpOverlayOvWidget();
+    }
 #endif
 }
 

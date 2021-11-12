@@ -16,6 +16,7 @@ limitations under the License.
 #pragma once
 
 #include <fstream>
+#include <regex>
 #include <string>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -28,6 +29,7 @@ inline struct Launch {
     std::wstring launchPath;
     std::wstring launchAppArgs;
     bool closeOnExit = true;
+    bool isUWP = false;
 } launch;
 
 inline struct Devices {
@@ -39,6 +41,15 @@ inline struct Window {
     int maxFps = 0;
     float scale = 0.f;
 } window;
+
+inline bool checkIsUwp(const std::wstring& launch_path)
+{
+    std::wsmatch m;
+    if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,3}:"))) {
+        return true;
+    }
+    return false;
+}
 
 inline void Parse(std::string arg1)
 {
@@ -112,6 +123,11 @@ inline void Parse(std::string arg1)
     json_file.close();
 
     spdlog::debug("Read config file \"{}\"", path.string());
+
+    if (launch.launch) {
+        launch.isUWP = checkIsUwp(launch.launchPath);
+    }
+
 }
 
 } // namespace Settings
