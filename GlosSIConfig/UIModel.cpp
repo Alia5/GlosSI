@@ -82,7 +82,7 @@ void UIModel::readConfigs()
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
 
-        json["name"] = QString(name).replace(QRegularExpression("\.json"), "");
+        json["name"] = QString(name).replace(QRegularExpression("\\.json"), "");
 
         targets_.append(json.toVariantMap());
     });
@@ -178,7 +178,7 @@ bool UIModel::addToSteam(QVariant shortcut)
             vdfshortcut.icon.value =
                 "\"" + (
                     is_windows_
-                        ? QString(maybeLaunchPath).replace(QRegularExpression("\/"), "\\").toStdString()
+                        ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString()
                         : maybeLaunchPath.toStdString()
                     ) + "\"";
     }
@@ -186,7 +186,7 @@ bool UIModel::addToSteam(QVariant shortcut)
         vdfshortcut.icon.value =
             "\"" + (
                 is_windows_
-                    ? QString(maybeIcon).replace(QRegularExpression("\/"), "\\").toStdString()
+                    ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString()
                     : maybeIcon.toStdString()
                 ) + "\"";
     }

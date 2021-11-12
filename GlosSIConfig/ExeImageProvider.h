@@ -1,6 +1,7 @@
 #pragma once
 #include <QQuickImageProvider>
 #include <Windows.h>
+#include <QRegularExpression>
 class ExeImageProvider : public QQuickImageProvider {
   public:
     ExeImageProvider()
@@ -11,7 +12,7 @@ class ExeImageProvider : public QQuickImageProvider {
     QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override
     {
         HICON icon = 0;
-        std::wstring path = id.toStdWString();
+        std::wstring path = QString(id).replace(QRegularExpression(("\\%5C")), "\\").toStdWString();
         icon = (HICON)LoadImage(
             0,
             path.data(),
