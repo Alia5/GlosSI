@@ -66,7 +66,8 @@ void AppLauncher::update()
         if (Settings::launch.waitForChildProcs) {
             std::erase_if(child_pids_, [](auto pid) {
                 const auto running = IsProcessRunning(pid);
-                spdlog::info("Child process with PID \"{}\" died", pid);
+                if (!running)
+                    spdlog::info("Child process with PID \"{}\" died", pid);
                 return !running;
             });
             if (Settings::launch.closeOnExit && child_pids_.empty() && launched_pid_ == 0) {
