@@ -58,7 +58,7 @@ void UIModel::readConfigs()
     std::for_each(entries.begin(), entries.end(), [this](const auto& name) {
         auto path = config_path_;
         path /= config_dir_name_.toStdString();
-        path /= name.toStdString();
+        path /= name.toStdWString();
         QFile file(path);
         if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
             // meh
@@ -248,8 +248,8 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
 void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 {
     auto path = config_path_;
-    path /= config_dir_name_.toStdString();
-    path /= (name + ".json").toStdString();
+    path /= config_dir_name_.toStdWString();
+    path /= (name + ".json").toStdWString();
     QFile file(path);
     if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
         // meh
