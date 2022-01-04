@@ -31,13 +31,13 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>$(DefaultQtVersion)</QtInstall>
+    <QtInstall>6.2.2_msvc2019_64</QtInstall>
     <QtModules>quick</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
     <QtQMLDebugEnable>true</QtQMLDebugEnable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>$(DefaultQtVersion)</QtInstall>
+    <QtInstall>6.2.2_msvc2019_64</QtInstall>
     <QtModules>quick</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
@@ -135,6 +135,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIModel.cpp" />
     <None Include=".clang-format" />
+    <None Include="GetAUMIDs.ps1" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
     <None Include="qml\InfoDialog.qml" />

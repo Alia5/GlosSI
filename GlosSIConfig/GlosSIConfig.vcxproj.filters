@@ -64,6 +64,7 @@
       <Filter>qml</Filter>
     </None>
     <None Include=".clang-format" />
+    <None Include="GetAUMIDs.ps1" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
