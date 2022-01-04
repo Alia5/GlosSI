@@ -21,6 +21,7 @@ Dialog {
 
 	property var confirmedParam: null
 	signal confirmed(var param)
+	signal confirmedExtra(var param)
 
 	visible: false
 	modal: true
@@ -39,6 +40,10 @@ Dialog {
 	
 	property alias titleText: title.text
 	property alias text: text.text
+
+	property bool extraButton: false
+	property alias extraButtonText: extrabutton.text
+	property var confirmedExtraParam: null
 
 	enter: Transition {
 		NumberAnimation{target: content; property: "y"; from: parent.height; to: 16; duration: 300; easing.type: Easing.OutQuad }
@@ -84,6 +89,16 @@ Dialog {
 			anchors.top: col.bottom
 			anchors.topMargin: parent.spacing
 			spacing: 16
+
+			Button {
+				id: extrabutton
+				visible: extraButton
+				onClicked: function(){
+					close()
+					confirmedExtra(confirmedExtraParam)
+				}
+			}
+
 			Button {
 				text: qsTr("OK")
 				onClicked: function(){

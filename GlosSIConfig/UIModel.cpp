@@ -236,6 +236,26 @@ bool UIModel::removeFromSteam(const QString& name, const QString& shortcutspath,
     return writeShortcutsVDF(L"remove", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
 
+QVariantMap UIModel::manualProps(QVariant shortcut)
+{
+    QDir appDir = QGuiApplication::applicationDirPath();
+    const auto map = shortcut.toMap();
+    const auto name = map["name"].toString();
+    const auto maybeLaunchPath = map["launchPath"].toString();
+    const auto launch = map["launch"].toBool();
+
+    QVariantMap res;
+    res.insert("name", name);
+    res.insert("config", name + ".json");
+    res.insert("launch", ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\""));
+    res.insert("launchDir", (
+        launch && !maybeLaunchPath.isEmpty()
+            ? (QString("\"") + QString::fromStdString(std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string()) + "\"")
+            : ("\"" + appDir.absolutePath() + "\""))
+    );
+    return res;
+}
+
 #ifdef _WIN32
 QVariantList UIModel::uwpApps()
 {

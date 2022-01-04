@@ -40,6 +40,7 @@ class UIModel : public QObject {
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
+    Q_INVOKABLE QVariantMap manualProps(QVariant shortcut);
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif

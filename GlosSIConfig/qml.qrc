@@ -11,5 +11,6 @@
         <file>svg/steam.svg</file>
         <file>qml/UWPSelectDialog.qml</file>
         <file>qml/InfoDialog.qml</file>
+        <file>steamscreener.png</file>
     </qresource>
 </RCC>
