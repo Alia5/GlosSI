@@ -103,6 +103,7 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& 
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
     QTextStream ts(&outFile);
     ts << txt << '\n';
+    std::cout << txt.toStdString() << "\n";
 }
 
 int main(int argc, char* argv[])
@@ -110,6 +111,23 @@ int main(int argc, char* argv[])
 #if defined(Q_OS_WIN)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
+
+    if (argc < 3) {
+        auto path = std::filesystem::temp_directory_path()
+                        .parent_path()
+                        .parent_path()
+                        .parent_path();
+
+        path /= "Roaming";
+        path /= "GlosSI";
+        if (!std::filesystem::exists(path))
+            std::filesystem::create_directories(path);
+
+        QFile outFile(QString::fromStdWString(path) + "/glossiconfig.log");
+        outFile.open(QIODevice::WriteOnly);
+        QTextStream ts(&outFile);
+        ts << '\n';   
+    }
 
     QGuiApplication app(argc, argv);
     qInstallMessageHandler(myMessageHandler);
