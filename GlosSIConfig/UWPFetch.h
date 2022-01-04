@@ -44,8 +44,6 @@ QVariantList UWPAppList()
         auto name = QString(subList[0]).replace("\r\n", "");
         if (name == "-Error-")
             continue;
-        qDebug() << "name: " << name << " installDir: " << subList[1] << " logo: " << subList[2] << " aumid: "
-                 << subList[3];
         QVariantMap uwpPair;
         uwpPair.insert("AppName", name);
         uwpPair.insert("Path", subList[1]);
