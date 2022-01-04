@@ -18,6 +18,10 @@ limitations under the License.
 #include <QQmlContext>
 #include <QWindow>
 
+#include <QtDebug>
+#include <QFile>
+#include <QTextStream>
+
 #ifdef _WIN32
 #include <VersionHelpers.h>
 #include <Windows.h>
@@ -63,6 +67,44 @@ typedef HRESULT(__stdcall* PSetWindowCompositionAttribute)(HWND hwnd, WindowComp
 
 #endif
 
+//stolen from: https://stackoverflow.com/a/11202102/5106063
+void myMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
+{
+    QString txt;
+    switch (type) {
+    case QtDebugMsg:
+        txt = QString("[%1] Debug: %2").arg(QDateTime::currentDateTime().toString(), msg);
+        break;
+    case QtInfoMsg:
+        txt = QString("[%1] Info: %2").arg(QDateTime::currentDateTime().toString(), msg);
+        break;
+    case QtWarningMsg:
+        txt = QString("[%1] Warning: %2").arg(QDateTime::currentDateTime().toString(), msg);
+        break;
+    case QtCriticalMsg:
+        txt = QString("[%1] Critical: %2").arg(QDateTime::currentDateTime().toString(), msg);
+        break;
+    case QtFatalMsg:
+        txt = QString("[%1] Fatal: %2").arg(QDateTime::currentDateTime().toString(), msg);
+        break;
+    }
+
+    auto path = std::filesystem::temp_directory_path()
+                    .parent_path()
+                    .parent_path()
+                    .parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (!std::filesystem::exists(path))
+        std::filesystem::create_directories(path);
+
+    QFile outFile(QString::fromStdWString(path) + "/glossiconfig.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt << '\n';
+}
+
 int main(int argc, char* argv[])
 {
 #if defined(Q_OS_WIN)
@@ -70,6 +112,7 @@ int main(int argc, char* argv[])
 #endif
 
     QGuiApplication app(argc, argv);
+    qInstallMessageHandler(myMessageHandler);
 
     QQmlApplicationEngine engine;
     UIModel uimodel;
