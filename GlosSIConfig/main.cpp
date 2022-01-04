@@ -23,8 +23,8 @@ limitations under the License.
 #include <QTextStream>
 
 #ifdef _WIN32
-#include <VersionHelpers.h>
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 #include "ExeImageProvider.h"
