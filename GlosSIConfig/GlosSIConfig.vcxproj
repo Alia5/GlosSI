@@ -76,7 +76,6 @@
     </Manifest>
     <Link>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
@@ -98,7 +97,7 @@
     </Manifest>
     <Link>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>

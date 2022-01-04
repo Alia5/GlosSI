@@ -226,6 +226,21 @@ struct Shortcut {
         tags = other.tags;
         return *this;
     }
+    //std::wstring to_json()
+    //{
+    //    std::wstring res = L"{";
+    //    res += L"idx: " + std::to_wstring(idx.operator int()) + L",\n";
+    //    res += L"appId: " + std::to_wstring(appId.value) + L",\n";
+    //    res += L"appName: " + std::filesystem::path(appName.value).wstring() + L",\n";
+    //    res += L"StartDir: " + std::filesystem::path(StartDir.value).wstring() + L",\n";
+    //    res += L"ShortcutPath: " + std::filesystem::path(ShortcutPath.value).wstring() + L",\n";
+    //    res += L"LaunchOptions: " + std::filesystem::path(LaunchOptions.value).wstring() + L",\n";
+    //    res += L"IsHidden: " + (IsHidden.value ? L"true" : L"false") + L",\n";
+    //    res += L"AllowDesktopConfig: " + (AllowDesktopConfig.value ? L"true" : L"false") + L",\n";
+    //    res += L"idx: " + std::to_wstring(appId.value) + L",\n";
+    //    res += L"}";
+    //    return res;
+    //}
 };
 
 struct VDFFile {
@@ -252,6 +267,15 @@ struct VDFFile {
         shortcuts = std::move(other.shortcuts);
         return *this;
     }
+    //std::wstring to_json()
+    //{
+    //    std::wstring res = L"[";
+
+
+
+    //    res += L"]";
+    //    return res;
+    //}
 };
 
 class Parser {

@@ -178,12 +178,12 @@ GridView {
                     steamChangedDialog.open();
                 }
                 if (delegateRoot.isInSteam) {
-                    if (!uiModel.removeFromSteam(modelData.name)) {
+                    if (!uiModel.removeFromSteam(modelData.name, "")) {
                         writeErrorDialog.open();
                         return;
                     }                
                 } else {
-                    if (!uiModel.addToSteam(modelData)) {
+                    if (!uiModel.addToSteam(modelData, "")) {
                         writeErrorDialog.open();
                         return;
                     }

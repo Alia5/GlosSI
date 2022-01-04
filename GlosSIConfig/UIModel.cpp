@@ -23,6 +23,7 @@ limitations under the License.
 
 #ifdef _WIN32
 #include "UWPFetch.h"
+#include <Windows.h>
 #endif
 
 UIModel::UIModel() : QObject(nullptr)
@@ -146,7 +147,7 @@ bool UIModel::isInSteam(QVariant shortcut)
     return false;
 }
 
-bool UIModel::addToSteam(QVariant shortcut)
+bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd)
 {
     QDir appDir = QGuiApplication::applicationDirPath();
     const auto map = shortcut.toMap();
@@ -203,11 +204,25 @@ bool UIModel::addToSteam(QVariant shortcut)
 
     shortcuts_vdf_.shortcuts.push_back(vdfshortcut);
 
-    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
-    return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+    return writeShortcutsVDF(L"add", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
-bool UIModel::removeFromSteam(const QString& name)
+bool UIModel::addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd)
 {
+    qDebug() << "trying to add " << name << " to steam";
+    const auto target = std::find_if(targets_.begin(), targets_.end(), [&name](const auto& target) {
+        const auto map = target.toMap();
+        const auto target_name = map["name"].toString();
+        return name == target_name;
+    });
+    if (target != targets_.end()) {
+        return addToSteam(*target, shortcutspath, from_cmd);
+    }
+    qDebug() << name << " not found!";
+    return false;
+}
+bool UIModel::removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd)
+{
+    qDebug() << "trying to remove " << name << " from steam";
     auto& scuts = shortcuts_vdf_.shortcuts;
     scuts.erase(std::remove_if(scuts.begin(), scuts.end(), [&name](const auto& shortcut) {
                     return shortcut.appName.value == name.toStdString();
@@ -218,8 +233,7 @@ bool UIModel::removeFromSteam(const QString& name)
             scuts[i].idx = i;
         }
     }
-    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
-    return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+    return writeShortcutsVDF(L"remove", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
 
 #ifdef _WIN32
@@ -228,6 +242,60 @@ QVariantList UIModel::uwpApps()
     return UWPFetch::UWPAppList();
 }
 #endif
+
+bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath, bool is_admin_try) const
+{
+#ifdef _WIN32
+    const std::filesystem::path config_path = is_admin_try
+                                                  ? shortcutspath
+        : std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+
+    qDebug() << "Steam config Path: " << config_path;
+    qDebug() << "Trying to write config as admin: " << is_admin_try;
+
+
+    auto write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+
+    if (!write_res && !is_admin_try) {
+        wchar_t szPath[MAX_PATH];
+        if (GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath))) {
+            // Launch itself as admin
+            SHELLEXECUTEINFO sei = {sizeof(sei)};
+            sei.lpVerb = L"runas";
+            qDebug() << QString("exepath: %1").arg(szPath);
+            sei.lpFile = szPath;
+            const std::wstring paramstr = mode + L" " + name + L" \"" + config_path.wstring() + L"\"";
+            sei.lpParameters = paramstr.c_str();
+            sei.hwnd = NULL;
+            sei.nShow = SW_NORMAL;
+            sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+            if (!ShellExecuteEx(&sei)) {
+                DWORD dwError = GetLastError();
+                if (dwError == ERROR_CANCELLED) {
+                    qDebug() << "User cancelled UAC Prompt";
+                    return false;
+                }
+            }
+            else {
+                qDebug() << QString("HProc: %1").arg((int)sei.hProcess);
+
+                if (sei.hProcess && WAIT_OBJECT_0 == WaitForSingleObject(sei.hProcess, INFINITE)) {
+                    DWORD exitcode = 1;
+                    GetExitCodeProcess(sei.hProcess, &exitcode);
+                    qDebug() << QString("Exitcode: %1").arg((int)exitcode);
+                    if (exitcode == 0) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }  
+    }
+    return write_res;
+#else
+    return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+#endif
+}
 
 bool UIModel::getIsWindows() const
 {
@@ -302,6 +370,9 @@ std::wstring UIModel::getSteamUserId() const
     // steam should always be open and have written reg values...
     winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
     const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+    if (res == L"0") {
+        qDebug() << "Steam not open?";
+    }
     return res;
 #else
     return L""; // TODO LINUX

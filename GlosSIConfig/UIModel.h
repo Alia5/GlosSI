@@ -37,11 +37,19 @@ class UIModel : public QObject {
     Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
     Q_INVOKABLE bool isInSteam(QVariant shortcut);
-    Q_INVOKABLE bool addToSteam(QVariant shortcut);
-    Q_INVOKABLE bool removeFromSteam(const QString& name);
+    Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
+    bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
+    Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
+
+    [[nodiscard]] bool writeShortcutsVDF(
+        const std::wstring& mode,
+        const std::wstring& name,
+        const std::wstring& shortcutspath,
+        bool is_admin_try = false
+    ) const;
 
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
@@ -54,7 +62,7 @@ class UIModel : public QObject {
   private:
     std::filesystem::path config_path_;
     QString config_dir_name_;
-
+    
     void writeTarget(const QJsonObject& json, const QString& name);
 
     std::filesystem::path getSteamPath() const;
