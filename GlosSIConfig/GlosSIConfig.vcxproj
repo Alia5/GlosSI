@@ -20,11 +20,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
@@ -64,9 +64,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalUsingDirectories>C:\Program Files %28x86%29\Windows Kits\10\References\10.0.22000.0\Windows.Foundation.FoundationContract\4.0.0.0;C:\Program Files %28x86%29\Windows Kits\10\References\10.0.22000.0\Windows.Foundation.UniversalApiContract\10.0.0.0;C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.22000.0;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VC\vcpackages;%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <CompileAsWinRT>true</CompileAsWinRT>
+      <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/Zc:__cplusplus /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
+      <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -74,20 +74,21 @@
       <EnableDpiAwareness>true</EnableDpiAwareness>
       <AdditionalManifestFiles>$(ProjectDir)manifest.xml %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
-    <Link>
-      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
-    </Link>
+    <Link />
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
       <Outputs>Upading version based on git;%(Outputs)</Outputs>
     </CustomBuildStep>
+    <Link>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalUsingDirectories>C:\Program Files %28x86%29\Windows Kits\10\References\10.0.22000.0\Windows.Foundation.FoundationContract\4.0.0.0;C:\Program Files %28x86%29\Windows Kits\10\References\10.0.22000.0\Windows.Foundation.UniversalApiContract\10.0.0.0;C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.22000.0;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VC\vcpackages;%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <CompileAsWinRT>true</CompileAsWinRT>
+      <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  %(AdditionalOptions)</AdditionalOptions>
+      <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -96,8 +97,8 @@
       <AdditionalManifestFiles>$(ProjectDir)manifest.xml %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
     <Link>
-      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
     </Link>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>

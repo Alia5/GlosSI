@@ -7,8 +7,8 @@
 
 Requirements:
 
-- Visual Studio 2019 (Community edition is fine)
-- Qt 6.2.0 (GlosSIConfig only)
+- Visual Studio 2022 (Community edition is fine)
+- Qt 6.2.X (GlosSIConfig only)
 - Qt Visual Studio addin (GlosSIConfig only)
 
 ```bat

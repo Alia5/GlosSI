@@ -1,5 +1,5 @@
 /*
-Copyright 2021 Peter Repukat - FlatspotSoftware
+Copyright 2021-2022 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -106,8 +106,10 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& 
     std::cout << txt.toStdString() << "\n";
 }
 
+
 int main(int argc, char* argv[])
 {
+
 #if defined(Q_OS_WIN)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     HRESULT hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
