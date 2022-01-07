@@ -39,12 +39,26 @@ Dialog {
 	}
 	property real backdropOpacity: 1.0
 
+	property var unfilteredModel: null;
+	property var filteredModel: [];
+
+
 	onOpened: function() {
-		listview.model = uiModel.uwpList
+		unfilteredModel = null;
+		unfilteredModel = uiModel.uwpList;
+		listview.model = null;
+		filteredModel = [];
+		for(let i = 0; i < unfilteredModel.length; i++)
+		{
+			filteredModel.push(unfilteredModel[i])					
+		}
+		listview.model = filteredModel
 	}
 
 	onClosed: function() {
-		listview.model = null
+		listview.model = null;
+		unfilteredModel = null;
+		filteredModel = null;
 	}
 
 	enter: Transition {
@@ -77,10 +91,32 @@ Dialog {
 			font.bold: true
 		}
 
+		FluentTextInput {
+            width: listview.width - 2
+			x: 1
+            anchors.top: titlelabel.bottom
+            anchors.topMargin: 8
+            id: searchBar
+            enabled: true
+			placeholderText: qsTr("Search...")
+            text: ""
+            onTextChanged: function() {
+				listview.model = null;
+				filteredModel = [];
+				for(let i = 0; i < unfilteredModel.length; i++)
+				{
+					if(unfilteredModel[i].AppName.toLowerCase().includes(searchBar.text.toLowerCase())) {
+						filteredModel.push(unfilteredModel[i])					
+					}
+				}
+				listview.model = filteredModel
+			}
+        }
+
 		BusyIndicator {
 			running: visible
 			anchors.centerIn: parent
-			opacity: (!listview.model || listview.model.length == 0) ? 1 : 0
+			opacity: (!unfilteredModel || unfilteredModel.length == 0) ? 1 : 0
             Behavior on opacity {
                 NumberAnimation {
                     duration: 350
@@ -100,18 +136,18 @@ Dialog {
 		}
 
 		ListView {
-			anchors.top: titlelabel.bottom
+			anchors.top: searchBar.bottom
 			anchors.topMargin: 16
 			id: listview
 			width: window.width * 0.45
 			height: window.height * 0.66
 			spacing: 0
 			clip: true
-			model: null
+			model: filteredModel
 			ScrollBar.vertical: ScrollBar {
 			}
 
-			opacity: (!listview.model || listview.model.length == 0) ? 0 : 1
+			opacity: (!unfilteredModel || unfilteredModel.length == 0) ? 0 : 1
             Behavior on opacity {
 				ParallelAnimation {
 				    NumberAnimation {
