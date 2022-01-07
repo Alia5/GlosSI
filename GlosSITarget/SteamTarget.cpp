@@ -33,6 +33,7 @@ limitations under the License.
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_(
           [this] { run_ = false; },
+          [this] { toggleGlossiOverlay(); },
           getScreenshotHotkey(),
           [this]() {
               target_window_handle_ = window_.getSystemHandle();
@@ -115,6 +116,11 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
     if (overlay_open) {
         focusWindow(target_window_handle_);
         window_.setClickThrough(!overlay_open);
+    } else {
+        if (!(overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
+            window_.setClickThrough(!overlay_open);
+            focusWindow(last_foreground_window_);
+        }
     }
     if (!overlay_trigger_flag_) {
         overlay_trigger_flag_ = true;
@@ -122,22 +128,26 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
     }
     else {
         if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
-            const auto ov_opened = overlay_.expired() ? false : overlay_.lock()->toggle();
-            window_.setClickThrough(!ov_opened);
-            if (ov_opened) {
-                spdlog::info("Opened GlosSI-overlay");
-                focusWindow(target_window_handle_);
-            }
-            else {
-                focusWindow(last_foreground_window_);
-                spdlog::info("Closed GlosSI-overlay");
-            }
+            toggleGlossiOverlay();
         }
         overlay_trigger_flag_ = false;
     }
-    if (!(overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
-        window_.setClickThrough(!overlay_open);
+}
+
+void SteamTarget::toggleGlossiOverlay()
+{
+    if (overlay_.expired()) {
+        return;
+    }
+    const auto ov_opened = overlay_.lock()->toggle();
+    window_.setClickThrough(!ov_opened);
+    if (ov_opened) {
+        spdlog::info("Opened GlosSI-overlay");
+        focusWindow(target_window_handle_);
+    }
+    else {
         focusWindow(last_foreground_window_);
+        spdlog::info("Closed GlosSI-overlay");
     }
 }
 

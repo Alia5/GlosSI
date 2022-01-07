@@ -23,9 +23,11 @@ limitations under the License.
 Overlay::Overlay(
     sf::RenderWindow& window,
     std::function<void()> on_close,
+    std::function<void()> trigger_state_change,
     bool force_enable)
     : window_(window),
       on_close_(std::move(on_close)),
+      trigger_state_change_(std::move(trigger_state_change)),
       force_enable_(force_enable)
 {
     ImGui::SFML::Init(window_);
@@ -160,6 +162,8 @@ void Overlay::update()
         if (closeButton()) {
             return;
         }
+
+        closeOverlayButton();
     }
 
     ImGui::SFML::Render(window_);
@@ -246,6 +250,29 @@ void Overlay::showLogs()
     }
 }
 
+bool Overlay::closeOverlayButton() const
+{
+    if (force_enable_) {
+        return false;
+    }
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.f, 0.f, 0.0f));
+    ImGui::Begin("##CloseOverlayButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+    ImGui::SetWindowPos({(window_.getSize().x - ImGui::GetWindowWidth()) / 2, 32});
+    ImGui::SetWindowSize({256, 32});
+    if (ImGui::Button("Return to Game", {256, 32})) {
+        trigger_state_change_();
+        ImGui::End();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+        return true;
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    return false;
+}
+
 bool Overlay::closeButton() const
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
@@ -256,6 +283,11 @@ bool Overlay::closeButton() const
     ImGui::SetWindowSize({56 + 32, 32 + 32});
     ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 32, -32});
     if (ImGui::Button("X##Close", {56, 32})) {
+        ImGui::End();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
         on_close_();
         return true;
     }

@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,3,1011002805066
- PRODUCTVERSION 0,0,3,1011002805066
+ FILEVERSION 0,0,3,1012008015277
+ PRODUCTVERSION 0,0,3,1012008015277
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Peter Repukat - FlatspotSoftware"
             VALUE "FileDescription", "GlosSI - SteamTarget"
-            VALUE "FileVersion", "0.0.3.1-11-g28c5c66"
+            VALUE "FileVersion", "0.0.3.1-12-g8d15277"
             VALUE "InternalName", "GlosSITarget"
             VALUE "LegalCopyright", "Copyright (C) 2021 Peter Repukat - FlatspotSoftware"
             VALUE "OriginalFilename", "GlosSITarget.exe"
             VALUE "ProductName", "GlosSI"
-            VALUE "ProductVersion", "0.0.3.1-11-g28c5c66"
+            VALUE "ProductVersion", "0.0.3.1-12-g8d15277"
         END
     END
     BLOCK "VarFileInfo"
@@ -97,6 +97,50 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

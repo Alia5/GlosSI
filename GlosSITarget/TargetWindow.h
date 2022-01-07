@@ -32,6 +32,7 @@ class TargetWindow {
   public:
     explicit TargetWindow(
         std::function<void()> on_close = []() {},
+        std::function<void()> toggle_overlay_state = []() {},
         std::vector<std::string> screenshot_hotkey = {"KEY_F12"},
         std::function<void()> on_window_changed = []() {}
     );
@@ -64,6 +65,7 @@ class TargetWindow {
 
   private:
     const std::function<void()> on_close_;
+    const std::function<void()> toggle_overlay_state_;
     sf::RenderWindow window_;
     std::vector<std::string> screenshot_keys_;
     const std::function<void()> on_window_changed_;

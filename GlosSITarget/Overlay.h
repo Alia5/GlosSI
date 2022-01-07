@@ -28,7 +28,7 @@ limitations under the License.
 
 class Overlay {
   public:
-    Overlay(sf::RenderWindow& window, std::function<void()> on_close, bool force_enable = false);
+    Overlay(sf::RenderWindow& window, std::function<void()> on_close, std::function<void()> trigger_state_change, bool force_enable = false);
 
     void setEnabled(bool enabled);
     bool isEnabled() const;
@@ -46,7 +46,9 @@ class Overlay {
     sf::Clock update_clock_;
     bool enabled_ = true;
     std::function<void()> on_close_;
+    std::function<void()> trigger_state_change_;
     void showLogs();
+    bool closeOverlayButton() const;
     [[nodiscard]] bool closeButton() const;
     bool force_enable_ = false;
     bool log_expanded_ = true;

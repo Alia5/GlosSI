@@ -38,9 +38,11 @@ limitations under the License.
 
 TargetWindow::TargetWindow(
     std::function<void()> on_close,
+    std::function<void()> toggle_overlay_state,
     std::vector<std::string> screenshot_hotkey,
     std::function<void()> on_window_changed)
     : on_close_(std::move(on_close)),
+      toggle_overlay_state_(std::move(toggle_overlay_state)),
       screenshot_keys_(std::move(screenshot_hotkey)),
       on_window_changed_(std::move(on_window_changed))
 {
@@ -289,7 +291,7 @@ void TargetWindow::createWindow(bool window_mode)
         spdlog::debug("Limiting overlay to FPS to {}", dev_mode.dmDisplayFrequency);
     }
 
-    overlay_ = std::make_shared<Overlay>(window_, [this]() { close(); }, windowed_);
+    overlay_ = std::make_shared<Overlay>(window_, [this]() { close(); }, toggle_overlay_state_, windowed_);
 
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;

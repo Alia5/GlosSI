@@ -37,6 +37,7 @@ class SteamTarget {
 
   private:
     void onOverlayChanged(bool overlay_open);
+    void toggleGlossiOverlay();
     void focusWindow(WindowHandle hndl);
     std::filesystem::path getSteamPath() const;
     std::wstring getSteamUserId() const;
