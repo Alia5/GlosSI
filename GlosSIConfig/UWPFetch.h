@@ -31,6 +31,9 @@ QVariantList UWPAppList()
     QProcess proc;
     proc.setProgram("powershell.exe");
     QStringList args;
+    args.push_back("-ExecutionPolicy");
+    args.push_back("Unrestricted");
+    args.push_back("-File");
     args.push_back(".\\GetAUMIDs.ps1");
     proc.setArguments(args);
     proc.start();

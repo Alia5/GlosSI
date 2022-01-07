@@ -76,7 +76,7 @@
     </Manifest>
     <Link />
     <CustomBuildStep>
-      <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
+      <Command>powershell.exe -ExecutionPolicy Unrestricted -File $(SolutionDir)version_help.ps1</Command>
       <Outputs>Upading version based on git;%(Outputs)</Outputs>
     </CustomBuildStep>
     <Link>
