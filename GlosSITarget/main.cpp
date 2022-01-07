@@ -16,12 +16,16 @@ limitations under the License.
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
+#include <winternl.h>
+#undef WIN32_NO_STATUS
+#include <ntstatus.h>
 #endif
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include "DllInjector.h"
 #include "SteamTarget.h"
 
 #include "OverlayLogSink.h"
@@ -95,7 +99,11 @@ int main(int argc, char* argv[])
     path /= "GlosSI";
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
-    path /= "glossitarget.log";
+    if (__argc > 1 && std::string(__argv[1]) == "-p") {
+        path /= "glossitarget_UWP_inject.log";
+    } else {
+        path /= "glossitarget.log";
+    }
     const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
 #else
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("/tmp/glossitarget.log", true);
@@ -120,8 +128,63 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
     std::string argsv = "";
     if (__argc > 1) {
-        for (int i = 1; i < __argc; i++)
-            argsv += i == 1 ? __argv[i] : std::string(" ") + __argv[i];
+        if (std::string(__argv[1]) == "-p" && __argc >= 3) {
+            DWORD pid = std::stoi(std::string(__argv[2]));
+            spdlog::debug("DLLInject requested with pid: {}", pid);
+            if (DllInjector::TakeDebugPrivilege()) {
+                // No need to eject, as the dll is self-ejecting.
+                if (DllInjector::Inject(
+                    pid, 
+                    L"Test.dll")) {
+                    spdlog::info("Successfully injected Test.dll...");
+
+                    // --
+
+                    typedef LONG (NTAPI *fnNtResumeProcess)(IN HANDLE processHandle);
+
+                    auto resume_proc = reinterpret_cast<fnNtResumeProcess>(GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtResumeProcess"));
+                    if (!resume_proc) {
+                        spdlog::error("Failed to get address of NtResumeProcess");
+                    } else {
+                        spdlog::debug("Got adress of NTResumeProc...");
+                    }
+
+                    HANDLE process = NULL;
+
+                    process = OpenProcess(
+                        PROCESS_QUERY_INFORMATION | PROCESS_SUSPEND_RESUME | PROCESS_CREATE_THREAD | PROCESS_VM_OPERATION | PROCESS_VM_WRITE,
+                        false,
+                        pid);
+
+                    if (!process) {
+                        spdlog::error("Failed to open process");
+                        spdlog::shutdown();
+                        return 1;
+                    }
+
+                    spdlog::debug("Resuming proc...");
+                    if (!NT_SUCCESS(resume_proc(process)))
+                    {
+                        spdlog::error("Failed to resume proc!");
+                    }
+                    CloseHandle(process);
+
+
+                    // --
+
+                } else {
+                    spdlog::error("Couldn't inject...");
+                }
+            } else {
+                spdlog::error("Couldn't take debug privilege!");
+            }
+
+            spdlog::shutdown();
+            return 0;
+        } else {
+            for (int i = 1; i < __argc; i++)
+                argsv += i == 1 ? __argv[i] : std::string(" ") + __argv[i];   
+        }
     }
     Settings::Parse(argsv);
     SteamTarget target(__argc, __argv);

@@ -18,9 +18,14 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 
 #ifdef _WIN32
+#define COBJMACROS
+#include <winternl.h>
+#include <objbase.h>
+#include <sddl.h>
 #include <ShObjIdl.h>
 #include <atlbase.h>
 #include <tlhelp32.h>
+#include <atlcomcli.h>
 #endif
 #include "Settings.h"
 
@@ -183,6 +188,17 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
     HRESULT result = CoInitialize(nullptr);
     if (SUCCEEDED(result)) {
 
+        // DllInjector::TakeDebugPrivilege();
+        HRESULT hResult = S_OK;
+        ATL::CComQIPtr<IPackageDebugSettings> debugSettings;
+        hResult = debugSettings.CoCreateInstance(CLSID_PackageDebugSettings, NULL, CLSCTX_ALL);
+        debugSettings->EnableDebugging(
+            L"Microsoft.MinecraftUWP_1.18.203.0_x64__8wekyb3d8bbwe",
+            L"D:\\Alia5\\Documents\\Visual_Studio_Projects\\GlosSI\\x64\\Debug\\GlosSITarget.exe",
+            NULL
+        );
+
+
         CComPtr<IApplicationActivationManager> sp_app_activation_manager;
         // Initialize IApplicationActivationManager
         result = CoCreateInstance(
@@ -209,6 +225,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
         } else {
             spdlog::error("CoCreateInstance failed: Code {}", result);
         }
+        debugSettings->DisableDebugging(L"Microsoft.MinecraftUWP_1.18.203.0_x64__8wekyb3d8bbwe");
         CoUninitialize();
     }
     else {
