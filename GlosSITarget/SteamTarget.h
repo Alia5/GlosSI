@@ -82,7 +82,7 @@ class SteamTarget {
     static inline WindowHandle target_window_handle_ = nullptr;
 
     sf::Clock overlay_trigger_clock_;
-    uint32_t overlay_trigger_max_seconds_ = 4;
+    uint32_t overlay_trigger_max_seconds_ = 1;
     bool overlay_trigger_flag_ = false;
 
     bool delayed_shutdown_ = false;

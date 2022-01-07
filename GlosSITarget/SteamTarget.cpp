@@ -67,7 +67,7 @@ Application will not function!");
     }
     else {
         spdlog::info("Steam-overlay detected.");
-        spdlog::warn("Open/Close Steam-overlay twice to show GlosSI-overlay"); // Just to color output and really get users attention
+        spdlog::warn("Double press Steam- overlay key(s)/Controller button to show GlosSI-overlay"); // Just to color output and really get users attention
         window_.setClickThrough(true);
         if (!overlay_.expired())
             overlay_.lock()->setEnabled(false);
@@ -116,31 +116,28 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
         focusWindow(target_window_handle_);
         window_.setClickThrough(!overlay_open);
     }
+    if (!overlay_trigger_flag_) {
+        overlay_trigger_flag_ = true;
+        overlay_trigger_clock_.restart();
+    }
     else {
-
-        if (!overlay_trigger_flag_) {
-            overlay_trigger_flag_ = true;
-            overlay_trigger_clock_.restart();
-        }
-        else {
-            if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
-                const auto ov_opened = overlay_.expired() ? false : overlay_.lock()->toggle();
-                window_.setClickThrough(!ov_opened);
-                if (ov_opened) {
-                    spdlog::info("Opened GlosSI-overlay");
-                    focusWindow(target_window_handle_);
-                }
-                else {
-                    focusWindow(last_foreground_window_);
-                    spdlog::info("Closed GlosSI-overlay");
-                }
+        if (overlay_trigger_clock_.getElapsedTime().asSeconds() <= overlay_trigger_max_seconds_) {
+            const auto ov_opened = overlay_.expired() ? false : overlay_.lock()->toggle();
+            window_.setClickThrough(!ov_opened);
+            if (ov_opened) {
+                spdlog::info("Opened GlosSI-overlay");
+                focusWindow(target_window_handle_);
             }
-            overlay_trigger_flag_ = false;
+            else {
+                focusWindow(last_foreground_window_);
+                spdlog::info("Closed GlosSI-overlay");
+            }
         }
-        if (!( overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
-            window_.setClickThrough(!overlay_open);
-            focusWindow(last_foreground_window_);
-        }
+        overlay_trigger_flag_ = false;
+    }
+    if (!(overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
+        window_.setClickThrough(!overlay_open);
+        focusWindow(last_foreground_window_);
     }
 }
 

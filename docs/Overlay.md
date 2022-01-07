@@ -5,7 +5,7 @@
 
 GlosSI provides it's own overlay in addition to that of Steam.  
 
-Simply open/close Steams overlay via your assigned shortcut or the Steam/Guide button **twice** to bring it up.  
+Simply **double press** your assigned Steam overlay key(s) or the Steam/Guide button to bring it up.  
 From here you can take a peek at the log and change various settings.
 
 ![GlosSI overlay screenshot](./glossi_overlay.png)
