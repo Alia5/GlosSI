@@ -32,5 +32,14 @@ Pane {
         layer.effect: ElevationEffect {
             elevation: control.Material.elevation
         }
+        Image {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            source: "qrc:/noise.png"
+            fillMode: Image.Tile
+            opacity: 0.035
+        }
     }
 }

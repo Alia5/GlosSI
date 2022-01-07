@@ -45,6 +45,16 @@ Window {
 
     property bool steamShortcutsChanged: false
 
+    Image {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        source: "qrc:/noise.png"
+        fillMode: Image.Tile
+        opacity: 0.033
+    }
+
     InfoDialog {
         id: steamChangedDialog
         titleText: qsTr("Attention!")

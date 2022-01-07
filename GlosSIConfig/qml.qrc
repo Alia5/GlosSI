@@ -12,5 +12,6 @@
         <file>qml/UWPSelectDialog.qml</file>
         <file>qml/InfoDialog.qml</file>
         <file>steamscreener.png</file>
+        <file>noise.png</file>
     </qresource>
 </RCC>
