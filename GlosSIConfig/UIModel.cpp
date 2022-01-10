@@ -83,7 +83,7 @@ void UIModel::readConfigs()
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
 
-        json["name"] = QString(name).replace(QRegularExpression("\\.json"), "");
+        json["name"] = filejson.contains("name") ? filejson["name"] : QString(name).replace(QRegularExpression("\\.json"), "");
 
         targets_.append(json.toVariantMap());
     });
@@ -110,7 +110,7 @@ void UIModel::updateTarget(int index, QVariant shortcut)
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
-    auto oldName = targets_[index].toMap()["name"].toString() + ".json";
+    auto oldName = targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
     path /= (oldName).toStdString();
@@ -124,7 +124,7 @@ void UIModel::updateTarget(int index, QVariant shortcut)
 
 void UIModel::deleteTarget(int index)
 {
-    auto oldName = targets_[index].toMap()["name"].toString() + ".json";
+    auto oldName = targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
     path /= (oldName).toStdString();
@@ -211,7 +211,7 @@ bool UIModel::addToSteam(const QString& name, const QString& shortcutspath, bool
     qDebug() << "trying to add " << name << " to steam";
     const auto target = std::find_if(targets_.begin(), targets_.end(), [&name](const auto& target) {
         const auto map = target.toMap();
-        const auto target_name = map["name"].toString();
+        const auto target_name = map["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "");
         return name == target_name;
     });
     if (target != targets_.end()) {
@@ -240,7 +240,7 @@ QVariantMap UIModel::manualProps(QVariant shortcut)
 {
     QDir appDir = QGuiApplication::applicationDirPath();
     const auto map = shortcut.toMap();
-    const auto name = map["name"].toString();
+    const auto name = map["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "");
     const auto maybeLaunchPath = map["launchPath"].toString();
     const auto launch = map["launch"].toBool();
 
@@ -337,7 +337,7 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 {
     auto path = config_path_;
     path /= config_dir_name_.toStdWString();
-    path /= (name + ".json").toStdWString();
+    path /= (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdWString();
     QFile file(path);
     if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
         // meh
@@ -346,6 +346,7 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
     QJsonObject fileJson;
     fileJson["version"] = json["version"];
     fileJson["icon"] = json["icon"];
+    fileJson["name"] = json["name"];
 
     QJsonObject launchObject;
     launchObject["launch"] = json["launch"];
