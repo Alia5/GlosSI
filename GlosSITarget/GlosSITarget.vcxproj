@@ -194,6 +194,7 @@
     <ClInclude Include="InputRedirector.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="OverlayLogSink.h" />
+    <ClInclude Include="ProcessPriority.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Roboto.h" />
     <ClInclude Include="Settings.h" />

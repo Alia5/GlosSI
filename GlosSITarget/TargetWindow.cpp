@@ -22,11 +22,14 @@ limitations under the License.
 #include <SFML/Window/Event.hpp>
 #include <spdlog/spdlog.h>
 
+
 #ifdef _WIN32
 #include <SFML/Graphics.hpp>
 #include <VersionHelpers.h>
 #include <Windows.h>
 #include <dwmapi.h>
+
+#include "ProcessPriority.h"
 
 #include "Settings.h"
 
@@ -57,6 +60,8 @@ TargetWindow::TargetWindow(
         }
         ImGui::End();
     });
+
+    ProcessPriority::init();
 }
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
