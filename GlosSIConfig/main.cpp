@@ -185,6 +185,18 @@ int main(int argc, char* argv[])
     bb.hRgnBlur = nullptr;
     DwmEnableBlurBehindWindow(hwnd, &bb);
 
+    HMODULE hUser = GetModuleHandle(L"user32.dll");
+    if (hUser) {
+        if (auto set_window_composition_attribute = reinterpret_cast<PSetWindowCompositionAttribute>(GetProcAddress(hUser, "SetWindowCompositionAttribute"))) {
+            AccentPolicy accent = {ACCENT_ENABLE_BLURBEHIND, 0, 0, 0};
+            WindowCompositionAttributeData data{};
+            data.Attribute = WCA_ACCENT_POLICY;
+            data.Data = &accent;
+            data.SizeOfData = sizeof(accent);
+            set_window_composition_attribute(hwnd, &data);
+        }
+    }
+
     //if (IsWindows10OrGreater()) {
     //    // undoc stuff for aero >= Win10
     //    int color = (0 << 24) + (0x21 << 16) + (0x11 << 8) + (0x11);
