@@ -188,7 +188,7 @@ GridView {
     InfoDialog {
         id: writeErrorDialog
         titleText: qsTr("Error")
-        text: qsTr("Error writing shortcuts.vdf...")
+        text: qsTr("Error writing shortcuts.vdf...\nPlease make sure Steam is running")
         extraButton: true
         extraButtonText: qsTr("Manual instructions")
         onConfirmedExtra: function(data) {
