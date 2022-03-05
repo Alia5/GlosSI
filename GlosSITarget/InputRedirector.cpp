@@ -20,6 +20,7 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 
 #include "Overlay.h"
+#include "Settings.h"
 
 InputRedirector::InputRedirector()
 {
@@ -49,6 +50,7 @@ void InputRedirector::run()
 {
     run_ = vigem_connected_;
     controller_thread_ = std::thread(&InputRedirector::runLoop, this);
+    max_controller_count_ = Settings::controller.maxControllers;
 #ifdef _WIN32
     Overlay::AddOverlayElem([this]() {
         ImGui::SetNextWindowPos({650, 450}, ImGuiCond_FirstUseEver);
