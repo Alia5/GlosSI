@@ -42,7 +42,8 @@ Item {
             maxFps: null,
             scale: null,
             icon: null,
-            maxControllers: 4
+            maxControllers: 4,
+            disableOverlay: false
         })
 
     function resetInfo() {
@@ -59,7 +60,8 @@ Item {
             maxFps: null,
             scale: null,
             icon: null,
-            maxControllers: 4
+            maxControllers: 4,
+            disableOverlay: false
         })
     }
 
@@ -73,6 +75,7 @@ Item {
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
         maxControllersSpinBox.value = shortcutInfo.maxControllers
+        disableOverlayCheckbox = shortcutInfo.disableOverlay || false
     }
 
     Column {
@@ -334,6 +337,24 @@ Item {
                         width: parent.width
                         leftPadding: 32
                     }
+                    Item {
+                        width: 1
+                        height: 4
+                    }
+                    CheckBox {
+                        id: disableOverlayCheckbox
+                        text: qsTr("Disable Steam/GlosSI overlay")
+                        checked: shortcutInfo.disableOverlay
+                        onCheckedChanged: shortcutInfo.disableOverlay = checked
+                     }
+                     Label {
+                        text: qsTr("Only controller emulation - No extra window")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                        topPadding: -8
+                }
+
                 }
 
             }
