@@ -74,12 +74,13 @@ Item {
 
 
     Column {
-        anchors.margins: 64
+        anchors.margins: 32
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         spacing: 4
+
         Item {
             id: namewrapper
             width: parent.width / 3
@@ -104,175 +105,217 @@ Item {
         }
         Item {
             width: 1
-            height: 28
+            height: 8
         }
-        Row {
-            spacing: 32
+        RPane {
             width: parent.width
-            height: closeOnExitCol.height
-            CheckBox {
-                id: launchApp
-                text: qsTr("Launch app")
-                checked: shortcutInfo.launch
-                onCheckedChanged: shortcutInfo.launch = checked
-            }
+            height: 192
+            radius: 4
+		    Material.elevation: 32
+            bgOpacity: 0.97
             Column {
-                id: closeOnExitCol
-                spacing: 2
-                CheckBox {
-                    id: closeOnExit
-                    text: qsTr("Close when launched app quits")
-                    checked: shortcutInfo.closeOnExit
-                    onCheckedChanged: shortcutInfo.closeOnExit = checked
-                }
-                Label {
-                    text: qsTr("Recommended to disable for launcher-games")
-                    wrapMode: Text.WordWrap
+                width: parent.width
+                height: parent.height
+                spacing: 4
+                Row {
+                    spacing: 32
                     width: parent.width
+                    height: closeOnExitCol.height
+                    CheckBox {
+                        id: launchApp
+                        text: qsTr("Launch app")
+                        checked: shortcutInfo.launch
+                        onCheckedChanged: shortcutInfo.launch = checked
+                    }
+                    Column {
+                        id: closeOnExitCol
+                        spacing: 2
+                        CheckBox {
+                            id: closeOnExit
+                            text: qsTr("Close when launched app quits")
+                            checked: shortcutInfo.closeOnExit
+                            onCheckedChanged: shortcutInfo.closeOnExit = checked
+                        }
+                        Label {
+                            text: qsTr("Recommended to disable for launcher-games")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                            topPadding: -8
+                        }
+                    }
+                    CheckBox {
+                        id: waitForChildren
+                        text: qsTr("Close when all children processes quit")
+                        checked: shortcutInfo.waitForChildProcs
+                        onCheckedChanged: function(){
+                            shortcutInfo.waitForChildProcs = checked
+                            if (checked) {
+                                closeOnExit.checked = true;
+                                closeOnExit.enabled = false;
+                            } else {
+                                closeOnExit.enabled = true;
+                            }
+                        }
+                    }
                 }
-                CheckBox {
-                    id: waitForChildren
-                    text: qsTr("Close when all children processes quit")
-                    checked: shortcutInfo.waitForChildProcs
-                    onCheckedChanged: function(){
-                        shortcutInfo.waitForChildProcs = checked
-                        if (checked) {
-                            closeOnExit.checked = true;
-                            closeOnExit.enabled = false;
-                        } else {
-                            closeOnExit.enabled = true;
+                Item {
+                    width: 1
+                    height: 8
+                }
+                RowLayout {
+                    id: launchlayout
+                    spacing: 4
+                    width: parent.width
+                    Image {
+                        id: maybeIcon
+                        source: shortcutInfo.icon
+                            ? shortcutInfo.icon.endsWith(".exe")
+                                ? "image://exe/" + shortcutInfo.icon
+                                : "file:///" + shortcutInfo.icon
+                            : null
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 48
+                        visible: shortcutInfo.icon
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                    Item {
+                        Layout.preferredWidth: 8
+                        Layout.preferredHeight: 8
+                        visible: shortcutInfo.icon
+                    }
+                    Item {
+                        Layout.preferredWidth: parent.width / 2
+                        Layout.fillWidth: true
+                        height: 64
+                        Label {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 4
+                            id: pathLabel
+                            font.bold: true
+                            text: qsTr("Path")
+                        }
+                        FluentTextInput {
+                            width: parent.width
+                            anchors.top: pathLabel.bottom
+                            anchors.topMargin: 4
+                            id: pathInput
+                            placeholderText: qsTr("...")
+                            enabled: launchApp.checked
+                            text: shortcutInfo.launchPath || ""
+                            onTextChanged: shortcutInfo.launchPath = text
+                        }
+                    }
+                    Button {
+                        Layout.preferredWidth: 64
+                        Layout.alignment: Qt.AlignBottom
+                        text: qsTr("...")
+                        onClicked: fileDialog.open();
+                    }
+                    Button {
+                        Layout.preferredWidth: 64
+                        Layout.alignment: Qt.AlignBottom
+                        text: qsTr("UWP")
+                        visible: uiModel.isWindows
+                        onClicked: uwpSelectDialog.open();
+                    }
+                    Item {
+                        height: 1
+                        Layout.preferredWidth: 12
+                    }
+                    Item {
+                        Layout.preferredWidth: parent.width / 2.5
+                        height: 64
+                        Label {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 4
+                            id: argslabel
+                            font.bold: true
+                            text: qsTr("Launch Arguments")
+                        }
+                        FluentTextInput {
+                            width: parent.width
+                            anchors.top: argslabel.bottom
+                            anchors.topMargin: 4
+                            id: argsInput
+                            enabled: launchApp.checked
+                            text: shortcutInfo.launchAppArgs
+                            onTextChanged: shortcutInfo.launchAppArgs = text
                         }
                     }
                 }
             }
         }
-        RowLayout {
-            id: launchlayout
-            spacing: 4
-            width: parent.width
-            Image {
-                id: maybeIcon
-                source: shortcutInfo.icon
-                    ? shortcutInfo.icon.endsWith(".exe")
-                        ? "image://exe/" + shortcutInfo.icon
-                        : "file:///" + shortcutInfo.icon
-                    : null
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
-                visible: shortcutInfo.icon
-                Layout.alignment: Qt.AlignVCenter
-            }
-            Item {
-                Layout.preferredWidth: 8
-                Layout.preferredHeight: 8
-                visible: shortcutInfo.icon
-            }
-            Item {
-                Layout.preferredWidth: parent.width / 2
-                Layout.fillWidth: true
-                height: 64
-                Label {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 4
-                    id: pathLabel
-                    font.bold: true
-                    text: qsTr("Path")
-                }
-                FluentTextInput {
-                    width: parent.width
-                    anchors.top: pathLabel.bottom
-                    anchors.topMargin: 4
-                    id: pathInput
-                    placeholderText: qsTr("...")
-                    enabled: launchApp.checked
-                    text: shortcutInfo.launchPath || ""
-                    onTextChanged: shortcutInfo.launchPath = text
-                }
-            }
-            Button {
-                Layout.preferredWidth: 64
-                Layout.alignment: Qt.AlignBottom
-                text: qsTr("...")
-                onClicked: fileDialog.open();
-            }
-            Button {
-                Layout.preferredWidth: 64
-                Layout.alignment: Qt.AlignBottom
-                text: qsTr("UWP")
-                visible: uiModel.isWindows
-                onClicked: uwpSelectDialog.open();
-            }
-            Item {
-                height: 1
-                Layout.preferredWidth: 12
-            }
-            Item {
-                Layout.preferredWidth: parent.width / 2.5
-                height: 64
-                Label {
-                    anchors.left: parent.left
-                    anchors.leftMargin: 4
-                    id: argslabel
-                    font.bold: true
-                    text: qsTr("Launch Arguments")
-                }
-                FluentTextInput {
-                    width: parent.width
-                    anchors.top: argslabel.bottom
-                    anchors.topMargin: 4
-                    id: argsInput
-                    enabled: launchApp.checked
-                    text: shortcutInfo.launchAppArgs
-                    onTextChanged: shortcutInfo.launchAppArgs = text
-                }
-            }
-        }
         Item {
             width: 1
-            height: 28
+            height: 16
         }
         Row {
-            spacing: 64
+            spacing: 16
             width: parent.width
-            Column {
-                spacing: 2
-                width: parent.width/2 - 64
-                CheckBox {
-                    id: hideDevices
-                    text: qsTr("Hide (Real) Controllers")
-                    checked: shortcutInfo.hideDevices
-                    onCheckedChanged: shortcutInfo.hideDevices = checked
-                }
-                Label {
-                    text: qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
-                    wrapMode: Text.WordWrap
+
+            RPane {
+                width: parent.width / 2 - 8
+                height: 224
+                radius: 4
+		        Material.elevation: 32
+                bgOpacity: 0.97
+
+
+                Column {
+                    spacing: 2
                     width: parent.width
-                }
-                Label {
-                    text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
-                    wrapMode: Text.WordWrap
-                    width: parent.width
+                    CheckBox {
+                        id: hideDevices
+                        text: qsTr("Hide (Real) Controllers")
+                        checked: shortcutInfo.hideDevices
+                        onCheckedChanged: shortcutInfo.hideDevices = checked
+                    }
+                    Label {
+                        text: qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                        topPadding: -8
+                    }
+                    Label {
+                        text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                    }
                 }
             }
-            Column {
-                spacing: 2
-                width: parent.width/2 - 64
-                CheckBox {
-                    id: windowMode
-                    text: qsTr("Steam/GlosSI overlay as separate window")
-                    checked: shortcutInfo.windowMode
-                    onCheckedChanged: shortcutInfo.windowMode = checked
-                }
-                Label {
-                    text: qsTr("Doesn't show overlay on top, but as separate window")
-                    wrapMode: Text.WordWrap
+            RPane {
+                width: parent.width / 2 - 8
+                height: 224
+                radius: 4
+		        Material.elevation: 32
+                bgOpacity: 0.97
+                Column {
+                    spacing: 2
                     width: parent.width
+                    CheckBox {
+                        id: windowMode
+                        text: qsTr("Steam/GlosSI overlay as separate window")
+                        checked: shortcutInfo.windowMode
+                        onCheckedChanged: shortcutInfo.windowMode = checked
+                    }
+                    Label {
+                        text: qsTr("Doesn't show overlay on top, but as separate window")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                        topPadding: -8
+                    }
+                    Label {
+                        text: qsTr("Use if blackscreen-issues are encountered.")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                    }
                 }
-                Label {
-                    text: qsTr("Use if blackscreen-issues are encountered.")
-                    wrapMode: Text.WordWrap
-                    width: parent.width
-                }
+
             }
         }
     }
