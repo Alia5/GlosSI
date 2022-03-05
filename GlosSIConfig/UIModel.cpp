@@ -82,6 +82,7 @@ void UIModel::readConfigs()
         json["windowMode"] = filejson["window"]["windowMode"];
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
+        json["maxControllers"] = filejson["controller"]["maxControllers"];
 
         json["name"] = filejson.contains("name") ? filejson["name"] : QString(name).replace(QRegularExpression("\\.json"), "");
 
@@ -177,19 +178,11 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
     if (maybeIcon.isEmpty()) {
         if (launch && !maybeLaunchPath.isEmpty())
             vdfshortcut.icon.value =
-                "\"" + (
-                    is_windows_
-                        ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString()
-                        : maybeLaunchPath.toStdString()
-                    ) + "\"";
+                "\"" + (is_windows_ ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeLaunchPath.toStdString()) + "\"";
     }
     else {
         vdfshortcut.icon.value =
-            "\"" + (
-                is_windows_
-                    ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString()
-                    : maybeIcon.toStdString()
-                ) + "\"";
+            "\"" + (is_windows_ ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeIcon.toStdString()) + "\"";
     }
     // Add installed locally and GlosSI tag
     VDFParser::ShortcutTag locallyTag;
@@ -249,10 +242,9 @@ QVariantMap UIModel::manualProps(QVariant shortcut)
     res.insert("config", name + ".json");
     res.insert("launch", ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\""));
     res.insert("launchDir", (
-        launch && !maybeLaunchPath.isEmpty()
-            ? (QString("\"") + QString::fromStdString(std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string()) + "\"")
-            : ("\"" + appDir.absolutePath() + "\""))
-    );
+                                launch && !maybeLaunchPath.isEmpty()
+                                    ? (QString("\"") + QString::fromStdString(std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string()) + "\"")
+                                    : ("\"" + appDir.absolutePath() + "\"")));
     return res;
 }
 
@@ -268,11 +260,10 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
 #ifdef _WIN32
     const std::filesystem::path config_path = is_admin_try
                                                   ? shortcutspath
-        : std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+                                                  : std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
 
     qDebug() << "Steam config Path: " << config_path;
     qDebug() << "Trying to write config as admin: " << is_admin_try;
-
 
     auto write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
 
@@ -309,7 +300,7 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
                 }
                 return false;
             }
-        }  
+        }
     }
     return write_res;
 #else
@@ -365,6 +356,10 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
     windowObject["maxFps"] = json["maxFps"];
     windowObject["scale"] = json["scale"];
     fileJson["window"] = windowObject;
+
+    QJsonObject controllerObject;
+    controllerObject["maxControllers"] = json["maxControllers"];
+    fileJson["controller"] = controllerObject;
 
     auto wtf = QString(QJsonDocument(fileJson).toJson(QJsonDocument::Indented)).toStdString();
     file.write(wtf.data());

@@ -42,6 +42,7 @@ Item {
             maxFps: null,
             scale: null,
             icon: null,
+            maxControllers: 4
         })
 
     function resetInfo() {
@@ -58,6 +59,7 @@ Item {
             maxFps: null,
             scale: null,
             icon: null,
+            maxControllers: 4
         })
     }
 
@@ -70,8 +72,8 @@ Item {
         waitForChildren.checked = shortcutInfo.waitForChildProcs || false
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
+        maxControllersSpinBox.value = shortcutInfo.maxControllers
     }
-
 
     Column {
         anchors.margins: 32
@@ -261,7 +263,6 @@ Item {
 		        Material.elevation: 32
                 bgOpacity: 0.97
 
-
                 Column {
                     spacing: 2
                     width: parent.width
@@ -283,6 +284,25 @@ Item {
                         wrapMode: Text.WordWrap
                         width: parent.width
                         leftPadding: 32
+                    }
+                    Item {
+                        width: 1
+                        height: 4
+                    }
+                    Row {
+                        leftPadding: 16
+                        Label {
+                            text: qsTr("Max. emulated controllers")
+                            topPadding: 16
+                        }
+                        SpinBox {
+                            id: maxControllersSpinBox
+                            width: 128
+                            value: 4
+                            from: 0
+                            to: 4
+                            onValueChanged: shortcutInfo.maxControllers = value
+                        }
                     }
                 }
             }
