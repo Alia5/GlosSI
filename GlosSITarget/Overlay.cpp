@@ -32,7 +32,6 @@ Overlay::Overlay(
 {
     ImGui::SFML::Init(window_);
 
-
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -184,7 +183,6 @@ void Overlay::AddLog(const spdlog::details::log_msg& msg)
     LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
 }
 
-
 int Overlay::AddOverlayElem(const std::function<void()>& elem_fn)
 {
     OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
@@ -212,7 +210,11 @@ void Overlay::showLogs()
         std::ranges::copy_if(LOG_MSGS_,
                              std::back_inserter(logs),
                              [](const auto& log) {
-                                 return log.time.time_since_epoch() + std::chrono::seconds(LOG_RETENTION_TIME_) > std::chrono::system_clock::now().time_since_epoch();
+                                 return (
+                                            log.time.time_since_epoch() + std::chrono::seconds(
+                                                                              LOG_RETENTION_TIME_) >
+                                            std::chrono::system_clock::now().time_since_epoch()) &&
+                                        (log.level > spdlog::level::debug);
                              });
     }
     if (logs.empty())
@@ -242,7 +244,7 @@ void Overlay::showLogs()
                 ImGui::Text(msg.payload.data());
             }
         });
-        ImGui::SetScrollY(ImGui::GetScrollMaxY());   
+        ImGui::SetScrollY(ImGui::GetScrollMaxY());
     }
     ImGui::End();
     if (!enabled_) {
