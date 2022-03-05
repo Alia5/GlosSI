@@ -52,7 +52,7 @@ void SteamOverlayDetector::update()
             if (msg_count_ >= 3) {
                 msg_count_ = 0;
                 overlay_open_ = true;
-                spdlog::info("Overlay opened");
+                spdlog::debug("Overlay opened");
                 overlay_changed_(overlay_open_);
             }
         }
@@ -61,7 +61,7 @@ void SteamOverlayDetector::update()
             if (msg_count_ >= 3) {
                 msg_count_ = 0;
                 overlay_open_ = false;
-                spdlog::info("Overlay closed");
+                spdlog::debug("Overlay closed");
                 overlay_changed_(overlay_open_);
             }
         }

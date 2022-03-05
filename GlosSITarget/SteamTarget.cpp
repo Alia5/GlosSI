@@ -29,7 +29,6 @@ limitations under the License.
 #include "UWPOverlayEnabler.h"
 #endif
 
-
 SteamTarget::SteamTarget(int argc, char* argv[])
     : window_(
           [this] { run_ = false; },
@@ -50,7 +49,8 @@ SteamTarget::SteamTarget(int argc, char* argv[])
 #ifdef _WIN32
     if (Settings::launch.isUWP) {
         UWPOverlayEnabler::EnableUwpOverlay();
-    } else {
+    }
+    else {
         UWPOverlayEnabler::AddUwpOverlayOvWidget();
     }
 #endif
@@ -116,7 +116,8 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
     if (overlay_open) {
         focusWindow(target_window_handle_);
         window_.setClickThrough(!overlay_open);
-    } else {
+    }
+    else {
         if (!(overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
             window_.setClickThrough(!overlay_open);
             focusWindow(last_foreground_window_);
@@ -142,12 +143,12 @@ void SteamTarget::toggleGlossiOverlay()
     const auto ov_opened = overlay_.lock()->toggle();
     window_.setClickThrough(!ov_opened);
     if (ov_opened) {
-        spdlog::info("Opened GlosSI-overlay");
+        spdlog::debug("Opened GlosSI-overlay");
         focusWindow(target_window_handle_);
     }
     else {
         focusWindow(last_foreground_window_);
-        spdlog::info("Closed GlosSI-overlay");
+        spdlog::debug("Closed GlosSI-overlay");
     }
 }
 
@@ -201,8 +202,9 @@ std::filesystem::path SteamTarget::getSteamPath() const
         winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
         const auto res = key.GetStringValue(L"SteamPath");
         spdlog::info(L"Detected Steam Path: {}", res);
-        return res;   
-    } catch (const winreg::RegException& e) {
+        return res;
+    }
+    catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
     return L"";
