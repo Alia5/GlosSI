@@ -23,7 +23,6 @@ limitations under the License.
 
 namespace Settings {
 
-
 inline struct Launch {
     bool launch = false;
     std::wstring launchPath;
@@ -41,7 +40,12 @@ inline struct Window {
     bool windowMode = false;
     int maxFps = 0;
     float scale = 0.f;
+    bool disableOverlay = false;
 } window;
+
+inline struct Controller {
+    int maxControllers = 4;
+} controller;
 
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
@@ -60,9 +64,9 @@ inline void Parse(std::string arg1)
     std::filesystem::path path(arg1);
     if (path.has_extension() && !std::filesystem::exists(path)) {
         path = std::filesystem::temp_directory_path()
-                        .parent_path()
-                        .parent_path()
-                        .parent_path();
+                   .parent_path()
+                   .parent_path()
+                   .parent_path();
 
         path /= "Roaming";
         path /= "GlosSI";
@@ -88,7 +92,8 @@ inline void Parse(std::string arg1)
                 return;
             }
             value = object[key];
-        } catch (const nlohmann::json::exception& e) {
+        }
+        catch (const nlohmann::json::exception& e) {
             spdlog::error("Err parsing \"{}\"; {}", key, e.what());
         }
     };
@@ -120,6 +125,11 @@ inline void Parse(std::string arg1)
         safeParseValue(winconf, "windowMode", window.windowMode);
         safeParseValue(winconf, "maxFps", window.maxFps);
         safeParseValue(winconf, "scale", window.scale);
+        safeParseValue(winconf, "disableOverlay", window.disableOverlay);
+    }
+
+    if (auto controllerConf = json["controller"]; controllerConf.is_object()) {
+        safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
     }
 
     json_file.close();
@@ -129,7 +139,6 @@ inline void Parse(std::string arg1)
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
     }
-
 }
 
 } // namespace Settings
