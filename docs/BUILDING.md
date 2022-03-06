@@ -11,14 +11,11 @@ Requirements:
 - Qt 6.2.X (GlosSIConfig only)
 - Qt Visual Studio addin (GlosSIConfig only)
 
-```bat
-git submodule init
-git submodule update --recursive
-buildSFML.bat
-buildViGEmClient.bat
+```powershell
+.\prebuild.ps1
 
-:: Open GlosSI.sln and hit build!
-start GlosSI.sln
+# Open GlosSI.sln and hit build!
+Invoke-Item GlosSI.sln
 ```
 
 In addition to the above, you will need to install the required drivers:  
