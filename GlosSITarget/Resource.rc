@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,4,1023002300004
- PRODUCTVERSION 0,0,4,1023002300004
+ FILEVERSION 0,0,4,20068
+ PRODUCTVERSION 0,0,4,20068
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -91,7 +91,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "D:\\Alia5\\Documents\\Visual_Studio_Projects\\GloSC\\GloSC_Icon.ico"
+IDI_ICON1               ICON                    "GloSC_Icon.ico"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -107,56 +107,4 @@ IDI_ICON1               ICON                    "D:\\Alia5\\Documents\\Visual_St
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
