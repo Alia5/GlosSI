@@ -27,6 +27,7 @@ limitations under the License.
 
 #ifdef _WIN32
 #include "UWPOverlayEnabler.h"
+#include <tray.hpp>
 #endif
 
 SteamTarget::SteamTarget(int argc, char* argv[])
@@ -88,6 +89,32 @@ Application will not function!");
     }
 
     keepControllerConfig(true);
+
+#ifdef _WIN32
+    HICON icon = 0;
+    TCHAR path[MAX_PATH];
+    GetModuleFileName(nullptr, path, MAX_PATH);
+    icon = (HICON)LoadImage(
+        0,
+        path,
+        IMAGE_ICON,
+        GetSystemMetrics(SM_CXSMICON),
+        GetSystemMetrics(SM_CYSMICON),
+        LR_LOADFROMFILE | LR_LOADMAP3DCOLORS);
+    if (!icon) {
+        ExtractIconEx(path, 0, &icon, nullptr, 1);
+    }
+    Tray::Tray tray{"GlosSITarget", icon};
+#else
+    Tray::Tray tray{"GlosSITarget", "ico.png"};
+#endif
+
+    tray.addEntry(Tray::Button{
+        "Quit", [this, &tray]() {
+            tray.exit();
+            run_ = false;
+        }});
+
     while (run_) {
         detector_.update();
         overlayHotkeyWorkaround();

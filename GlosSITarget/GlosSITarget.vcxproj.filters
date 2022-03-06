@@ -31,6 +31,9 @@
     <Filter Include="Header Files\imgui-sfml">
       <UniqueIdentifier>{5e050d12-af62-455e-afb1-d8a253f06ab8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\tray">
+      <UniqueIdentifier>{fae52f0e-0152-49bd-8d74-a327f54bb789}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -74,6 +77,42 @@
     </ClCompile>
     <ClCompile Include="AppLauncher.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\icon.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\image.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\tray.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\core\entry.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\core\traybase.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\button.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\imagebutton.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\label.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\separator.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\submenu.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\syncedtoggle.cpp">
+      <Filter>Source Files\tray</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\traypp\tray\src\components\toggle.cpp">
+      <Filter>Source Files\tray</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

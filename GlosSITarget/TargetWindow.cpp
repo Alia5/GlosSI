@@ -22,7 +22,6 @@ limitations under the License.
 #include <SFML/Window/Event.hpp>
 #include <spdlog/spdlog.h>
 
-
 #ifdef _WIN32
 #include <SFML/Graphics.hpp>
 #include <VersionHelpers.h>
@@ -296,7 +295,8 @@ void TargetWindow::createWindow(bool window_mode)
         spdlog::debug("Limiting overlay to FPS to {}", dev_mode.dmDisplayFrequency);
     }
 
-    overlay_ = std::make_shared<Overlay>(window_, [this]() { close(); }, toggle_overlay_state_, windowed_);
+    overlay_ = std::make_shared<Overlay>(
+        window_, [this]() { close(); }, toggle_overlay_state_, windowed_);
 
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
@@ -316,4 +316,11 @@ void TargetWindow::createWindow(bool window_mode)
         ImGui::SFML::UpdateFontTexture();
     }
     on_window_changed_();
+
+#ifdef _WIN32
+    if (Settings::window.disableOverlay) {
+        setFpsLimit(1);
+        ShowWindow(hwnd, SW_HIDE);
+    }
+#endif
 }

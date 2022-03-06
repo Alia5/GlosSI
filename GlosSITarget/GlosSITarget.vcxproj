@@ -80,7 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;..\deps\traypp\tray\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\Debug\lib\Debug;..\deps\ViGEmClient\lib\debug\x64;$(LibraryPath)</LibraryPath>
     <CopyLocalProjectReference>false</CopyLocalProjectReference>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
@@ -88,7 +88,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>..\deps\SFML\include;..\deps\WinReg;..\deps\spdlog\include;..\deps\ValveFileVDF;..\deps\subhook;..\deps\ViGEmClient\include;..\deps\imgui;..\deps\imgui-sfml;..\deps\json\include;..\deps\traypp\tray\include;$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>..\deps\SFML\out\Release\lib\RelWithDebInfo;..\deps\ViGEmClient\lib\release\x64;$(LibraryPath)</LibraryPath>
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
     <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
@@ -174,6 +174,18 @@
     <ClCompile Include="..\deps\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\deps\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\deps\subhook\subhook.c" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\button.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\imagebutton.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\label.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\separator.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\submenu.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\syncedtoggle.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\components\toggle.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\core\entry.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\core\traybase.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\icon.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\image.cpp" />
+    <ClCompile Include="..\deps\traypp\tray\src\core\windows\tray.cpp" />
     <ClCompile Include="AppLauncher.cpp" />
     <ClCompile Include="HidHide.cpp" />
     <ClCompile Include="InputRedirector.cpp" />
