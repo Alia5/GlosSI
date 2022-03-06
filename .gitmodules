@@ -27,4 +27,4 @@
 	url = https://github.com/nlohmann/json
 [submodule "deps/traypp"]
 	path = deps/traypp
-	url = git@github.com:Soundux/traypp.git
+	url = https://github.com/Soundux/traypp.git
