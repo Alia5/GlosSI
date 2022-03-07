@@ -111,7 +111,6 @@ Application will not function!");
 
     tray.addEntry(Tray::Button{
         "Quit", [this, &tray]() {
-            tray.exit();
             run_ = false;
         }});
 
@@ -129,6 +128,7 @@ Application will not function!");
             launcher_.update();
         }
     }
+    tray.exit();
 
 #ifdef _WIN32
     input_redirector_.stop();
