@@ -51,6 +51,7 @@ void InputRedirector::run()
     run_ = vigem_connected_;
     controller_thread_ = std::thread(&InputRedirector::runLoop, this);
     max_controller_count_ = Settings::controller.maxControllers;
+    use_real_vid_pid_ = Settings::devices.realDeviceIds;
 #ifdef _WIN32
     Overlay::AddOverlayElem([this]() {
         ImGui::SetNextWindowPos({650, 450}, ImGuiCond_FirstUseEver);
@@ -75,7 +76,7 @@ void InputRedirector::run()
             ImGui::Text("When changing this, it's advised to also set Max. controller count");
             ImGui::Text("to prevent having multiple mirrored controllers plugged in");
             ImGui::Spacing();
-            ImGui::Text("If enabled, Device hiding can't show if a controller is emulated.");
+            ImGui::Text("If enabled, Device hiding won't work! Use \"Max. Controller count\"-setting.");
             bool use_real_copy = use_real_vid_pid_;
             ImGui::Checkbox("Use real USB-IDs", &use_real_copy);
             if (use_real_vid_pid_ != use_real_copy) {

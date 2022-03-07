@@ -34,6 +34,7 @@ inline struct Launch {
 
 inline struct Devices {
     bool hideDevices = true;
+    bool realDeviceIds = false;
 } devices;
 
 inline struct Window {
@@ -119,6 +120,7 @@ inline void Parse(std::string arg1)
 
     if (auto devconf = json["devices"]; devconf.is_object()) {
         safeParseValue(devconf, "hideDevices", devices.hideDevices);
+        safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
     }
 
     if (auto winconf = json["window"]; winconf.is_object()) {
