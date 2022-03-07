@@ -79,6 +79,7 @@ void UIModel::readConfigs()
         json["closeOnExit"] = filejson["launch"]["closeOnExit"];
         json["waitForChildProcs"] = filejson["launch"]["waitForChildProcs"];
         json["hideDevices"] = filejson["devices"]["hideDevices"];
+        json["realDeviceIds"] = filejson["devices"]["realDeviceIds"];
         json["windowMode"] = filejson["window"]["windowMode"];
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
@@ -350,6 +351,7 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 
     QJsonObject devicesObject;
     devicesObject["hideDevices"] = json["hideDevices"];
+    devicesObject["realDeviceIds"] = json["realDeviceIds"];
     fileJson["devices"] = devicesObject;
 
     QJsonObject windowObject;

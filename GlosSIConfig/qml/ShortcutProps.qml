@@ -43,7 +43,8 @@ Item {
             scale: null,
             icon: null,
             maxControllers: 4,
-            disableOverlay: false
+            disableOverlay: false,
+            realDeviceIds: false
         })
 
     function resetInfo() {
@@ -61,7 +62,8 @@ Item {
             scale: null,
             icon: null,
             maxControllers: 4,
-            disableOverlay: false
+            disableOverlay: false,
+            realDeviceIds: false
         })
     }
 
@@ -75,7 +77,8 @@ Item {
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
         maxControllersSpinBox.value = shortcutInfo.maxControllers
-        disableOverlayCheckbox = shortcutInfo.disableOverlay || false
+        disableOverlayCheckbox.checked = shortcutInfo.disableOverlay || false
+        realDeviceIds.checked = shortcutInfo.realDeviceIds || false
     }
 
     Column {
@@ -253,7 +256,7 @@ Item {
         }
         Item {
             width: 1
-            height: 16
+            height: 8
         }
         Row {
             spacing: 16
@@ -261,7 +264,7 @@ Item {
 
             RPane {
                 width: parent.width / 2 - 8
-                height: 224
+                height: 294
                 radius: 4
 		        Material.elevation: 32
                 bgOpacity: 0.97
@@ -269,7 +272,7 @@ Item {
                 Column {
                     spacing: 2
                     width: parent.width
-                    CheckBox {
+                    RadioButton {
                         id: hideDevices
                         text: qsTr("Hide (Real) Controllers")
                         checked: shortcutInfo.hideDevices
@@ -284,6 +287,29 @@ Item {
                     }
                     Label {
                         text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                    }
+                    Item {
+                        width: 1
+                        height: 4
+                    }
+                    RadioButton {
+                        id: realDeviceIds
+                        text: qsTr("Use real device (USB)-IDs")
+                        checked: shortcutInfo.realDeviceIds
+                        onCheckedChanged: shortcutInfo.realDeviceIds = checked
+                    }
+                    Label {
+                        text: qsTr("Only enable if input's are not recognized by the game")
+                        wrapMode: Text.WordWrap
+                        width: parent.width
+                        leftPadding: 32
+                        topPadding: -8
+                    }
+                    Label {
+                        text: qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
                         wrapMode: Text.WordWrap
                         width: parent.width
                         leftPadding: 32
@@ -311,7 +337,7 @@ Item {
             }
             RPane {
                 width: parent.width / 2 - 8
-                height: 224
+                height: 294
                 radius: 4
 		        Material.elevation: 32
                 bgOpacity: 0.97
@@ -346,17 +372,15 @@ Item {
                         text: qsTr("Disable Steam/GlosSI overlay")
                         checked: shortcutInfo.disableOverlay
                         onCheckedChanged: shortcutInfo.disableOverlay = checked
-                     }
-                     Label {
+                    }
+                    Label {
                         text: qsTr("Only controller emulation - No extra window")
                         wrapMode: Text.WordWrap
                         width: parent.width
                         leftPadding: 32
                         topPadding: -8
+                    }
                 }
-
-                }
-
             }
         }
     }
