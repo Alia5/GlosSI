@@ -1,5 +1,5 @@
 diff --git a/src/ViGEmClient.vcxproj b/src/ViGEmClient.vcxproj
-index 7c186414e62a6334fbcd518d506f55db57491dfe..b90aed49271ff3788b243c1a42c5e252cf286634 100644
+index 7c186414e62a6334fbcd518d506f55db57491dfe..2955df4d391b37bf0b71e17df8bd161c1014a0c4 100644
 --- a/src/ViGEmClient.vcxproj
 +++ b/src/ViGEmClient.vcxproj
 @@ -49,52 +49,52 @@
@@ -63,21 +63,3 @@ index 7c186414e62a6334fbcd518d506f55db57491dfe..b90aed49271ff3788b243c1a42c5e252
      <WholeProgramOptimization>true</WholeProgramOptimization>
      <CharacterSet>Unicode</CharacterSet>
    </PropertyGroup>
-@@ -200,7 +200,7 @@
-       <Optimization>Disabled</Optimization>
-       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <SDLCheck>true</SDLCheck>
--      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-     </ClCompile>
-     <Link>
-       <SubSystem>Windows</SubSystem>
-@@ -271,7 +271,7 @@
-       <IntrinsicFunctions>true</IntrinsicFunctions>
-       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-       <SDLCheck>true</SDLCheck>
--      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-     </ClCompile>
-     <Link>
-       <SubSystem>Windows</SubSystem>

@@ -25,7 +25,7 @@ index 75a7868350bd1069521345826163eb9275607277..1ecb1de7edaeaff871426238862531dc
      if (image == nullptr)
      {
 diff --git a/tray/src/core/windows/tray.cpp b/tray/src/core/windows/tray.cpp
-index 38111083207e3e9512f24749360172b995cf2bb0..089fdc56fab1c9d6bdd60b4b93158ecdf22e5bf6 100755
+index 38111083207e3e9512f24749360172b995cf2bb0..8d9326b5d700b91c81ba0aef7d8dfcea1c9e19ca 100755
 --- a/tray/src/core/windows/tray.cpp
 +++ b/tray/src/core/windows/tray.cpp
 @@ -23,14 +23,14 @@ Tray::Tray::Tray(std::string identifier, Icon icon) : BaseTray(std::move(identif
@@ -55,12 +55,14 @@ index 38111083207e3e9512f24749360172b995cf2bb0..089fdc56fab1c9d6bdd60b4b93158ecd
      PostMessage(hwnd, WM_QUIT, 0, 0);
      allocations.clear();
  
-@@ -98,10 +98,10 @@ HMENU Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entri
+@@ -97,11 +97,11 @@ HMENU Tray::Tray::construct(const std::vector<std::shared_ptr<TrayEntry>> &entri
+     {
          auto *item = entry.get();
  
-         auto name = std::shared_ptr<char[]>(new char[item->getText().size() + 1]);
+-        auto name = std::shared_ptr<char[]>(new char[item->getText().size() + 1]);
 -        strcpy(name.get(), item->getText().c_str()); // NOLINT
-+        strcpy_s(name.get(), strlen(name.get()), item->getText().c_str()); // NOLINT
++        auto name = std::make_shared<char[]>(item->getText().size() + 1);
++        strcpy_s(name.get(), item->getText().size() + 1, item->getText().c_str()); // NOLINT
          parent->allocations.emplace_back(name);
  
 -        MENUITEMINFO winItem{0};
