@@ -168,11 +168,11 @@ Dialog {
 			
 			delegate: Item {
 				width: listview.width
-				height: 72
+				height: textcolumn.implicitHeight > 72 ? 500 : 72
 
 				Image {
 					id: maybeIcon
-					width: 56
+					width: textcolumn.implicitHeight > 72 ? 0 : 56
 					height: 56
 					anchors.left: parent.left
 					anchors.verticalCenter: parent.verticalCenter
@@ -182,6 +182,7 @@ Dialog {
 				}
 
 				Column {
+					id: textcolumn 
 					anchors.left: maybeIcon.right
 					anchors.right: parent.right
 					anchors.leftMargin: 16
@@ -193,8 +194,11 @@ Dialog {
 						font.bold: true
 					}
 					Label {
+						id: umidLabel
 						text: modelData.AppUMId
 						font.pixelSize: 12
+						wrapMode: Text.WordWrap
+						width: parent.width
 					}
 				}
 

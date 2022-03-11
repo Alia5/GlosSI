@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QVariant>
 #include <QProcess>
+#include <QVariant>
 #include <QVariantMap>
 
 #include <VersionHelpers.h>
@@ -31,13 +31,14 @@ QVariantList UWPAppList()
     QProcess proc;
     proc.setProgram("powershell.exe");
     QStringList args;
+    args.push_back("-noprofile");
     args.push_back("-ExecutionPolicy");
-    args.push_back("Unrestricted");
+    args.push_back("Bypass");
     args.push_back("-File");
     args.push_back(".\\GetAUMIDs.ps1");
     proc.setArguments(args);
     proc.start();
-    proc.waitForFinished(300000000);
+    proc.waitForFinished(60000);
     const auto baseList = QString(proc.readAllStandardOutput()).split(";");
     QVariantList list;
     for (const auto& entry : baseList) {
@@ -52,7 +53,6 @@ QVariantList UWPAppList()
         uwpPair.insert("Path", subList[1]);
         uwpPair.insert("AppUMId", subList[3]);
 
-        
         QString icoFName = subList[2];
         std::filesystem::path icoPath(icoFName.toStdString());
 
@@ -71,6 +71,15 @@ QVariantList UWPAppList()
         uwpPair.insert("IconPath", QString::fromStdString(icoPath.string()));
 
         list.push_back(uwpPair);
+    }
+    if (list.empty()) {
+        auto stderrstr = proc.readAllStandardError();
+        auto stdoutstr = proc.readAllStandardOutput();
+        list.emplaceBack(QVariantMap{
+            {"AppName", "Error executing \"GetAUMIDs.ps1\""},
+            {"Path", ""},
+            {"AppUMId", QString::number(proc.error()) + ":" + stderrstr},
+        });
     }
     return list;
 }
