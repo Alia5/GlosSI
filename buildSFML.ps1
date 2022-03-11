@@ -1,6 +1,6 @@
 cd deps/SFML
 
-if ($env:APPVEYOR = ="") {
+if ($env:APPVEYOR -like "") {
     cmake.exe -S . -B out/Debug -DCMAKE_BUILD_TYPE=Debug
     cmake.exe --build out/Debug --config Debug
 }
