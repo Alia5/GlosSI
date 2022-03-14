@@ -46,7 +46,7 @@ inline struct Window {
 
 inline struct Controller {
     int maxControllers = 4;
-    bool allowDesktopConfig = true;
+    bool allowDesktopConfig = Settings::launch.launch;
 } controller;
 
 inline bool checkIsUwp(const std::wstring& launch_path)

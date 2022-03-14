@@ -393,7 +393,7 @@ void SteamTarget::keepControllerConfig(bool keep)
 #ifdef _WIN32
 HWND SteamTarget::keepFgWindowHookFn()
 {
-    if (!Settings::controller.allowDesktopConfig) {
+    if (!Settings::controller.allowDesktopConfig || !Settings::launch.launch) {
         return target_window_handle_;
     }
     subhook::ScopedHookRemove remove(&getFgWinHook);
