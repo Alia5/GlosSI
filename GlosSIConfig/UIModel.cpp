@@ -84,7 +84,8 @@ void UIModel::readConfigs()
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
         json["disableOverlay"] = filejson["window"]["disableOverlay"];
-        json["maxControllers"] = filejson["controller"]["maxControllers"];
+        json["maxControllers"] = filejson["controller"]["allowDesktopConfig"];
+        json["allowDesktopConfig"] = filejson["controller"]["allowDesktopConfig"];
 
         json["name"] = filejson.contains("name") ? filejson["name"] : QString(name).replace(QRegularExpression("\\.json"), "");
 
@@ -363,6 +364,7 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 
     QJsonObject controllerObject;
     controllerObject["maxControllers"] = json["maxControllers"];
+    controllerObject["allowDesktopConfig"] = json["allowDesktopConfig"];
     fileJson["controller"] = controllerObject;
 
     auto wtf = QString(QJsonDocument(fileJson).toJson(QJsonDocument::Indented)).toStdString();

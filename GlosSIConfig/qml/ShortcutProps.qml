@@ -44,7 +44,8 @@ Item {
             icon: null,
             maxControllers: 4,
             disableOverlay: false,
-            realDeviceIds: false
+            realDeviceIds: false,
+            allowDesktopConfig: true,
         })
 
     function resetInfo() {
@@ -63,7 +64,8 @@ Item {
             icon: null,
             maxControllers: 4,
             disableOverlay: false,
-            realDeviceIds: false
+            realDeviceIds: false,
+            allowDesktopConfig: true,
         })
     }
 
@@ -79,308 +81,366 @@ Item {
         maxControllersSpinBox.value = shortcutInfo.maxControllers
         disableOverlayCheckbox.checked = shortcutInfo.disableOverlay || false
         realDeviceIds.checked = shortcutInfo.realDeviceIds || false
+        allowDesktopConfig.checked = shortcutInfo.allowDesktopConfig || true
     }
 
-    Column {
-        anchors.margins: 32
+    Flickable {
+        id: flickable
+        anchors.margins: 0
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        spacing: 4
+        clip: true
+        ScrollBar.vertical: ScrollBar {
 
-        Item {
-            id: namewrapper
-            width: parent.width / 3
-            height: 64
-            Label {
-                anchors.left: parent.left
-                anchors.leftMargin: 4
-                id: nameLabel
-                font.bold: true
-                text: qsTr("Name")
-            }
-            FluentTextInput {
-                width: parent.width
-                anchors.top: nameLabel.bottom
-                anchors.topMargin: 4
-                id: nameInput
-                placeholderText: qsTr("...")
-                text: shortcutInfo.name
-                onTextChanged: shortcutInfo.name = text
-                validator: RegularExpressionValidator { regularExpression: /([0-z]|\s|.)+/gm }
-            }
         }
-        Item {
-            width: 1
-            height: 8
-        }
-        RPane {
-            width: parent.width
-            height: 192
-            radius: 4
-		    Material.elevation: 32
-            bgOpacity: 0.97
-            Column {
-                width: parent.width
-                height: parent.height
-                spacing: 4
-                Row {
-                    spacing: 32
+        contentWidth: propscolumn.width
+        contentHeight: propscolumn.height
+        flickableDirection: Flickable.VerticalFlick
+
+
+        Column {
+            id: propscolumn
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 32
+            spacing: 4
+
+            Item {
+                id: topspacing
+                width: 1
+                height: 32
+            }
+
+            Item {
+                id: namewrapper
+                width: parent.width / 3
+                height: 64
+                Label {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 4
+                    id: nameLabel
+                    font.bold: true
+                    text: qsTr("Name")
+                }
+                FluentTextInput {
                     width: parent.width
-                    height: closeOnExitCol.height
-                    CheckBox {
-                        id: launchApp
-                        text: qsTr("Launch app")
-                        checked: shortcutInfo.launch
-                        onCheckedChanged: shortcutInfo.launch = checked
-                    }
-                    Column {
-                        id: closeOnExitCol
-                        spacing: 2
+                    anchors.top: nameLabel.bottom
+                    anchors.topMargin: 4
+                    id: nameInput
+                    placeholderText: qsTr("...")
+                    text: shortcutInfo.name
+                    onTextChanged: shortcutInfo.name = text
+                    validator: RegularExpressionValidator { regularExpression: /([0-z]|\s|.)+/gm }
+                }
+            }
+            Item {
+                width: 1
+                height: 8
+            }
+            RPane {
+                width: parent.width
+                height: 248
+                radius: 4
+		        Material.elevation: 32
+                bgOpacity: 0.97
+                Column {
+                    width: parent.width
+                    height: parent.height
+                    spacing: 4
+                    Row {
+                        spacing: 32
+                        width: parent.width
+                        height: closeOnExitCol.height
                         CheckBox {
-                            id: closeOnExit
-                            text: qsTr("Close when launched app quits")
-                            checked: shortcutInfo.closeOnExit
-                            onCheckedChanged: shortcutInfo.closeOnExit = checked
+                            id: launchApp
+                            text: qsTr("Launch app")
+                            checked: shortcutInfo.launch
+                            onCheckedChanged: function() {
+                                shortcutInfo.launch = checked
+                                if (checked) {
+                                    closeOnExit.enabled = true;
+                                    if (closeOnExit.checked) {
+                                        waitForChildren.enabled = true;
+                                    }
+                                    allowDesktopConfig.enabled = true;
+                                } else {
+                                    waitForChildren.enabled = false;
+                                    closeOnExit.enabled = false;
+                                    allowDesktopConfig.enabled = false;
+                                }
+                            }
+                        }
+                        Column {
+                            id: closeOnExitCol
+                            spacing: 2
+                            CheckBox {
+                                id: closeOnExit
+                                text: qsTr("Close when launched app quits")
+                                checked: shortcutInfo.closeOnExit
+                                onCheckedChanged: function() {
+                                    shortcutInfo.closeOnExit = checked
+                                    if (checked) {
+                                        waitForChildren.enabled = true;
+                                    } else {
+                                        waitForChildren.enabled = false;
+                                    }
+                                }
+                            }
+                            Label {
+                                text: qsTr("Recommended to disable for launcher-games")
+                                wrapMode: Text.WordWrap
+                                width: parent.width
+                                leftPadding: 32
+                                topPadding: -8
+                            }
+                            CheckBox {
+                                id: waitForChildren
+                                text: qsTr("Wait for child processes")
+                                checked: shortcutInfo.waitForChildProcs
+                                onCheckedChanged: function(){
+                                    shortcutInfo.waitForChildProcs = checked
+                                }
+                            }
+                        }
+                        Column {
+                            spacing: 2
+                            CheckBox {
+                                id: allowDesktopConfig
+                                text: qsTr("Allow desktop-config")
+                                checked: shortcutInfo.allowDesktopConfig
+                                onCheckedChanged: function(){
+                                    shortcutInfo.allowDesktopConfig = checked
+                                }
+                            }
+                            Label {
+                                text: qsTr("Use desktop-config if launched application is not focused")
+                                leftPadding: 32
+                                topPadding: -8
+                            }
+                        }
+                    }
+                    Item {
+                        width: 1
+                        height: 8
+                    }
+                    RowLayout {
+                        id: launchlayout
+                        spacing: 4
+                        width: parent.width
+                        Image {
+                            id: maybeIcon
+                            source: shortcutInfo.icon
+                                ? shortcutInfo.icon.endsWith(".exe")
+                                    ? "image://exe/" + shortcutInfo.icon
+                                    : "file:///" + shortcutInfo.icon
+                                : null
+                            Layout.preferredWidth: 48
+                            Layout.preferredHeight: 48
+                            visible: shortcutInfo.icon
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                        Item {
+                            Layout.preferredWidth: 8
+                            Layout.preferredHeight: 8
+                            visible: shortcutInfo.icon
+                        }
+                        Item {
+                            Layout.preferredWidth: parent.width / 2
+                            Layout.fillWidth: true
+                            height: 64
+                            Label {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 4
+                                id: pathLabel
+                                font.bold: true
+                                text: qsTr("Path")
+                            }
+                            FluentTextInput {
+                                width: parent.width
+                                anchors.top: pathLabel.bottom
+                                anchors.topMargin: 4
+                                id: pathInput
+                                placeholderText: qsTr("...")
+                                enabled: launchApp.checked
+                                text: shortcutInfo.launchPath || ""
+                                onTextChanged: shortcutInfo.launchPath = text
+                            }
+                        }
+                        Button {
+                            Layout.preferredWidth: 64
+                            Layout.alignment: Qt.AlignBottom
+                            text: qsTr("...")
+                            onClicked: fileDialog.open();
+                        }
+                        Button {
+                            Layout.preferredWidth: 64
+                            Layout.alignment: Qt.AlignBottom
+                            text: qsTr("UWP")
+                            visible: uiModel.isWindows
+                            onClicked: uwpSelectDialog.open();
+                        }
+                        Item {
+                            height: 1
+                            Layout.preferredWidth: 12
+                        }
+                        Item {
+                            Layout.preferredWidth: parent.width / 2.5
+                            height: 64
+                            Label {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 4
+                                id: argslabel
+                                font.bold: true
+                                text: qsTr("Launch Arguments")
+                            }
+                            FluentTextInput {
+                                width: parent.width
+                                anchors.top: argslabel.bottom
+                                anchors.topMargin: 4
+                                id: argsInput
+                                enabled: launchApp.checked
+                                text: shortcutInfo.launchAppArgs
+                                onTextChanged: shortcutInfo.launchAppArgs = text
+                            }
+                        }
+                    }
+                }
+            }
+            Item {
+                width: 1
+                height: 8
+            }
+            Row {
+                spacing: 16
+                width: parent.width
+
+                RPane {
+                    width: parent.width / 2 - 8
+                    height: 294
+                    radius: 4
+		            Material.elevation: 32
+                    bgOpacity: 0.97
+
+                    Column {
+                        spacing: 2
+                        width: parent.width
+                        RadioButton {
+                            id: hideDevices
+                            text: qsTr("Hide (Real) Controllers")
+                            checked: shortcutInfo.hideDevices
+                            onCheckedChanged: shortcutInfo.hideDevices = checked
                         }
                         Label {
-                            text: qsTr("Recommended to disable for launcher-games")
+                            text: qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                            topPadding: -8
+                        }
+                        Label {
+                            text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                        }
+                        Item {
+                            width: 1
+                            height: 4
+                        }
+                        RadioButton {
+                            id: realDeviceIds
+                            text: qsTr("Use real device (USB)-IDs")
+                            checked: shortcutInfo.realDeviceIds
+                            onCheckedChanged: shortcutInfo.realDeviceIds = checked
+                        }
+                        Label {
+                            text: qsTr("Only enable if input's are not recognized by the game")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                            topPadding: -8
+                        }
+                        Label {
+                            text: qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                        }
+                        Item {
+                            width: 1
+                            height: 4
+                        }
+                        Row {
+                            leftPadding: 16
+                            Label {
+                                text: qsTr("Max. emulated controllers")
+                                topPadding: 16
+                            }
+                            SpinBox {
+                                id: maxControllersSpinBox
+                                width: 128
+                                value: 4
+                                from: 0
+                                to: 4
+                                onValueChanged: shortcutInfo.maxControllers = value
+                            }
+                        }
+                    }
+                }
+                RPane {
+                    width: parent.width / 2 - 8
+                    height: 294
+                    radius: 4
+		            Material.elevation: 32
+                    bgOpacity: 0.97
+                    Column {
+                        spacing: 2
+                        width: parent.width
+                        CheckBox {
+                            id: windowMode
+                            text: qsTr("Steam/GlosSI overlay as separate window")
+                            checked: shortcutInfo.windowMode
+                            onCheckedChanged: shortcutInfo.windowMode = checked
+                        }
+                        Label {
+                            text: qsTr("Doesn't show overlay on top, but as separate window")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                            topPadding: -8
+                        }
+                        Label {
+                            text: qsTr("Use if blackscreen-issues are encountered.")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                        }
+                        Item {
+                            width: 1
+                            height: 4
+                        }
+                        CheckBox {
+                            id: disableOverlayCheckbox
+                            text: qsTr("Disable Steam/GlosSI overlay")
+                            checked: shortcutInfo.disableOverlay
+                            onCheckedChanged: shortcutInfo.disableOverlay = checked
+                        }
+                        Label {
+                            text: qsTr("Only controller emulation - No extra window")
                             wrapMode: Text.WordWrap
                             width: parent.width
                             leftPadding: 32
                             topPadding: -8
                         }
                     }
-                    CheckBox {
-                        id: waitForChildren
-                        text: qsTr("Close when all children processes quit")
-                        checked: shortcutInfo.waitForChildProcs
-                        onCheckedChanged: function(){
-                            shortcutInfo.waitForChildProcs = checked
-                            if (checked) {
-                                closeOnExit.checked = true;
-                                closeOnExit.enabled = false;
-                            } else {
-                                closeOnExit.enabled = true;
-                            }
-                        }
-                    }
-                }
-                Item {
-                    width: 1
-                    height: 8
-                }
-                RowLayout {
-                    id: launchlayout
-                    spacing: 4
-                    width: parent.width
-                    Image {
-                        id: maybeIcon
-                        source: shortcutInfo.icon
-                            ? shortcutInfo.icon.endsWith(".exe")
-                                ? "image://exe/" + shortcutInfo.icon
-                                : "file:///" + shortcutInfo.icon
-                            : null
-                        Layout.preferredWidth: 48
-                        Layout.preferredHeight: 48
-                        visible: shortcutInfo.icon
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-                    Item {
-                        Layout.preferredWidth: 8
-                        Layout.preferredHeight: 8
-                        visible: shortcutInfo.icon
-                    }
-                    Item {
-                        Layout.preferredWidth: parent.width / 2
-                        Layout.fillWidth: true
-                        height: 64
-                        Label {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 4
-                            id: pathLabel
-                            font.bold: true
-                            text: qsTr("Path")
-                        }
-                        FluentTextInput {
-                            width: parent.width
-                            anchors.top: pathLabel.bottom
-                            anchors.topMargin: 4
-                            id: pathInput
-                            placeholderText: qsTr("...")
-                            enabled: launchApp.checked
-                            text: shortcutInfo.launchPath || ""
-                            onTextChanged: shortcutInfo.launchPath = text
-                        }
-                    }
-                    Button {
-                        Layout.preferredWidth: 64
-                        Layout.alignment: Qt.AlignBottom
-                        text: qsTr("...")
-                        onClicked: fileDialog.open();
-                    }
-                    Button {
-                        Layout.preferredWidth: 64
-                        Layout.alignment: Qt.AlignBottom
-                        text: qsTr("UWP")
-                        visible: uiModel.isWindows
-                        onClicked: uwpSelectDialog.open();
-                    }
-                    Item {
-                        height: 1
-                        Layout.preferredWidth: 12
-                    }
-                    Item {
-                        Layout.preferredWidth: parent.width / 2.5
-                        height: 64
-                        Label {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 4
-                            id: argslabel
-                            font.bold: true
-                            text: qsTr("Launch Arguments")
-                        }
-                        FluentTextInput {
-                            width: parent.width
-                            anchors.top: argslabel.bottom
-                            anchors.topMargin: 4
-                            id: argsInput
-                            enabled: launchApp.checked
-                            text: shortcutInfo.launchAppArgs
-                            onTextChanged: shortcutInfo.launchAppArgs = text
-                        }
-                    }
                 }
             }
-        }
-        Item {
-            width: 1
-            height: 8
-        }
-        Row {
-            spacing: 16
-            width: parent.width
-
-            RPane {
-                width: parent.width / 2 - 8
-                height: 294
-                radius: 4
-		        Material.elevation: 32
-                bgOpacity: 0.97
-
-                Column {
-                    spacing: 2
-                    width: parent.width
-                    RadioButton {
-                        id: hideDevices
-                        text: qsTr("Hide (Real) Controllers")
-                        checked: shortcutInfo.hideDevices
-                        onCheckedChanged: shortcutInfo.hideDevices = checked
-                    }
-                    Label {
-                        text: qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                        topPadding: -8
-                    }
-                    Label {
-                        text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                    }
-                    Item {
-                        width: 1
-                        height: 4
-                    }
-                    RadioButton {
-                        id: realDeviceIds
-                        text: qsTr("Use real device (USB)-IDs")
-                        checked: shortcutInfo.realDeviceIds
-                        onCheckedChanged: shortcutInfo.realDeviceIds = checked
-                    }
-                    Label {
-                        text: qsTr("Only enable if input's are not recognized by the game")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                        topPadding: -8
-                    }
-                    Label {
-                        text: qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                    }
-                    Item {
-                        width: 1
-                        height: 4
-                    }
-                    Row {
-                        leftPadding: 16
-                        Label {
-                            text: qsTr("Max. emulated controllers")
-                            topPadding: 16
-                        }
-                        SpinBox {
-                            id: maxControllersSpinBox
-                            width: 128
-                            value: 4
-                            from: 0
-                            to: 4
-                            onValueChanged: shortcutInfo.maxControllers = value
-                        }
-                    }
-                }
-            }
-            RPane {
-                width: parent.width / 2 - 8
-                height: 294
-                radius: 4
-		        Material.elevation: 32
-                bgOpacity: 0.97
-                Column {
-                    spacing: 2
-                    width: parent.width
-                    CheckBox {
-                        id: windowMode
-                        text: qsTr("Steam/GlosSI overlay as separate window")
-                        checked: shortcutInfo.windowMode
-                        onCheckedChanged: shortcutInfo.windowMode = checked
-                    }
-                    Label {
-                        text: qsTr("Doesn't show overlay on top, but as separate window")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                        topPadding: -8
-                    }
-                    Label {
-                        text: qsTr("Use if blackscreen-issues are encountered.")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                    }
-                    Item {
-                        width: 1
-                        height: 4
-                    }
-                    CheckBox {
-                        id: disableOverlayCheckbox
-                        text: qsTr("Disable Steam/GlosSI overlay")
-                        checked: shortcutInfo.disableOverlay
-                        onCheckedChanged: shortcutInfo.disableOverlay = checked
-                    }
-                    Label {
-                        text: qsTr("Only controller emulation - No extra window")
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                        leftPadding: 32
-                        topPadding: -8
-                    }
-                }
+            Item {
+                id: bottomspacing
+                width: 1
+                height: 32
             }
         }
     }
@@ -389,7 +449,8 @@ Item {
         spacing: 8
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.margins: 32
+        anchors.margins: 24
+        anchors.bottomMargin: 16
         Button {
             text: qsTr("Cancel")
             onClicked: function() {
