@@ -36,7 +36,7 @@ Item {
             launchPath: null,
             launchAppArgs: null,
             closeOnExit: true,
-            waitForChildProcs: false,
+            waitForChildProcs: true,
             hideDevices: true,
             windowMode: false,
             maxFps: null,
@@ -55,7 +55,7 @@ Item {
             launchPath: null,
             launchAppArgs: null,
             closeOnExit: true,
-            waitForChildProcs: false,
+            waitForChildProcs: true,
             hideDevices: true,
             windowMode: false,
             maxFps: null,
@@ -73,7 +73,7 @@ Item {
         pathInput.text = shortcutInfo.launchPath || ""
         argsInput.text = shortcutInfo.launchAppArgs || ""
         closeOnExit.checked = shortcutInfo.closeOnExit || false
-        waitForChildren.checked = shortcutInfo.waitForChildProcs || false
+        waitForChildren.checked = shortcutInfo.waitForChildProcs || true
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
         maxControllersSpinBox.value = shortcutInfo.maxControllers
