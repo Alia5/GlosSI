@@ -28,7 +28,7 @@ inline struct Launch {
     std::wstring launchPath;
     std::wstring launchAppArgs;
     bool closeOnExit = true;
-    bool waitForChildProcs = false;
+    bool waitForChildProcs = true;
     bool isUWP = false;
 } launch;
 
