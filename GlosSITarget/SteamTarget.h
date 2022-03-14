@@ -58,6 +58,8 @@ class SteamTarget {
 #ifdef _WIN32
     static HWND keepFgWindowHookFn();
     static inline subhook::Hook getFgWinHook;
+    static inline std::vector<HWND> force_config_hwnds_ = {};
+    static inline HWND last_real_hwnd_ = nullptr;
 #endif
 
     /*
@@ -88,7 +90,6 @@ class SteamTarget {
 
     bool delayed_shutdown_ = false;
     sf::Clock delay_shutdown_clock_;
-
 
     static constexpr std::wstring_view user_data_path_ = L"/userdata/";
     static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";

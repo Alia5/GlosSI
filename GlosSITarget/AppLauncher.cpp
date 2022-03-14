@@ -21,12 +21,18 @@ limitations under the License.
 #include <ShObjIdl.h>
 #include <atlbase.h>
 #include <tlhelp32.h>
+#include <Propsys.h>
+#include <propkey.h>
+
+#pragma comment(lib, "Shell32.lib")
 #endif
 #include "Settings.h"
 
 #include <regex>
 
-AppLauncher::AppLauncher(std::function<void()> shutdown) : shutdown_(std::move(shutdown))
+AppLauncher::AppLauncher(
+    std::vector<HWND>& process_hwnds,
+    std::function<void()> shutdown) : process_hwnds_(process_hwnds), shutdown_(std::move(shutdown))
 {
 #ifdef _WIN32
     UnPatchValveHooks();
@@ -38,8 +44,10 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 #ifdef _WIN32
     if (Settings::launch.isUWP) {
         spdlog::info("LaunchApp is UWP, launching...");
+        launched_uwp_path_ = path;
         launchUWPApp(path.data(), args);
-    } else {
+    }
+    else {
         spdlog::info("LaunchApp is Win32, launching...");
         launchWin32App(path, args);
     }
@@ -75,6 +83,7 @@ void AppLauncher::update()
                 shutdown_();
             }
         }
+        getProcessHwnds();
 #endif
         process_check_clock_.restart();
     }
@@ -115,6 +124,37 @@ void AppLauncher::getChildPids(DWORD parent_pid)
     }
     CloseHandle(hp);
 }
+
+void AppLauncher::getProcessHwnds()
+{
+    process_hwnds_.clear();
+    HWND curr_wnd = nullptr;
+    do {
+        curr_wnd = FindWindowEx(nullptr, curr_wnd, nullptr, nullptr);
+        DWORD check_pid = 0;
+        GetWindowThreadProcessId(curr_wnd, &check_pid);
+        if (check_pid == launched_pid_ || (std::ranges::find_if(child_pids_, [check_pid](auto pid) {
+                                               return pid == check_pid;
+                                           }) != child_pids_.end())) {
+            process_hwnds_.push_back(curr_wnd);
+        }
+    } while (curr_wnd != nullptr);
+    if (!launched_uwp_path_.empty()) {
+        // UWP and ApplicationFrameHost Bullshit.
+        // iterate all "ApplicationFrameWindow"; check the AppUserModelId (used for launching) and add on match.
+        do {
+            curr_wnd = FindWindowEx(nullptr, curr_wnd, L"ApplicationFrameWindow", nullptr);
+            IPropertyStore* propStore;
+            SHGetPropertyStoreForWindow(curr_wnd, IID_IPropertyStore, reinterpret_cast<void**>(&propStore));
+            PROPVARIANT prop;
+            propStore->GetValue(PKEY_AppUserModel_ID, &prop);
+            if (prop.bstrVal != nullptr && std::wstring(prop.bstrVal) == launched_uwp_path_) {
+                process_hwnds_.push_back(curr_wnd);
+            }
+        } while (curr_wnd != nullptr);
+    }
+}
+
 #endif
 
 #ifdef _WIN32
@@ -203,10 +243,12 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             result = sp_app_activation_manager->ActivateApplication(package_full_name, args.empty() ? nullptr : args.data(), AO_NONE, &launched_pid_);
             if (!SUCCEEDED(result)) {
                 spdlog::error("ActivateApplication failed: Code {}", result);
-            } else {
+            }
+            else {
                 spdlog::info(L"Launched UWP Package \"{}\"", package_full_name);
             }
-        } else {
+        }
+        else {
             spdlog::error("CoCreateInstance failed: Code {}", result);
         }
         CoUninitialize();

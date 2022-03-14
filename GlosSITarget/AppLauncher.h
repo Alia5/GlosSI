@@ -26,20 +26,25 @@ limitations under the License.
 
 class AppLauncher {
   public:
-    explicit AppLauncher(std::function<void()> shutdown = [](){});
+    explicit AppLauncher(
+        std::vector<HWND>& process_hwnds,
+        std::function<void()> shutdown = []() {});
 
     void launchApp(const std::wstring& path, const std::wstring& args = L"");
     void update();
     void close();
 
-private:
-
+  private:
     std::function<void()> shutdown_;
     sf::Clock process_check_clock_;
 
 #ifdef _WIN32
     static bool IsProcessRunning(DWORD pid);
     void getChildPids(DWORD parent_pid);
+    void getProcessHwnds();
+    std::vector<HWND>& process_hwnds_;
+
+    std::wstring launched_uwp_path_;
 
     // Valve also hooks "CreateProcess"
     // Unpatch that so that launched programs don't also get hooked...

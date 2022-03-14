@@ -41,7 +41,7 @@ SteamTarget::SteamTarget(int argc, char* argv[])
           }),
       overlay_(window_.getOverlay()),
       detector_([this](bool overlay_open) { onOverlayChanged(overlay_open); }),
-      launcher_([this] {
+      launcher_(force_config_hwnds_, [this] {
           delayed_shutdown_ = true;
           delay_shutdown_clock_.restart();
       })
@@ -363,6 +363,13 @@ bool SteamTarget::getXBCRebindingEnabled()
     return xbsup == "1";
 }
 
+/*
+ * The "magic" that keeps a controller-config forced (without hooking into Steam)
+ *
+ * Hook into own process and detour "GetForegroundWindow"
+ * Deatour function always returns HWND of own application window
+ * Steam now doesn't detect application changes and keeps the game-specific input config without reverting to desktop-conf
+ */
 void SteamTarget::keepControllerConfig(bool keep)
 {
 #ifdef _WIN32
@@ -386,7 +393,28 @@ void SteamTarget::keepControllerConfig(bool keep)
 #ifdef _WIN32
 HWND SteamTarget::keepFgWindowHookFn()
 {
-    return target_window_handle_;
+    if (!Settings::controller.allowDesktopConfig) {
+        return target_window_handle_;
+    }
+    subhook::ScopedHookRemove remove(&getFgWinHook);
+    HWND real_fg_win = GetForegroundWindow();
+    if (real_fg_win == nullptr) {
+        return target_window_handle_;
+    }
+    if (std::ranges::find_if(force_config_hwnds_, [real_fg_win](auto hwnd) {
+            return hwnd == real_fg_win;
+        }) != force_config_hwnds_.end()) {
+        if (last_real_hwnd_ != real_fg_win) {
+            last_real_hwnd_ = real_fg_win;
+            spdlog::debug("Active window (\"{:#x}\") in launched process window list, forcing specific config", reinterpret_cast<uint64_t>(real_fg_win));
+        }
+        return target_window_handle_;
+    }
+    if (last_real_hwnd_ != real_fg_win) {
+        last_real_hwnd_ = real_fg_win;
+        spdlog::debug("Active window (\"{:#x}\") not in launched process window list, allowing desktop-config", reinterpret_cast<uint64_t>(real_fg_win));
+    }
+    return real_fg_win;
 }
 #endif
 
