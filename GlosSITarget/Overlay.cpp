@@ -213,8 +213,11 @@ void Overlay::showLogs()
                                  return (
                                             log.time.time_since_epoch() + std::chrono::seconds(
                                                                               LOG_RETENTION_TIME_) >
-                                            std::chrono::system_clock::now().time_since_epoch()) &&
-                                        (log.level > spdlog::level::debug);
+                                            std::chrono::system_clock::now().time_since_epoch())
+#ifdef NDEBUG
+                                        && (log.level > spdlog::level::debug)
+#endif
+                                     ;
                              });
     }
     if (logs.empty())
