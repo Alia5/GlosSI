@@ -243,8 +243,10 @@ void TargetWindow::createWindow(bool window_mode)
     toggle_window_mode_after_frame_ = false;
 
     auto desktop_mode = sf::VideoMode::getDesktopMode();
+    spdlog::info("Detected resolution: {}x{}", desktop_mode.width, desktop_mode.height);
     old_desktop_mode_ = desktop_mode;
     if (window_mode) {
+        spdlog::info("Creating Overlay window...");
         window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
         windowed_ = true;
     }
@@ -252,6 +254,7 @@ void TargetWindow::createWindow(bool window_mode)
 #ifdef _WIN32
         // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
         // Scaling down by 1px each direction is barely noticeable and works.
+        spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
         window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
@@ -269,7 +272,6 @@ void TargetWindow::createWindow(bool window_mode)
     //    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
     //    DwmEnableBlurBehindWindow(hwnd, &bb);
     //} // semi-transparent in window mode, but deprecated api
-    // TODO: MAYBE: use undocumented acrylic api as in GlosSI-Config
     // On Linux the window will (should) automagically be semi-transparent
 
     // transparent windows window...
@@ -314,6 +316,9 @@ void TargetWindow::createWindow(bool window_mode)
         ImGuiIO& io = ImGui::GetIO();
         io.FontGlobalScale = Settings::window.scale;
         ImGui::SFML::UpdateFontTexture();
+    }
+    else {
+        spdlog::warn("Not applying too low screen scale setting");
     }
     on_window_changed_();
 
