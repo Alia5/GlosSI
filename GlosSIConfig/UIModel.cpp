@@ -168,7 +168,7 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
                                       : ("\"" + appDir.absolutePath() + "\"").toStdString());
     vdfshortcut.appId.value = VDFParser::Parser::calculateAppId(vdfshortcut);
     // ShortcutPath; default
-    vdfshortcut.LaunchOptions.value = (name + ".json").toStdString();
+    vdfshortcut.LaunchOptions.value = (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdString();
     // IsHidden; default
     // AllowDesktopConfig; default
     // AllowOverlay; default
