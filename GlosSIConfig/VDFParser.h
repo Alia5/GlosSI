@@ -271,8 +271,6 @@ struct VDFFile {
     //{
     //    std::wstring res = L"[";
 
-
-
     //    res += L"]";
     //    return res;
     //}
@@ -474,6 +472,8 @@ class Parser {
 
     static inline bool writeShortcuts(std::filesystem::path path, const VDFFile& vdffile)
     {
+        const auto copied = std::filesystem::copy_file(path, path.string() + ".bak", std::filesystem::copy_options::update_existing);
+
         ofile.open(path.string(), std::ios::binary | std::ios::out);
         if (!ofile.is_open()) {
             return false;

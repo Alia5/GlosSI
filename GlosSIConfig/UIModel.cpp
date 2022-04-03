@@ -268,7 +268,13 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
     qDebug() << "Steam config Path: " << config_path;
     qDebug() << "Trying to write config as admin: " << is_admin_try;
 
-    auto write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+    bool write_res;
+    try {
+        write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Couldn't backup shortcuts file: " << e.what();
+    }
 
     if (!write_res && !is_admin_try) {
         wchar_t szPath[MAX_PATH];
