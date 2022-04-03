@@ -282,7 +282,7 @@ class Parser {
     static inline std::ofstream ofile;
 
     template <typename typ, typename size>
-    static inline auto readVDFBuffer(typ& buff, size sz)
+    static inline auto readVDFBuffer(typ* buff, size sz)
     {
         if (ifile.eof()) {
 
@@ -335,28 +335,45 @@ class Parser {
         if (vdffile.first_byte != firsty) {
             // TODO: invalid
             ifile.close();
-            return vdffile;
+            throw std::exception("First byte is invalid in vdf");
         }
 
         auto headername = readVDFString();
         if (vdffile.identifier != headername) {
             // TODO: invalid
             ifile.close();
-            return vdffile;
+            throw std::exception("VDF header is invalid");
         }
 
-        char buff[3];
         while (true) {
+            std::vector<char> buff;
             if (ifile.eof()) {
                 break;
             }
-            readVDFBuffer(buff, 3); // 2 bytes idx, 0x00 delmiter
+            char b = '\x0';
+            readVDFBuffer(&b, 1); // skip 0 byte
+            if (b != '\x0')
+                buff.push_back(b);
+            do {
+                if (ifile.eof()) {
+                    break;
+                }
+                readVDFBuffer(&b, 1); // 1-2 bytes idx, 0x00 delmiter
+                if (b != '\x0')
+                    buff.push_back(b);
+            } while (b != '\x0');
             if (buff[0] == 0x08 && buff[1] == 0x08) {
                 break;
             }
             Shortcut shortcut;
-            shortcut.idx.data[0] = buff[0];
-            shortcut.idx.data[1] = buff[1];
+            if (buff.size() == 2) {
+                shortcut.idx.data[0] = buff[0];
+                shortcut.idx.data[1] = buff[1];
+            }
+            else {
+                shortcut.idx.data[0] = '\x0';
+                shortcut.idx.data[1] = buff[0];
+            }
             while (true) // TODO;
             {
                 if (ifile.eof()) {
@@ -371,7 +388,7 @@ class Parser {
                     else {
                         // WTF?!
                         // TODO:
-                        throw std::exception("WTF");
+                        throw std::exception("VDF: WTF");
                     }
                 }
                 auto key = readVDFString();
@@ -482,7 +499,11 @@ class Parser {
         ofile.write(vdffile.identifier.data(), vdffile.identifier.length());
         ofile.write("\x00", 1);
         for (auto& shortcut : vdffile.shortcuts) {
-            ofile.write(shortcut.idx.data, 2);
+            if (shortcut.idx.data[0] == '\x0') {
+                ofile.write(&shortcut.idx.data[1], 1);
+            } else {
+                ofile.write(shortcut.idx.data, 2);
+            }
             ofile.write("\x00", 1);
             //
             ofile.write((char*)&shortcut.appId.type_id, 1);

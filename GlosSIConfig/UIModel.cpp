@@ -410,5 +410,10 @@ std::wstring UIModel::getSteamUserId() const
 void UIModel::parseShortcutVDF()
 {
     const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
-    shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path);
+    try {
+        shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path);
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Error parsing VDF: " << e.what();
+    }
 }
