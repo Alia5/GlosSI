@@ -153,7 +153,7 @@ void Overlay::update()
     if (enabled_ || force_enable_) {
         window_.clear(sf::Color(0, 0, 0, 128)); // make window slightly dim screen with overlay
         std::ranges::for_each(OVERLAY_ELEMS_, [this](const auto& elem) {
-            elem.second();
+            elem.second(window_.hasFocus());
         });
 
         // ImGui::ShowDemoWindow();
@@ -183,7 +183,7 @@ void Overlay::AddLog(const spdlog::details::log_msg& msg)
     LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
 }
 
-int Overlay::AddOverlayElem(const std::function<void()>& elem_fn)
+int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus)>& elem_fn)
 {
     OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
     // keep this non confusing, but longer...

@@ -38,7 +38,7 @@ class Overlay {
     static void Shutdown();
     static void AddLog(const spdlog::details::log_msg& msg);
 
-    static int AddOverlayElem(const std::function<void()>& elem_fn);
+    static int AddOverlayElem(const std::function<void(bool window_has_focus)>& elem_fn);
     static void RemoveOverlayElem(int id);
 
   private:
@@ -62,10 +62,9 @@ class Overlay {
     static constexpr int LOG_RETENTION_TIME_ = 5;
 
     static inline int overlay_element_id_ = 0;
-    static inline std::map<int, std::function<void()>> OVERLAY_ELEMS_;
+    static inline std::map<int, std::function<void(bool window_has_focus)>> OVERLAY_ELEMS_;
 
 #ifdef _WIN32
     std::string config_file_name_;
 #endif
-
 };

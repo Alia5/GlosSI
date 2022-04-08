@@ -34,7 +34,7 @@ inline DWORD ExplorerPid()
     return 0;
 }
 
-}
+} // namespace internal
 
 inline void EnableUwpOverlay()
 {
@@ -60,7 +60,7 @@ inline void EnableUwpOverlay()
 
 inline void AddUwpOverlayOvWidget()
 {
-    Overlay::AddOverlayElem([]() {
+    Overlay::AddOverlayElem([](bool window_has_focus) {
         ImGui::SetNextWindowPos({1200, 250}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSizeConstraints({170, 325}, {1000, 1000});
         ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
@@ -80,4 +80,4 @@ inline void AddUwpOverlayOvWidget()
     });
 }
 
-}
+} // namespace UWPOverlayEnabler

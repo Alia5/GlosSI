@@ -7,14 +7,13 @@
 
 namespace ProcessPriority {
 
-
 static int current_priority = HIGH_PRIORITY_CLASS;
 
 inline void init()
 {
-        SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+    SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-        Overlay::AddOverlayElem([]() {
+    Overlay::AddOverlayElem([](bool window_has_focus) {
         ImGui::SetNextWindowPos({913, 418}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSizeConstraints({170, 325}, {1000, 1000});
         ImGui::Begin("Process Priority");
@@ -45,7 +44,6 @@ inline void init()
         }
         ImGui::End();
     });
-
 }
 
-}
+} // namespace ProcessPriority

@@ -135,12 +135,12 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
 
 void HidHide::disableHidHide()
 {
-        openCtrlDevice();
-        if (getActive()) {
-            setActive(false);
-            spdlog::info("Un-hid Gaming Devices");
-        }
-        closeCtrlDevice();
+    openCtrlDevice();
+    if (getActive()) {
+        setActive(false);
+        spdlog::info("Un-hid Gaming Devices");
+    }
+    closeCtrlDevice();
 }
 
 void HidHide::UnPatchValveHooks()
@@ -257,8 +257,7 @@ void HidHide::UnPatchHook(BYTE* address, const std::string& bytes)
 
 void HidHide::enableOverlayElement()
 {
-    Overlay::AddOverlayElem([this]() {
-        if (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_) {
+    Overlay::AddOverlayElem([this](bool window_has_focus) {
             openCtrlDevice();
             bool hidehide_state_store = hidhide_active_;
             if (hidhide_active_) {

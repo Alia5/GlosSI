@@ -50,7 +50,7 @@ TargetWindow::TargetWindow(
 {
     createWindow(Settings::window.windowMode);
 
-    Overlay::AddOverlayElem([this]() {
+    Overlay::AddOverlayElem([this](bool window_has_focus) {
         bool windowed_copy = windowed_;
         ImGui::SetNextWindowPos({window_.getSize().x - 370.f, 100}, ImGuiCond_FirstUseEver);
         ImGui::Begin("Window mode");
