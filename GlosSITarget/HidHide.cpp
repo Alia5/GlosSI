@@ -258,6 +258,7 @@ void HidHide::UnPatchHook(BYTE* address, const std::string& bytes)
 void HidHide::enableOverlayElement()
 {
     Overlay::AddOverlayElem([this](bool window_has_focus) {
+        if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
             openCtrlDevice();
             bool hidehide_state_store = hidhide_active_;
             if (hidhide_active_) {
