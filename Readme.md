@@ -14,6 +14,8 @@ Reach out via Discord/E-Mail (But get to the point right away, please, I get way
 
 See: [BUILDING.md](./docs/BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
 
+Snapshot builds can always be found [-> here <-](https://1-3-3-7.dev/u/glossisnapshot)
+
 # GlosSI
 
 GlosSI or [Glo]bal ([s]ystemwide) [S]team [I]nput, formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
