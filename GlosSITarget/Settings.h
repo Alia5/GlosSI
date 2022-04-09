@@ -51,6 +51,9 @@ inline struct Controller {
 
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
+    if (launch_path.find(L"://") != std::wstring::npos) {
+        return false;
+    }
     std::wsmatch m;
     if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,3}:"))) {
         return true;
@@ -90,12 +93,15 @@ inline void Parse(std::string arg1)
 
     auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
         try {
-            if (object[key].is_null()) {
+            if (object.is_null() || object.empty() || object.at(key).empty() || object.at(key).is_null()) {
                 return;
             }
             value = object[key];
         }
         catch (const nlohmann::json::exception& e) {
+            spdlog::error("Err parsing \"{}\"; {}", key, e.what());
+        }
+        catch (const std::exception& e) {
             spdlog::error("Err parsing \"{}\"; {}", key, e.what());
         }
     };
