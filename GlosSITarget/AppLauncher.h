@@ -54,7 +54,6 @@ class AppLauncher {
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
     STARTUPINFO info{sizeof(info)};
     PROCESS_INFORMATION process_info{};
-    DWORD launched_pid_ = 0;
-    std::unordered_set<DWORD> child_pids_;
+    std::vector<DWORD> pids_;
 #endif
 };

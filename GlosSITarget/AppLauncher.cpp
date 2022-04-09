@@ -58,27 +58,27 @@ void AppLauncher::update()
 {
     if (process_check_clock_.getElapsedTime().asMilliseconds() > 250) {
 #ifdef _WIN32
-        if (launched_pid_ > 0) {
+        if (!pids_.empty() && pids_[0] > 0) {
             if (Settings::launch.waitForChildProcs) {
-                getChildPids(launched_pid_);
+                getChildPids(pids_[0]);
             }
-            if (!IsProcessRunning(launched_pid_)) {
-                spdlog::info("Launched App with PID \"{}\" died", launched_pid_);
+            if (!IsProcessRunning(pids_[0])) {
+                spdlog::info("Launched App with PID \"{}\" died", pids_[0]);
                 if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
                 }
-                launched_pid_ = 0;
+                pids_[0] = 0;
             }
         }
         if (Settings::launch.waitForChildProcs) {
-            std::erase_if(child_pids_, [](auto pid) {
+            std::erase_if(pids_, [](auto pid) {
                 const auto running = IsProcessRunning(pid);
                 if (!running)
                     spdlog::info("Child process with PID \"{}\" died", pid);
                 return !running;
             });
-            if (Settings::launch.closeOnExit && child_pids_.empty() && launched_pid_ == 0) {
+            if (Settings::launch.closeOnExit && pids_.empty()) {
                 spdlog::info("Configured to close on all children exit. Shutting down...");
                 shutdown_();
             }
@@ -118,7 +118,7 @@ void AppLauncher::getChildPids(DWORD parent_pid)
     if (Process32First(hp, &pe)) {
         do {
             if (pe.th32ParentProcessID == parent_pid) {
-                child_pids_.insert(pe.th32ProcessID);
+                pids_.push_back(pe.th32ProcessID);
             }
         } while (Process32Next(hp, &pe));
     }
@@ -133,9 +133,9 @@ void AppLauncher::getProcessHwnds()
         curr_wnd = FindWindowEx(nullptr, curr_wnd, nullptr, nullptr);
         DWORD check_pid = 0;
         GetWindowThreadProcessId(curr_wnd, &check_pid);
-        if (check_pid == launched_pid_ || (std::ranges::find_if(child_pids_, [check_pid](auto pid) {
-                                               return pid == check_pid;
-                                           }) != child_pids_.end())) {
+        if ((std::ranges::find_if(pids_, [check_pid](auto pid) {
+                 return pid == check_pid;
+             }) != pids_.end())) {
             process_hwnds_.push_back(curr_wnd);
         }
     } while (curr_wnd != nullptr);
@@ -209,7 +209,7 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        &process_info)) {
         //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::info(L"Started Program: \"{}\"", native_seps_path);
-        launched_pid_ = process_info.dwProcessId;
+        pids_.push_back(process_info.dwProcessId);
     }
     else {
         //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
@@ -239,10 +239,16 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
                 spdlog::warn("CoAllowSetForegroundWindow failed. Code: {}", result);
             }
 
+            pids_.push_back(0);
             // Launch the app
-            result = sp_app_activation_manager->ActivateApplication(package_full_name, args.empty() ? nullptr : args.data(), AO_NONE, &launched_pid_);
+            result = sp_app_activation_manager->ActivateApplication(
+                package_full_name,
+                args.empty() ? nullptr : args.data(),
+                AO_NONE,
+                &pids_[0]);
             if (!SUCCEEDED(result)) {
                 spdlog::error("ActivateApplication failed: Code {}", result);
+                pids_.clear();
             }
             else {
                 spdlog::info(L"Launched UWP Package \"{}\"", package_full_name);
