@@ -52,6 +52,7 @@ class AppLauncher {
     static void UnPatchValveHooks();
     void launchWin32App(const std::wstring& path, const std::wstring& args = L"");
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
+    void launchURL(const std::wstring& url, const std::wstring& args = L"", const std::wstring& verb = L"open");
     STARTUPINFO info{sizeof(info)};
     PROCESS_INFORMATION process_info{};
     std::vector<DWORD> pids_;

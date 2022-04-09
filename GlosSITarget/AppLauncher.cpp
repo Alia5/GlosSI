@@ -47,6 +47,10 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
         launched_uwp_path_ = path;
         launchUWPApp(path.data(), args);
     }
+    else if (path.find(L"://") != std::wstring::npos) {
+        spdlog::info("LaunchApp is URL, launching...");
+        launchURL(path, args);
+    }
     else {
         spdlog::info("LaunchApp is Win32, launching...");
         launchWin32App(path, args);
@@ -262,5 +266,41 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
     else {
         spdlog::error("CoInitialize failed: Code {}", result);
     }
+}
+
+void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, const std::wstring& verb)
+{
+    HRESULT result = CoInitialize(nullptr);
+    if (!SUCCEEDED(result)) {
+        spdlog::error("CoInitialize failed: Code {}", result);
+        return;
+    }
+    SHELLEXECUTEINFOW execute_info{};
+    execute_info.cbSize = sizeof(SHELLEXECUTEINFOW);
+    execute_info.fMask = SEE_MASK_NOASYNC; // because we exit process after ShellExecuteEx()
+    execute_info.lpVerb = verb.c_str();
+    execute_info.lpFile = url.c_str();
+    execute_info.lpParameters = args.c_str();
+    execute_info.nShow = SW_SHOWDEFAULT;
+
+    if (!ShellExecuteExW(&execute_info)) {
+        auto err = GetLastError();
+        spdlog::error("Couldn't launch URL: ShellExecuteEx failed with error \"{}\"", err);
+        CoUninitialize();
+        if (err == ERROR_ACCESS_DENIED && verb == L"open") {
+            spdlog::error("Error was access denied. Retry with elevated permissions...");
+            launchURL(url, args, L"runas");
+            return;
+        }
+    }
+    CoUninitialize();
+
+    if (execute_info.hProcess != nullptr) {
+        if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
+            pids_.push_back(pid);
+            return;
+        }
+    }
+    spdlog::warn("Couldn't get PID of launched URL process");
 }
 #endif
