@@ -499,11 +499,7 @@ class Parser {
         ofile.write(vdffile.identifier.data(), vdffile.identifier.length());
         ofile.write("\x00", 1);
         for (auto& shortcut : vdffile.shortcuts) {
-            if (shortcut.idx.data[0] == '\x0') {
-                ofile.write(&shortcut.idx.data[1], 1);
-            } else {
-                ofile.write(shortcut.idx.data, 2);
-            }
+            ofile.write(shortcut.idx.data, 2);
             ofile.write("\x00", 1);
             //
             ofile.write((char*)&shortcut.appId.type_id, 1);
