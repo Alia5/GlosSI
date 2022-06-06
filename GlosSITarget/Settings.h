@@ -47,6 +47,7 @@ inline struct Window {
 inline struct Controller {
     int maxControllers = 4;
     bool allowDesktopConfig = Settings::launch.launch;
+    bool emulateDS4 = false;
 } controller;
 
 inline bool checkIsUwp(const std::wstring& launch_path)
@@ -140,6 +141,7 @@ inline void Parse(std::string arg1)
     if (auto controllerConf = json["controller"]; controllerConf.is_object()) {
         safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
         safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
+        safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
     }
 
     json_file.close();

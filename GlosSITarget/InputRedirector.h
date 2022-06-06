@@ -20,6 +20,7 @@ limitations under the License.
 #include <Windows.h>
 #include <Xinput.h>
 #include <ViGEm/Client.h>
+#include <ViGEm/Util.h>
 #endif
 
 class InputRedirector {
@@ -45,10 +46,13 @@ class InputRedirector {
     static inline std::atomic<bool> use_real_vid_pid_ = false;
     static inline std::atomic<bool> use_real_vid_pid_changed_ = false;
 
-    PVIGEM_TARGET vt_x360_[XUSER_MAX_COUNT]{};
     bool vigem_connected_;
-    static void CALLBACK controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber, LPVOID UserData);
-    void unplugVigemX360(int idx);
+
+    PVIGEM_TARGET vt_pad_[XUSER_MAX_COUNT]{};
+    static void CALLBACK x360ControllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber, LPVOID UserData);
+    void unplugVigemPad(int idx);
+
+    static void CALLBACK ds4ControllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, DS4_LIGHTBAR_COLOR LightbarColor, LPVOID UserData);
 
 #endif
 
