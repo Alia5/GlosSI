@@ -68,7 +68,7 @@ void AppLauncher::update()
             }
             if (!IsProcessRunning(pids_[0])) {
                 spdlog::info("Launched App with PID \"{}\" died", pids_[0]);
-                if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs) {
+                if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs && Settings::launch.launch) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
                 }
@@ -82,7 +82,7 @@ void AppLauncher::update()
                     spdlog::info("Child process with PID \"{}\" died", pid);
                 return !running;
             });
-            if (Settings::launch.closeOnExit && pids_.empty()) {
+            if (Settings::launch.closeOnExit && pids_.empty() && Settings::launch.launch) {
                 spdlog::info("Configured to close on all children exit. Shutting down...");
                 shutdown_();
             }
