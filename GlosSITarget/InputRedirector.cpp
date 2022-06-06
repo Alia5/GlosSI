@@ -94,7 +94,7 @@ void InputRedirector::stop()
     run_ = false;
     controller_thread_.join();
     if (vigem_connected_) {
-        for (const auto& target : vt_x360_) {
+        for (const auto& target : vt_pad_) {
             vigem_target_remove(driver_, target);
         }
     }
@@ -113,22 +113,40 @@ void InputRedirector::runLoop()
             // unplug all.
             use_real_vid_pid_changed_ = false;
             for (int i = 0; i < XUSER_MAX_COUNT; i++) {
-                unplugVigemX360(i);
+                unplugVigemPad(i);
             }
         }
         if (max_controller_count_ < XUSER_MAX_COUNT) {
             for (int i = max_controller_count_; i < XUSER_MAX_COUNT; i++) {
-                unplugVigemX360(i);
+                unplugVigemPad(i);
             }
         }
         for (int i = 0; i < XUSER_MAX_COUNT && i < max_controller_count_; i++) {
             XINPUT_STATE state{};
             if (XInputGetState(i, &state) == ERROR_SUCCESS) {
-                if (vt_x360_[i] != nullptr) {
-                    vigem_target_x360_update(driver_, vt_x360_[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+                if (vt_pad_[i] != nullptr) {
+                    if (Settings::controller.emulateDS4) {
+                        DS4_REPORT rep;
+                        DS4_REPORT_INIT(&rep);
+
+                        // The DualShock 4 expects a different report format, so we call a helper
+                        // function which will translate buttons and axes 1:1 from XUSB to DS4
+                        // format and submit it to the update function afterwards.
+                        XUSB_TO_DS4_REPORT(reinterpret_cast<PXUSB_REPORT>(&state.Gamepad), &rep);
+                        vigem_target_ds4_update(driver_, vt_pad_[i], rep);
+                    }
+                    else {
+                        vigem_target_x360_update(driver_, vt_pad_[i], *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+                    }
                 }
                 else {
-                    vt_x360_[i] = vigem_target_x360_alloc();
+                    if (Settings::controller.emulateDS4) {
+                        vt_pad_[i] = vigem_target_ds4_alloc();
+                    }
+                    else {
+                        vt_pad_[i] = vigem_target_x360_alloc();
+                    }
+
                     // By using VID and PID of Valve's Emulated Controller
                     // ( https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices )
                     // Steam doesn't give us ANOTHER "fake" XInput device
@@ -144,31 +162,49 @@ void InputRedirector::runLoop()
                     // This however is configurable withon GlosSI overlay;
                     // Multiple controllers can be worked around with by setting max count.
                     if (!use_real_vid_pid_) {
-                        vigem_target_set_vid(vt_x360_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                        // vigem_target_set_pid(vt_x360_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
+                        // vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
                     }
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
                     //and filter out emulated controllers to support a greater amount of controllers simultaneously
 
-                    const int target_add_res = vigem_target_add(driver_, vt_x360_[i]);
+                    const int target_add_res = vigem_target_add(driver_, vt_pad_[i]);
                     if (target_add_res == VIGEM_ERROR_TARGET_UNINITIALIZED) {
-                        vt_x360_[i] = vigem_target_x360_alloc();
+                        if (Settings::controller.emulateDS4) {
+                            vt_pad_[i] = vigem_target_ds4_alloc();
+                        }
+                        else {
+                            vt_pad_[i] = vigem_target_x360_alloc();
+                        }
                     }
                     if (target_add_res == VIGEM_ERROR_NONE) {
-                        spdlog::info("Plugged in controller {}, {}", i, vigem_target_get_index(vt_x360_[i]));
-                        const auto callback_register_res = vigem_target_x360_register_notification(
-                            driver_,
-                            vt_x360_[i],
-                            &InputRedirector::controllerCallback,
-                            reinterpret_cast<LPVOID>(i));
-                        if (!VIGEM_SUCCESS(callback_register_res)) {
-                            spdlog::error("Registering controller {}, {} for notification failed with error code: {:#x}", i, vigem_target_get_index(vt_x360_[i]), callback_register_res);
+                        spdlog::info("Plugged in controller {}, {}", i, vigem_target_get_index(vt_pad_[i]));
+
+                        if (Settings::controller.emulateDS4) {
+                            const auto callback_register_res = vigem_target_ds4_register_notification(
+                                driver_,
+                                vt_pad_[i],
+                                &InputRedirector::ds4ControllerCallback,
+                                reinterpret_cast<LPVOID>(i));
+                            if (!VIGEM_SUCCESS(callback_register_res)) {
+                                spdlog::error("Registering controller {}, {} for notification failed with error code: {:#x}", i, vigem_target_get_index(vt_pad_[i]), callback_register_res);
+                            }
+                        }
+                        else {
+                            const auto callback_register_res = vigem_target_x360_register_notification(
+                                driver_,
+                                vt_pad_[i],
+                                &InputRedirector::x360ControllerCallback,
+                                reinterpret_cast<LPVOID>(i));
+                            if (!VIGEM_SUCCESS(callback_register_res)) {
+                                spdlog::error("Registering controller {}, {} for notification failed with error code: {:#x}", i, vigem_target_get_index(vt_pad_[i]), callback_register_res);
+                            }
                         }
                     }
                 }
             }
             else {
-                unplugVigemX360(i);
+                unplugVigemPad(i);
             }
         }
         sf::sleep(sf::milliseconds(1));
@@ -178,26 +214,39 @@ void InputRedirector::runLoop()
 }
 
 #ifdef _WIN32
-void InputRedirector::controllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber, LPVOID UserData)
+void InputRedirector::x360ControllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, UCHAR LedNumber, LPVOID UserData)
 {
     if (!enable_rumble_) {
         return;
     }
     XINPUT_VIBRATION vibration;
     ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
-    vibration.wLeftMotorSpeed = LargeMotor * 0xff;  //Controllers only use 1 byte, XInput-API uses two, ViGEm also only uses one, like the hardware does, so we have to multiply
-    vibration.wRightMotorSpeed = SmallMotor * 0xff; //Yeah yeah I do know about bitshifting and the multiplication not being 100% correct...
+    vibration.wLeftMotorSpeed = LargeMotor * 257;
+    vibration.wRightMotorSpeed = SmallMotor * 257;
 
     XInputSetState(reinterpret_cast<int>(UserData), &vibration);
 }
 
-void InputRedirector::unplugVigemX360(int idx)
+void InputRedirector::unplugVigemPad(int idx)
 {
-    if (vt_x360_[idx] != nullptr) {
-        if (VIGEM_SUCCESS(vigem_target_remove(driver_, vt_x360_[idx]))) {
-            spdlog::info("Unplugged controller {}, {}", idx, vigem_target_get_index(vt_x360_[idx]));
-            vt_x360_[idx] = nullptr;
+    if (vt_pad_[idx] != nullptr) {
+        if (VIGEM_SUCCESS(vigem_target_remove(driver_, vt_pad_[idx]))) {
+            spdlog::info("Unplugged controller {}, {}", idx, vigem_target_get_index(vt_pad_[idx]));
+            vt_pad_[idx] = nullptr;
         }
     }
+}
+
+void InputRedirector::ds4ControllerCallback(PVIGEM_CLIENT client, PVIGEM_TARGET Target, UCHAR LargeMotor, UCHAR SmallMotor, DS4_LIGHTBAR_COLOR LightbarColor, LPVOID UserData)
+{
+    if (!enable_rumble_) {
+        return;
+    }
+    XINPUT_VIBRATION vibration;
+    ZeroMemory(&vibration, sizeof(XINPUT_VIBRATION));
+    vibration.wLeftMotorSpeed = LargeMotor * 257;
+    vibration.wRightMotorSpeed = SmallMotor * 257;
+
+    XInputSetState(reinterpret_cast<int>(UserData), &vibration);
 }
 #endif
