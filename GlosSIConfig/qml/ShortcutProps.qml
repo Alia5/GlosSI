@@ -46,6 +46,7 @@ Item {
             disableOverlay: false,
             realDeviceIds: false,
             allowDesktopConfig: true,
+            emulateDS4: false,
         })
 
     function resetInfo() {
@@ -66,6 +67,7 @@ Item {
             disableOverlay: false,
             realDeviceIds: false,
             allowDesktopConfig: true,
+            emulateDS4: false,
         })
     }
 
@@ -82,6 +84,7 @@ Item {
         disableOverlayCheckbox.checked = shortcutInfo.disableOverlay || false
         realDeviceIds.checked = shortcutInfo.realDeviceIds || false
         allowDesktopConfig.checked = shortcutInfo.allowDesktopConfig || true
+        emulateDS4.checked = shortcutInfo.emulateDS4 || false
     }
 
     Flickable {
@@ -318,7 +321,7 @@ Item {
 
                 RPane {
                     width: parent.width / 2 - 8
-                    height: 294
+                    height: 394
                     radius: 4
 		            Material.elevation: 32
                     bgOpacity: 0.97
@@ -326,7 +329,7 @@ Item {
                     Column {
                         spacing: 2
                         width: parent.width
-                        RadioButton {
+                        CheckBox {
                             id: hideDevices
                             text: qsTr("Hide (Real) Controllers")
                             checked: shortcutInfo.hideDevices
@@ -349,7 +352,7 @@ Item {
                             width: 1
                             height: 4
                         }
-                        RadioButton {
+                        CheckBox {
                             id: realDeviceIds
                             text: qsTr("Use real device (USB)-IDs")
                             checked: shortcutInfo.realDeviceIds
@@ -367,6 +370,23 @@ Item {
                             wrapMode: Text.WordWrap
                             width: parent.width
                             leftPadding: 32
+                        }
+                        Item {
+                            width: 1
+                            height: 4
+                        }
+                        CheckBox {
+                            id: emulateDS4
+                            text: qsTr("Emulate DS4")
+                            checked: shortcutInfo.emulateDS4
+                            onCheckedChanged: shortcutInfo.emulateDS4 = checked
+                        }
+                        Label {
+                            text: qsTr("Instead of X360 Pad; Disable \"Playstation Configuration support\" in Steam")
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                            leftPadding: 32
+                            topPadding: -8
                         }
                         Item {
                             width: 1
