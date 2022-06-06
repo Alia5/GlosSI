@@ -192,10 +192,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\GloSC_Icon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="GloSC_Icon.ico">
+    <Image Include="$(SolutionDir)\GloSC_Icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

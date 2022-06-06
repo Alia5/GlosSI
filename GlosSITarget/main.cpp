@@ -16,6 +16,7 @@ limitations under the License.
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
+#include <DbgHelp.h>
 #endif
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -27,13 +28,11 @@ limitations under the License.
 #include "OverlayLogSink.h"
 #include "Settings.h"
 
-
 #ifdef _WIN32
 
 // default to high performance GPU
 extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
-
 
 LONG Win32FaultHandler(struct _EXCEPTION_POINTERS* ExInfo)
 
@@ -49,19 +48,45 @@ LONG Win32FaultHandler(struct _EXCEPTION_POINTERS* ExInfo)
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
         FaultTx = "FLT DIVIDE BY ZERO";
         break;
-        default : FaultTx = "(unknown)";
+    default:
+        FaultTx = "(unknown)";
         break;
     }
 
     int wsFault = ExInfo->ExceptionRecord->ExceptionCode;
     PVOID CodeAdress = ExInfo->ExceptionRecord->ExceptionAddress;
 
-
-
     spdlog::error("*** A Program Fault occurred:");
     spdlog::error("*** Error code {:#x}: {}", wsFault, FaultTx);
     spdlog::error("*** Address: {:#x}", (int)CodeAdress);
     spdlog::error("*** Flags: {:#x}", ExInfo->ExceptionRecord->ExceptionFlags);
+
+    MINIDUMP_EXCEPTION_INFORMATION M;
+    HANDLE hDump_File;
+
+    auto path = std::filesystem::temp_directory_path()
+                    .parent_path()
+                    .parent_path()
+                    .parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (!std::filesystem::exists(path))
+        std::filesystem::create_directories(path);
+    path /= "glossitarget.dmp";
+
+    M.ThreadId = GetCurrentThreadId();
+    M.ExceptionPointers = ExInfo;
+    M.ClientPointers = 0;
+
+    hDump_File = CreateFile(path.wstring().c_str(), GENERIC_WRITE, 0,
+                            NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+                      hDump_File, MiniDumpNormal,
+                      (ExInfo) ? &M : NULL, NULL, NULL);
+
+    CloseHandle(hDump_File);
 
     /*if(want to continue)
     {
@@ -123,26 +148,28 @@ int main(int argc, char* argv[])
     auto exit = 1;
     try {
 #ifdef _WIN32
-    std::string argsv = "";
-    if (__argc > 1) {
-        for (int i = 1; i < __argc; i++)
-            argsv += i == 1 ? __argv[i] : std::string(" ") + __argv[i];
-    }
-    Settings::Parse(argsv);
-    SteamTarget target(__argc, __argv);
+        std::string argsv = "";
+        if (__argc > 1) {
+            for (int i = 1; i < __argc; i++)
+                argsv += i == 1 ? __argv[i] : std::string(" ") + __argv[i];
+        }
+        Settings::Parse(argsv);
+        SteamTarget target(__argc, __argv);
 #else
-    std::string argsv = "";
-    if (argc > 1) {
-        for (int i = 1; i < argc; i++)
-            argsv += i == 1 ? argv[i] : std::string(" ") + argv[i];
-    }
-    Settings::Parse(argsv);
-    SteamTarget target(argc, argv);
+        std::string argsv = "";
+        if (argc > 1) {
+            for (int i = 1; i < argc; i++)
+                argsv += i == 1 ? argv[i] : std::string(" ") + argv[i];
+        }
+        Settings::Parse(argsv);
+        SteamTarget target(argc, argv);
 #endif
-         exit = target.run();
-    } catch (std::exception& e) {
+        exit = target.run();
+    }
+    catch (std::exception& e) {
         spdlog::error("Exception occured: {}", e.what());
-    } catch (...) {
+    }
+    catch (...) {
         spdlog::error("Unknown exception occured");
     }
     spdlog::shutdown();
