@@ -154,6 +154,10 @@ int main(int argc, char* argv[])
             return 1;
         }
     }
+
+    QGuiApplication::setWindowIcon(QIcon(":/GloSC_Icon_small.png"));
+
+
 #ifdef _WIN32
     engine.addImageProvider(QLatin1String("exe"), new ExeImageProvider());
 #endif
