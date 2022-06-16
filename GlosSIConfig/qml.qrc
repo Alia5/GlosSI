@@ -13,5 +13,6 @@
         <file>qml/InfoDialog.qml</file>
         <file>steamscreener.png</file>
         <file>noise.png</file>
+        <file>GloSC_Icon_small.png</file>
     </qresource>
 </RCC>
