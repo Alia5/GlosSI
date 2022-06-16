@@ -9,3 +9,7 @@ $commatag = $commatag -replace "[A-z]","0"
 ((Get-Content -path ./Resource.rc -Raw) -replace "PRODUCTVERSION .*,.*,.*,.*", ("PRODUCTVERSION " + $commatag)) | Set-Content -Path ./Resource.rc
 ((Get-Content -path ./Resource.rc -Raw) -replace '"FileVersion", ".*"', ('"FileVersion", "' + $tag + '"')) | Set-Content -Path ./Resource.rc
 ((Get-Content -path ./Resource.rc -Raw) -replace '"ProductVersion", ".*"', ('"ProductVersion", "' + $tag + '"')) | Set-Content -Path ./Resource.rc
+
+if ((Test-Path '../Installer/Installer.nsi')) {
+    ((Get-Content -path '../Installer/Installer.nsi' -Raw) -replace '!define VERSION ".*"', ('!define VERSION "' + $tag + '"')) | Set-Content -Path '../Installer/Installer.nsi'
+}
