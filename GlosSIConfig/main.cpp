@@ -106,7 +106,6 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& 
     std::cout << txt.toStdString() << "\n";
 }
 
-
 int main(int argc, char* argv[])
 {
 
@@ -140,14 +139,14 @@ int main(int argc, char* argv[])
     if (argc >= 4) {
         if (QString::fromStdString(argv[1]) == "remove") {
             const auto write_res = uimodel.removeFromSteam(
-                QString::fromStdString(argv[2]), QString::fromStdString(argv[3]), true);
+                QCoreApplication::arguments().at(2), QCoreApplication::arguments().at(3), true);
             if (write_res) {
                 return 0;
             }
             return 1;
         } else if (QString::fromStdString(argv[1]) == "add") {
             const auto write_res = uimodel.addToSteam(
-                QString::fromStdString(argv[2]), QString::fromStdString(argv[3]), true);
+                QCoreApplication::arguments().at(2), QCoreApplication::arguments().at(3), true);
             if (write_res) {
                 return 0;
             }

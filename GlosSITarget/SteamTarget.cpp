@@ -30,7 +30,7 @@ limitations under the License.
 #include <tray.hpp>
 #endif
 
-SteamTarget::SteamTarget(int argc, char* argv[])
+SteamTarget::SteamTarget()
     : window_(
           [this] { run_ = false; },
           [this] { toggleGlossiOverlay(); },
