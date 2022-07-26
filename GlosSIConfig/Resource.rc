@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,7,1
- PRODUCTVERSION 0,0,7,1
+ FILEVERSION 0,0,7,102000153200
+ PRODUCTVERSION 0,0,7,102000153200
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Peter Repukat - FlatspotSoftware"
             VALUE "FileDescription", "GlosSI - Config"
-            VALUE "FileVersion", "0.0.7.1"
+            VALUE "FileVersion", "0.0.7.1-2-gd15320b"
             VALUE "InternalName", "GlosSIConfig"
             VALUE "LegalCopyright", "Copyright (C) 2021 Peter Repukat - FlatspotSoftware"
             VALUE "OriginalFilename", "GlosSIConfig.exe"
             VALUE "ProductName", "GlosSI"
-            VALUE "ProductVersion", "0.0.7.1"
+            VALUE "ProductVersion", "0.0.7.1-2-gd15320b"
         END
     END
     BLOCK "VarFileInfo"
@@ -107,4 +107,20 @@ IDI_ICON1               ICON                    "..\GloSC_Icon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

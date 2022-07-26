@@ -24,6 +24,8 @@ limitations under the License.
 #include <string>
 #include <vector>
 
+#include <QDebug>
+
 namespace VDFParser {
 namespace crc {
 template <typename CONT>
@@ -489,7 +491,14 @@ class Parser {
 
     static inline bool writeShortcuts(std::filesystem::path path, const VDFFile& vdffile)
     {
-        const auto copied = std::filesystem::copy_file(path, path.wstring() + L".bak", std::filesystem::copy_options::update_existing);
+        const auto backupFileName = path.wstring() + L".bak";
+        if (std::filesystem::exists(path) && !std::filesystem::exists(backupFileName)) {
+            qDebug() << "No shortcuts backup detected... Creating now...";
+            const auto copied = std::filesystem::copy_file(path, backupFileName, std::filesystem::copy_options::update_existing);
+            if (!copied) {
+                qDebug() << "failed to copy shortcuts.vdf to backup!";
+            }
+        }
 
         ofile.open(path.wstring(), std::ios::binary | std::ios::out);
         if (!ofile.is_open()) {
