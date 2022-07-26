@@ -48,7 +48,7 @@ inline struct Window {
 
 inline struct Controller {
     int maxControllers = 4;
-    bool allowDesktopConfig = Settings::launch.launch;
+    bool allowDesktopConfig = false;
     bool emulateDS4 = false;
 } controller;
 
