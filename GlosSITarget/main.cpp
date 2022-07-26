@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
     path /= "glossitarget.log";
-    // For "path.wstring()" to be usable here, "#define SPDLOG_WCHAR_FILENAMES" in "tweakme.h" has to be uncommented.
+    // For "path.wstring()" to be usable here, SPDLOG_WCHAR_FILENAMES must be defined.
     const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.wstring(), true);
 #else
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(L"/tmp/glossitarget.log", true);
