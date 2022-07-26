@@ -32,7 +32,7 @@ limitations under the License.
 
 class SteamTarget {
   public:
-    explicit SteamTarget(int argc, char* argv[]);
+    explicit SteamTarget();
     int run();
 
   private:

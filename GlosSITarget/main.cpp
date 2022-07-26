@@ -27,6 +27,7 @@ limitations under the License.
 
 #include "OverlayLogSink.h"
 #include "Settings.h"
+#include <iostream>
 
 #ifdef _WIN32
 
@@ -126,9 +127,10 @@ int main(int argc, char* argv[])
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
     path /= "glossitarget.log";
-    const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
+    // For "path.wstring()" to be usable here, SPDLOG_WCHAR_FILENAMES must be defined.
+    const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.wstring(), true);
 #else
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("/tmp/glossitarget.log", true);
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(L"/tmp/glossitarget.log", true);
 #endif
     file_sink->set_level(spdlog::level::trace);
 
@@ -148,21 +150,23 @@ int main(int argc, char* argv[])
     auto exit = 1;
     try {
 #ifdef _WIN32
-        std::string argsv = "";
-        if (__argc > 1) {
-            for (int i = 1; i < __argc; i++)
-                argsv += i == 1 ? __argv[i] : std::string(" ") + __argv[i];
+        int numArgs;
+        LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &numArgs);
+        std::wstring argsv = L"";
+        if (numArgs > 1) {
+            for (int i = 1; i < numArgs; i++)
+                argsv += i == 1 ? args[i] : std::wstring(L" ") + args[i];
         }
         Settings::Parse(argsv);
-        SteamTarget target(__argc, __argv);
-#else
+        SteamTarget target;
+#else // Code below is broken now due to parse requiring std::wstring instead of std:string. Sorry.
         std::string argsv = "";
         if (argc > 1) {
             for (int i = 1; i < argc; i++)
                 argsv += i == 1 ? argv[i] : std::string(" ") + argv[i];
         }
         Settings::Parse(argsv);
-        SteamTarget target(argc, argv);
+        SteamTarget target;
 #endif
         exit = target.run();
     }

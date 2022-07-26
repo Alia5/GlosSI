@@ -39,7 +39,7 @@ UIModel::UIModel() : QObject(nullptr)
         std::filesystem::create_directories(path);
 
     config_path_ = path;
-    config_dir_name_ = (path /= "Targets").string().data();
+    config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring().data());
 
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
@@ -58,7 +58,7 @@ void UIModel::readConfigs()
 
     std::for_each(entries.begin(), entries.end(), [this](const auto& name) {
         auto path = config_path_;
-        path /= config_dir_name_.toStdString();
+        path /= config_dir_name_.toStdWString();
         path /= name.toStdWString();
         QFile file(path);
         if (!file.open(QIODevice::Text | QIODevice::ReadOnly)) {
