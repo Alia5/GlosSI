@@ -45,7 +45,7 @@ Item {
             maxControllers: 4,
             disableOverlay: false,
             realDeviceIds: false,
-            allowDesktopConfig: true,
+            allowDesktopConfig: false,
             emulateDS4: false,
         })
 
@@ -66,7 +66,7 @@ Item {
             maxControllers: 4,
             disableOverlay: false,
             realDeviceIds: false,
-            allowDesktopConfig: true,
+            allowDesktopConfig: false,
             emulateDS4: false,
         })
     }
@@ -83,7 +83,7 @@ Item {
         maxControllersSpinBox.value = shortcutInfo.maxControllers
         disableOverlayCheckbox.checked = shortcutInfo.disableOverlay || false
         realDeviceIds.checked = shortcutInfo.realDeviceIds || false
-        allowDesktopConfig.checked = shortcutInfo.allowDesktopConfig || true
+        allowDesktopConfig.checked = shortcutInfo.allowDesktopConfig || false
         emulateDS4.checked = shortcutInfo.emulateDS4 || false
     }
 
