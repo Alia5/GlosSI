@@ -87,7 +87,7 @@
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  /permissive- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
