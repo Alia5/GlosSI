@@ -37,7 +37,16 @@ Real Gamecontrollers are hidden from other applications, so that they can't inte
 This brings full Steam-Input functionality to the desktop and any other application Steam-Input might not have worked before
 
 Games do not need to be launched using GlosSI.  
-If the "Start Application" option does not work, launch any GlosSI-Shortcut from Steam, followed by a game or application.
+If the "Start Application" option does not work, launch any GlosSI-Shortcut from Steam, followed by a game or application. 
+
+## How do you use it?
+
+1. Install Steam (it's needed even if your game is on Game Pass or Battle.net or any other such source)
+2. Download the newest GlosSI build and install vc_redist.x64 & ViGEmBusSetup_x64 from its folder
+3. Open GlosSIConfig, click on + and choose the type of game you want (like UWP for Game Pass games from the Microsoft Store)
+4. Click on the game's Steam icon in the GlosSI main menu to add the configured game to your Steam Library as a shortcut
+5. Restart Steam
+6. Start the game from the Steam Library, if all is well it will also trigger a terminal window with what GlosSI is doing
 
 ## What this is not
 
