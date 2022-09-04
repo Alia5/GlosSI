@@ -106,58 +106,37 @@ struct VDFKeyPair {
     }
 };
 
-template <uint8_t initialByte>
 struct VDFIdx {
     VDFIdx(){};
     VDFIdx(const VDFIdx& other)
     {
-        data[0] = other.data[0];
-        data[1] = other.data[1];
+        data = other.data;
     };
     VDFIdx(VDFIdx&& other)
     {
-        data[0] = std::move(other.data[0]);
-        data[1] = std::move(other.data[1]);
+        data = std::move(other.data);
     };
     VDFIdx(int idx)
     {
-        if (idx > 99) {
-            data[0] = initialByte;
-            data[1] = 0;
-        }
-        else if (idx < 10) {
-            data[1] = std::to_string(idx).c_str()[0];
-        }
-        else {
-            auto meh = std::to_string(idx).c_str();
-            data[0] = meh[0] + initialByte;
-            data[1] = meh[1];
-        }
+        data = std::to_string(idx);
     }
-    char data[2] = {initialByte, 0x0};
+    std::string data;
     operator int() const
     {
-        if (data[0] == initialByte) {
-            int res = 0;
-            std::from_chars(&data[1], &data[1], res);
-            return res;
-        }
         int res = 0;
-        char copy[2] = {data[0] - initialByte, data[1]};
-        std::from_chars(&copy[0], &copy[1], res);
+        std::from_chars(data.data(), data.data() + data.size(), res);
         return res;
     }
 
     VDFIdx& operator=(const VDFIdx& other)
     {
-        data[0] = other.data[0];
-        data[1] = other.data[1];
+        data = other.data;
+
         return *this;
     }
     VDFIdx& operator=(VDFIdx&& other)
     {
-        data[0] = std::move(other.data[0]);
-        data[1] = std::move(other.data[1]);
+        data = std::move(other.data);
         return *this;
     }
 };
@@ -172,7 +151,7 @@ struct ShortcutTag {
     {
         value = std::move(other.value);
     };
-    VDFIdx<0x01> idx; // I Hope this is how it works... See VDFIdx
+    VDFIdx idx;
     std::string value;
     const uint16_t end_marker = 0x0808;
 
@@ -189,7 +168,7 @@ struct ShortcutTag {
 };
 
 struct Shortcut {
-    VDFIdx<0x00> idx;
+    VDFIdx idx;
     VDFKeyPair<k_appid, uint32_t, VDFTypeId::Number> appId{0x000000};
     VDFKeyPair<k_appname, std::string, VDFTypeId::String> appName{""};
     VDFKeyPair<k_exe, std::string, VDFTypeId::String> exe{"\"\""};                 // Qouted
@@ -354,34 +333,17 @@ class Parser {
             }
             char b = '\x0';
             readVDFBuffer(&b, 1); // skip 0 byte
-            if (b != '\x0')
-                buff.push_back(b);
-            do {
-                if (ifile.eof()) {
-                    break;
-                }
-                readVDFBuffer(&b, 1); // 1-2 bytes idx, 0x00 delmiter
-                if (b != '\x0')
-                    buff.push_back(b);
-            } while (b != '\x0');
-            if (buff[0] == 0x08 && buff[1] == 0x08) {
-                break;
-            }
             Shortcut shortcut;
-            if (buff.size() == 2) {
-                shortcut.idx.data[0] = buff[0];
-                shortcut.idx.data[1] = buff[1];
-            }
-            else {
-                shortcut.idx.data[0] = '\x0';
-                shortcut.idx.data[1] = buff[0];
+            shortcut.idx.data = readVDFString();
+            if (shortcut.idx.data == "\x08\x08") {
+                break;
             }
             while (true) // TODO;
             {
                 if (ifile.eof()) {
                     break;
                 }
-                VDFTypeId tid = static_cast<VDFTypeId>(readVDFValue<uint8_t>());
+                auto tid = static_cast<VDFTypeId>(readVDFValue<uint8_t>());
                 if (tid == 0x08) {
                     auto nextbyte = readVDFValue<uint8_t>();
                     if (nextbyte == 0x08) {
@@ -458,20 +420,22 @@ class Parser {
                     continue;
                 }
                 if (key == shortcut.tags.key) {
-                    // TODO: read tags
                     ShortcutTag tag;
                     while (true) {
                         if (ifile.eof()) {
                             break;
                         }
                         char tbuff[2];
-                        readVDFBuffer(tbuff, 2); // 2 bytes idx
+                        readVDFBuffer(tbuff, 2); // 2 bytes POSSIBLE end marker
+                        ifile.seekg(-2, std::ios_base::cur);
                         if (tbuff[0] == 0x08 && tbuff[1] == 0x08) {
+                            break;
+                        }
+                        tag.idx.data = readVDFString();
+                        if (tag.idx.data == "\x08\x08") {
                             ifile.seekg(-2, std::ios_base::cur);
                             break;
                         }
-                        tag.idx.data[0] = tbuff[0];
-                        tag.idx.data[1] = tbuff[1];
                         ifile.seekg(1, std::ios_base::cur);
                         tag.value = readVDFString();
                         shortcut.tags.value.push_back(tag);
@@ -479,7 +443,7 @@ class Parser {
                     continue;
                 }
             }
-            if (!(shortcut.idx.data[0] == 0x0 && shortcut.idx.data[1] == 0x0)) {
+            if (!(shortcut.idx.data == "\x00\x00")) {
                 vdffile.shortcuts.push_back(shortcut);
             }
         }
@@ -508,10 +472,8 @@ class Parser {
         ofile.write(vdffile.identifier.data(), vdffile.identifier.length());
         ofile.write("\x00", 1);
         for (auto& shortcut : vdffile.shortcuts) {
-            if (shortcut.idx.data[0] != '\x0') {
-                ofile.write("\x00", 1);
-            }
-            ofile.write(shortcut.idx.data, 2);
+            ofile.write("\x00", 1);
+            ofile.write(shortcut.idx.data.data(), shortcut.idx.data.length());
             ofile.write("\x00", 1);
             //
             ofile.write((char*)&shortcut.appId.type_id, 1);
@@ -599,7 +561,7 @@ class Parser {
             ofile.write((char*)&shortcut.tags.type_id, 1);
             ofile.write(shortcut.tags.key, 5);
             for (auto& tag : shortcut.tags.value) {
-                ofile.write(tag.idx.data, 2);
+                ofile.write(tag.idx.data.data(), tag.idx.data.length());
                 ofile.write("\x00", 1);
                 ofile.write(tag.value.data(), tag.value.length());
                 ofile.write("\x00", 1);
