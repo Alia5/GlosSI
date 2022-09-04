@@ -21,7 +21,7 @@ foreach ($app in $installedapps) {
                 }
                
                 #filter more apps with improper naming patterns; games generally have the appropriate field in their manifests filled out.
-                if ($name -like "MicrosoftWindows.*" -or $name -like "Microsoft.*" -or $name -like "Windows.*" -or $name -like "Windows Web*") { break; }
+                if ($name -like "MicrosoftWindows.*"  -or $name -like "Windows.*" -or $name -like "Windows Web*") { break; }
 
                 $installDir = $app.InstallLocation;
                 #filter out system apps and apps installed by Microsoft as part of Windows
