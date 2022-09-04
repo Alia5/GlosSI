@@ -77,7 +77,7 @@ Item {
         pathInput.text = shortcutInfo.launchPath || ""
         argsInput.text = shortcutInfo.launchAppArgs || ""
         closeOnExit.checked = shortcutInfo.closeOnExit || false
-        waitForChildren.checked = shortcutInfo.waitForChildProcs || true
+        waitForChildren.checked = shortcutInfo.waitForChildProcs
         hideDevices.checked = shortcutInfo.hideDevices || false
         windowMode.checked = shortcutInfo.windowMode || false
         maxControllersSpinBox.value = shortcutInfo.maxControllers
@@ -321,7 +321,7 @@ Item {
 
                 RPane {
                     width: parent.width / 2 - 8
-                    height: 394
+                    height: 264
                     radius: 4
 		            Material.elevation: 32
                     bgOpacity: 0.97
@@ -329,64 +329,99 @@ Item {
                     Column {
                         spacing: 2
                         width: parent.width
-                        CheckBox {
-                            id: hideDevices
-                            text: qsTr("Hide (Real) Controllers")
-                            checked: shortcutInfo.hideDevices
-                            onCheckedChanged: shortcutInfo.hideDevices = checked
-                        }
-                        Label {
-                            text: qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                            topPadding: -8
-                        }
-                        Label {
-                            text: qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                        }
-                        Item {
-                            width: 1
-                            height: 4
-                        }
-                        CheckBox {
-                            id: realDeviceIds
-                            text: qsTr("Use real device (USB)-IDs")
-                            checked: shortcutInfo.realDeviceIds
-                            onCheckedChanged: shortcutInfo.realDeviceIds = checked
-                        }
-                        Label {
-                            text: qsTr("Only enable if input's are not recognized by the game")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                            topPadding: -8
-                        }
-                        Label {
-                            text: qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
+                        Row {
+                            CheckBox {
+                                id: hideDevices
+                                text: qsTr("Hide (Real) Controllers")
+                                checked: shortcutInfo.hideDevices
+                                onCheckedChanged: shortcutInfo.hideDevices = checked
+                            }
+                            RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Hide (Real) Controllers")
+                                    helpInfoDialog.text = 
+                                        qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
+                                        + "\n"
+                                        + qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                            
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
                         Item {
                             width: 1
                             height: 4
                         }
-                        CheckBox {
-                            id: emulateDS4
-                            text: qsTr("Emulate DS4")
-                            checked: shortcutInfo.emulateDS4
-                            onCheckedChanged: shortcutInfo.emulateDS4 = checked
+                        Row {
+                            CheckBox {
+                                id: realDeviceIds
+                                text: qsTr("Use real device (USB)-IDs")
+                                checked: shortcutInfo.realDeviceIds
+                                onCheckedChanged: shortcutInfo.realDeviceIds = checked
+                            }
+                            RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Use real device (USB)-IDs")
+                                    helpInfoDialog.text = 
+                                        qsTr("Only enable if input's are not recognized by the game")
+                                        + "\n"
+                                        + qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
+                            
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
-                        Label {
-                            text: qsTr("Instead of X360 Pad; Disable \"Playstation Configuration support\" in Steam")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                            topPadding: -8
+                        Item {
+                            width: 1
+                            height: 4
+                        }
+                        Row {
+                            CheckBox {
+                                id: emulateDS4
+                                text: qsTr("Emulate DS4")
+                                checked: shortcutInfo.emulateDS4
+                                onCheckedChanged: shortcutInfo.emulateDS4 = checked
+                            }
+                             RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Emulate DS4")
+                                    helpInfoDialog.text = 
+                                        qsTr("Instead of X360 Pad")
+                                        + "\n"
+                                        + qsTr("Disable \"Playstation Configuration support\" in Steam")
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
                         Item {
                             width: 1
@@ -411,7 +446,7 @@ Item {
                 }
                 RPane {
                     width: parent.width / 2 - 8
-                    height: 294
+                    height: 264
                     radius: 4
 		            Material.elevation: 32
                     bgOpacity: 0.97
@@ -517,6 +552,16 @@ Item {
             }
             pathInput.text = modelData.AppUMId
             launchApp.checked = true
+        }
+    }
+
+    InfoDialog {
+        id: helpInfoDialog
+        titleText: qsTr("")
+        text: qsTr("")
+        extraButton: false
+        extraButtonText: qsTr("")
+        onConfirmedExtra: function(data) {
         }
     }
 

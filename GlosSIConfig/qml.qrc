@@ -14,5 +14,6 @@
         <file>steamscreener.png</file>
         <file>noise.png</file>
         <file>GloSC_Icon_small.png</file>
+        <file>svg/help_outline_white_24dp.svg</file>
     </qresource>
 </RCC>

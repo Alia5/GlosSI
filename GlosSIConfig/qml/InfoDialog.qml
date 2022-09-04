@@ -80,6 +80,7 @@ Dialog {
 			anchors.top: title.bottom
 			anchors.topMargin: parent.spacing
 			spacing: 16
+			height: text.height + spacing
 			Label {
 				id: text
 			}
@@ -89,7 +90,7 @@ Dialog {
 			anchors.top: col.bottom
 			anchors.topMargin: parent.spacing
 			spacing: 16
-
+			height: okbutton.height + spacing + parent.spacing
 			Button {
 				id: extrabutton
 				visible: extraButton
@@ -100,6 +101,7 @@ Dialog {
 			}
 
 			Button {
+				id: okbutton
 				text: qsTr("OK")
 				onClicked: function(){
 					close()
