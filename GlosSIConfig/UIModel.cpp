@@ -84,7 +84,7 @@ void UIModel::readConfigs()
         json["maxFps"] = filejson["window"]["maxFps"];
         json["scale"] = filejson["window"]["scale"];
         json["disableOverlay"] = filejson["window"]["disableOverlay"];
-        json["maxControllers"] = filejson["controller"]["allowDesktopConfig"];
+        json["maxControllers"] = filejson["controller"]["maxControllers"];
         json["allowDesktopConfig"] = filejson["controller"]["allowDesktopConfig"];
         json["emulateDS4"] = filejson["controller"]["emulateDS4"];
 
