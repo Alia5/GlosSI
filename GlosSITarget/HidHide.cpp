@@ -322,7 +322,7 @@ DWORD HidHide::getRequiredOutputBufferSize(IOCTL_TYPE type) const
 {
     DWORD bytes_needed;
     if (!DeviceIoControl(hidhide_handle, static_cast<DWORD>(type), nullptr, 0, nullptr, 0, &bytes_needed, nullptr)) {
-        spdlog::error("Couldn't determine required HidHide output buffer size; type: {}", type);
+        spdlog::error("Couldn't determine required HidHide output buffer size; type: {}", static_cast<int>(type));
         return 0;
     }
     return bytes_needed;
