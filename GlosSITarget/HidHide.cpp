@@ -20,7 +20,6 @@ limitations under the License.
 
 #include "HidHide.h"
 
-#include <iostream>
 #include <numeric>
 #include <spdlog/spdlog.h>
 #include <vector>
@@ -147,112 +146,38 @@ void HidHide::UnPatchValveHooks()
 {
     spdlog::debug("Unpatching Valve HID hooks...");
     // need to load addresses that way.. Otherwise we land before some jumps...
-    auto setupapidll = GetModuleHandle(L"setupapi.dll");
-    if (setupapidll) {
-        BYTE* addr = reinterpret_cast<BYTE*>(GetProcAddress(setupapidll, "SetupDiEnumDeviceInfo"));
-        if (addr) {
-            UnPatchHook(addr, SETUP_DI_ENUM_DEV_INFO_ORIG_BYTES);
-            spdlog::trace("Unpatched SetupDiEnumDeviceInfo");
-        }
-        else {
-            spdlog::error("failed to unpatch SetupDiEnumDeviceInfo");
-        }
-        //addr = reinterpret_cast<BYTE*>(GetProcAddress(setupapidll, "SetupDiGetClassDevsW"));
-        //if (addr) {
-        //    UnPatchHook(addr, SETUP_DI_GETCLASSDEVSW_ORIG_BYTES);
-        //    spdlog::trace("Unpatched SetupDiGetClassDevsW");
-        //}
-        //else {
-        //    spdlog::error("failed to unpatch SetupDiGetClassDevsW");
-        //}
+    if (const auto setupapidll = GetModuleHandle(L"setupapi.dll")) {
+        UnPatchHook("SetupDiEnumDeviceInfo", setupapidll);
+        //UnPatchHook("SetupDiGetClassDevsW", setupapidll);
     }
-    auto hiddll = GetModuleHandle(L"hid.dll");
-    if (hiddll) {
-        BYTE* addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidD_GetPreparsedData"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETPREPARSED_ORIG_BYTES);
-            spdlog::trace("Unpatched HidD_GetPreparsedData");
-        }
-        else {
-            spdlog::error("failed to unpatch HidD_GetPreparsedData");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetCaps"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETCAPS_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetCaps");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetCaps");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidD_GetAttributes"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETATTRS_ORIG_BYTES);
-            spdlog::trace("Unpatched HidD_GetAttributes");
-        }
-        else {
-            spdlog::error("failed to unpatch HidD_GetAttributes");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidD_GetProductString"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETPRODSTR_ORIG_BYTES);
-            spdlog::trace("Unpatched HidD_GetProductString");
-        }
-        else {
-            spdlog::error("failed to unpatch HidD_GetProductString");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetUsages"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETUSAGE_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetUsages");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetUsages");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetData"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETDATA_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetData");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetData");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetValueCaps"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETVALUECAPS_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetValueCaps");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetValueCaps");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetUsageValue"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETUSAGE_VAL_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetUsageValue");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetUsageValue");
-        }
-        addr = reinterpret_cast<BYTE*>(GetProcAddress(hiddll, "HidP_GetButtonCaps"));
-        if (addr) {
-            UnPatchHook(addr, HID_GETBTNCAPS_VAL_ORIG_BYTES);
-            spdlog::trace("Unpatched HidP_GetButtonCaps");
-        }
-        else {
-            spdlog::error("failed to unpatch HidP_GetButtonCaps");
+    if (const auto hiddll = GetModuleHandle(L"hid.dll")) {
+        for (const auto& name : ORIGINAL_BYTES | std::views::keys) {
+            if (name.starts_with("Hid")) {
+                UnPatchHook(name, hiddll);
+            }            
         }
     }
 }
 
-void HidHide::UnPatchHook(BYTE* address, const std::string& bytes)
+void HidHide::UnPatchHook(const std::string& name, HMODULE module)
 {
+    spdlog::trace("Patching \"{}\"...", name);
+
+    BYTE* address = reinterpret_cast<BYTE*>(GetProcAddress(module, name.c_str()));
+    if (!address) {
+        spdlog::error("failed to unpatch \"{}\"", name);
+    }
+
+    auto bytes = ORIGINAL_BYTES.at(name);
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
-    VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); //Change permissions of memory..
+    VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..
     for (DWORD i = 0; i < len; i++)                                        //unpatch Valve's hook
     {
         *(address + i) = bytes[i];
     }
-    VirtualProtect(address, len, dw_old_protect, &dw_bkup); //Revert permission change...
+    VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+    spdlog::trace("Unpatched \"{}\"", name);
 }
 
 void HidHide::enableOverlayElement()
@@ -397,7 +322,7 @@ DWORD HidHide::getRequiredOutputBufferSize(IOCTL_TYPE type) const
 {
     DWORD bytes_needed;
     if (!DeviceIoControl(hidhide_handle, static_cast<DWORD>(type), nullptr, 0, nullptr, 0, &bytes_needed, nullptr)) {
-        spdlog::error("Couldn't determine required HidHide output buffer size; type: {}", type);
+        spdlog::error("Couldn't determine required HidHide output buffer size; type: {}", static_cast<int>(type));
         return 0;
     }
     return bytes_needed;

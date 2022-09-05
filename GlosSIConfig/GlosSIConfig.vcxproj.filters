@@ -84,9 +84,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ExeImageProvider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -102,8 +99,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\GloSC_Icon.ico">
-      <Filter>Resource Files</Filter>
+    <Image Include="$(SolutionDir)\GloSC_Icon.ico">
+        <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
 </Project>

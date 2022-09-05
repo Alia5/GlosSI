@@ -20,6 +20,8 @@ limitations under the License.
 #include <string>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <locale>
+#include <codecvt>
 
 namespace Settings {
 
@@ -46,7 +48,7 @@ inline struct Window {
 
 inline struct Controller {
     int maxControllers = 4;
-    bool allowDesktopConfig = Settings::launch.launch;
+    bool allowDesktopConfig = false;
     bool emulateDS4 = false;
 } controller;
 
@@ -62,10 +64,10 @@ inline bool checkIsUwp(const std::wstring& launch_path)
     return false;
 }
 
-inline void Parse(std::string arg1)
+inline void Parse(std::wstring arg1)
 {
-    if (!arg1.ends_with(".json")) {
-        arg1 += ".json";
+    if (!arg1.ends_with(L".json")) {
+        arg1 += L".json";
     }
     std::filesystem::path path(arg1);
     if (path.has_extension() && !std::filesystem::exists(path)) {
@@ -82,7 +84,7 @@ inline void Parse(std::string arg1)
     std::ifstream json_file;
     json_file.open(path);
     if (!json_file.is_open()) {
-        spdlog::error("Couldn't open settings file {}", path.string());
+        spdlog::error(L"Couldn't open settings file {}", path.wstring());
         return;
     }
     const auto json = nlohmann::json::parse(json_file);
@@ -111,10 +113,8 @@ inline void Parse(std::string arg1)
         std::string meh;
         safeParseValue(object, key, meh);
         if (!meh.empty()) {
-            value.clear();
-            std::ranges::transform(meh, std::back_inserter(value), [](const auto& ch) {
-                return static_cast<wchar_t>(ch);
-            });
+            // This assumes that char is utf8 and wchar_t is utf16, which is guaranteed on Windows.
+            value = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(meh);
         }
     };
 
@@ -146,7 +146,7 @@ inline void Parse(std::string arg1)
 
     json_file.close();
 
-    spdlog::debug("Read config file \"{}\"", path.string());
+    spdlog::debug(L"Read config file \"{}\"", path.wstring());
 
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);

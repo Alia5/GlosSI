@@ -30,7 +30,7 @@ limitations under the License.
 #include <tray.hpp>
 #endif
 
-SteamTarget::SteamTarget(int argc, char* argv[])
+SteamTarget::SteamTarget()
     : window_(
           [this] { run_ = false; },
           [this] { toggleGlossiOverlay(); },
@@ -270,8 +270,8 @@ std::vector<std::string> SteamTarget::getOverlayHotkey()
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
 
-    auto children = root.childs["system"];
-    if (children->attribs.find("InGameOverlayShortcutKey") == children->attribs.end()) {
+    std::shared_ptr<tyti::vdf::basic_object<char>> children = root.childs["system"];
+    if (!children || children->attribs.empty() || !children->attribs.contains("InGameOverlayShortcutKey")) {
         spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
         return {"Shift", "KEY_TAB"}; // default
     }
@@ -311,8 +311,8 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
 
-    auto children = root.childs["system"];
-    if (children->attribs.find("InGameOverlayScreenshotHotKey") == children->attribs.end()) {
+    std::shared_ptr<tyti::vdf::basic_object<char>> children = root.childs["system"];
+    if (!children || children->attribs.empty() || !children->attribs.contains("InGameOverlayScreenshotHotKey")) {
         spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
         return {"KEY_F12"}; //default
     }
@@ -352,7 +352,7 @@ bool SteamTarget::getXBCRebindingEnabled()
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
 
-    if (root.attribs.find("SteamController_XBoxSupport") == root.attribs.end()) {
+    if (root.attribs.empty() || !root.attribs.contains("SteamController_XBoxSupport")) {
         spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
         return false;
     }

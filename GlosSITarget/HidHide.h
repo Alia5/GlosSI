@@ -22,6 +22,7 @@ limitations under the License.
 #include <SetupAPI.h>
 #include <array>
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 #include <SFML/System/Clock.hpp>
@@ -68,32 +69,24 @@ class HidHide {
   private:
     HANDLE hidhide_handle = nullptr;
 
-    // Valve Hooks `SetupDiEnumDeviceInfo` and hides Gaming devices like this.
+    // Valve Hooks various functions and hides Gaming devices like this.
     // To be able to query them, unpatch the hook with the original bytes...
-    static inline const std::string SETUP_DI_ENUM_DEV_INFO_ORIG_BYTES = "\x48\x89\x5C\x24\x08";
-    // Valve also Hooks `SetupDiGetClassDevsW` ..unhook that as well...
-    static inline const std::string SETUP_DI_GETCLASSDEVSW_ORIG_BYTES = "\x48\x89\x5C\x24\x08";
-    // Valve also Hooks `HidD_GetPreparsedData` ..unhook that as well...
-    static inline const std::string HID_GETPREPARSED_ORIG_BYTES = "\x48\x89\x5C\x24\x18";
-    // ..aand `HidP_GetCaps`
-    static inline const std::string HID_GETCAPS_ORIG_BYTES = "\x4C\x8B\xD1\x48\x85\xC9";
-    // ...aaand `HidD_GetAttributes`
-    static inline const std::string HID_GETATTRS_ORIG_BYTES = "\x40\x53\x48\x83\xEC";
-    // ...aaaaand `HidD_GetProductString`
-    static inline const std::string HID_GETPRODSTR_ORIG_BYTES = "\x48\x83\xEC\x48\x48";
-    // ...aaaaand `HidP_GetUsages`
-    static inline const std::string HID_GETUSAGE_ORIG_BYTES = "\x4C\x89\x4C\x24\x20";
-    // ...aaaaand `HidP_GetData`
-    static inline const std::string HID_GETDATA_ORIG_BYTES = "\x4C\x89\x44\x24\x18";
-    // ...aaaaand `HidP_GetValueCaps`
-    static inline const std::string HID_GETVALUECAPS_ORIG_BYTES = "\x48\x83\xEC\x48\x49";
-    // ...aaaaand `HidP_GetUsageValue`
-    static inline const std::string HID_GETUSAGE_VAL_ORIG_BYTES = "\x40\x53\x55\x56\x48";
-    // ...aaaaand `HidP_GetButtonCaps`
-    static inline const std::string HID_GETBTNCAPS_VAL_ORIG_BYTES = "\x48\x83\xEC\x48\x49";
+    static inline const std::map<std::string, std::string> ORIGINAL_BYTES = {
+        {"SetupDiEnumDeviceInfo", "\x48\x89\x5C\x24\x08"},
+        {"SetupDiGetClassDevsW", "\x48\x89\x5C\x24\x08"},
+        {"HidD_GetPreparsedData", "\x48\x89\x5C\x24\x18"},
+        {"HidP_GetCaps", "\x4C\x8B\xD1\x48\x85\xC9"},
+        {"HidD_GetAttributes", "\x40\x53\x48\x83\xEC"},
+        {"HidD_GetProductString", "\x48\x83\xEC\x48\x48"},
+        {"HidP_GetUsages", "\x4C\x89\x4C\x24\x20"},
+        {"HidP_GetData", "\x4C\x89\x44\x24\x18"},
+        {"HidP_GetValueCaps", "\x48\x83\xEC\x48\x49"},
+        {"HidP_GetUsageValue", "\x40\x53\x55\x56\x48"},
+        {"HidP_GetButtonCaps", "\x48\x83\xEC\x48\x49"},
+    };
 
     static void UnPatchValveHooks();
-    static void UnPatchHook(BYTE* address, const std::string& bytes);
+    static void UnPatchHook(const std::string& name, HMODULE module);
 
     void enableOverlayElement();
     sf::Clock overlay_elem_clock_;

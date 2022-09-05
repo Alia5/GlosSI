@@ -34,12 +34,12 @@
     <QtModules>quick qml</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
     <QtQMLDebugEnable>true</QtQMLDebugEnable>
-    <QtInstall>6.2.4_msvc2019_64</QtInstall>
+    <QtInstall>6.3.1_msvc2019_64</QtInstall>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtModules>quick qml</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
-    <QtInstall>6.2.4_msvc2019_64</QtInstall>
+    <QtInstall>6.3.1_msvc2019_64</QtInstall>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
@@ -87,7 +87,7 @@
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  /permissive- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -153,7 +153,6 @@
   <ItemGroup>
     <ClInclude Include="ExeImageProvider.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="resource1.h" />
     <ClInclude Include="UWPFetch.h" />
     <ClInclude Include="VDFParser.h" />
     <ClInclude Include="WinEventFilter.h" />
@@ -165,7 +164,7 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\GloSC_Icon.ico" />
+    <Image Include="$(SolutionDir)\GloSC_Icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

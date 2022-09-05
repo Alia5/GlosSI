@@ -1,5 +1,5 @@
 git submodule init
-git submodule update --recursive
+git submodule update --recursive --force
 
 .\buildSFML.ps1
 .\buildViGEmClient.ps1

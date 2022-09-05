@@ -1,38 +1,8 @@
 diff --git a/src/ViGEmClient.vcxproj b/src/ViGEmClient.vcxproj
-index 7c186414e62a6334fbcd518d506f55db57491dfe..2955df4d391b37bf0b71e17df8bd161c1014a0c4 100644
+index 7c186414e62a6334fbcd518d506f55db57491dfe..6b71920a9b848e4a5a3ffb314a2e009a7a22502f 100644
 --- a/src/ViGEmClient.vcxproj
 +++ b/src/ViGEmClient.vcxproj
-@@ -49,52 +49,52 @@
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_LIB|Win32'" Label="Configuration">
-     <ConfigurationType>StaticLibrary</ConfigurationType>
-     <UseDebugLibraries>true</UseDebugLibraries>
--    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v143</PlatformToolset>
-     <CharacterSet>Unicode</CharacterSet>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_DLL|Win32'" Label="Configuration">
-     <ConfigurationType>DynamicLibrary</ConfigurationType>
-     <UseDebugLibraries>true</UseDebugLibraries>
--    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v143</PlatformToolset>
-     <CharacterSet>Unicode</CharacterSet>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LIB|Win32'" Label="Configuration">
-     <ConfigurationType>StaticLibrary</ConfigurationType>
-     <UseDebugLibraries>false</UseDebugLibraries>
--    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v143</PlatformToolset>
-     <WholeProgramOptimization>true</WholeProgramOptimization>
-     <CharacterSet>Unicode</CharacterSet>
-   </PropertyGroup>
-   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_DLL|Win32'" Label="Configuration">
-     <ConfigurationType>DynamicLibrary</ConfigurationType>
-     <UseDebugLibraries>false</UseDebugLibraries>
--    <PlatformToolset>v142</PlatformToolset>
-+    <PlatformToolset>v143</PlatformToolset>
-     <WholeProgramOptimization>true</WholeProgramOptimization>
-     <CharacterSet>Unicode</CharacterSet>
-   </PropertyGroup>
+@@ -75,26 +75,26 @@
    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_LIB|x64'" Label="Configuration">
      <ConfigurationType>StaticLibrary</ConfigurationType>
      <UseDebugLibraries>true</UseDebugLibraries>

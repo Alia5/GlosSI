@@ -17,6 +17,8 @@ limitations under the License.
 
 #include <filesystem>
 #include <utility>
+#include <locale>
+#include <codecvt>
 
 #include "Roboto.h"
 
@@ -53,7 +55,8 @@ Overlay::Overlay(
     if (!std::filesystem::exists(config_path))
         std::filesystem::create_directories(config_path);
     config_path /= "imgui.ini";
-    config_file_name_ = config_path.string();
+    // This assumes that char is utf8 and wchar_t is utf16, which is guaranteed on Windows.
+    config_file_name_ = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(config_path.wstring());
     io.IniFilename = config_file_name_.data();
 #endif
 
