@@ -8,7 +8,8 @@ msbuild.exe GlosSI.sln /t:Build /p:Configuration=Release /p:Platform=x64
 
 cd ./x64/Release/
 
-$env:Path += ';C:\Qt\6.2.4\msvc2019_64\bin'
+$env:Path += ';C:\Qt\6.3.1\msvc2019_64\bin'
+$env:Path += ';C:\Program Files\7-Zip'
 
 Get-ChildItem -Rec | Where {$_.Extension -match "lib"} | Remove-Item
 $env:Path = "$env:QTDIR\bin;$env:Path"
