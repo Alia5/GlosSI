@@ -69,6 +69,7 @@ static constexpr const char k_Devkit[] = {"Devkit"};
 static constexpr const char k_DevkitGameID[] = {"DevkitGameID"};
 static constexpr const char k_DevkitOverrideAppID[] = {"DevkitOverrideAppID"};
 static constexpr const char k_LastPlayTime[] = {"LastPlayTime"};
+static constexpr const char k_FlatpakAppID[] = {"FlatpakAppID"};
 static constexpr const char k_tags[] = {"tags"};
 
 enum VDFTypeId {
@@ -77,7 +78,7 @@ enum VDFTypeId {
     Number,
 };
 
-template <const char* const keyname, typename type, const uint8_t const _type_id>
+template <const char* const keyname, typename type, const uint8_t _type_id>
 struct VDFKeyPair {
     VDFKeyPair() {}
     explicit VDFKeyPair(type _value) : value(_value) {}
@@ -145,10 +146,12 @@ struct ShortcutTag {
     ShortcutTag(){};
     ShortcutTag(const ShortcutTag& other)
     {
+        idx = other.idx;
         value = other.value;
     };
     ShortcutTag(ShortcutTag&& other)
     {
+        idx = std::move(other.idx);
         value = std::move(other.value);
     };
     VDFIdx idx;
@@ -157,11 +160,13 @@ struct ShortcutTag {
 
     ShortcutTag& operator=(const ShortcutTag& other)
     {
+        idx = other.idx;
         value = other.value;
         return *this;
     }
     ShortcutTag& operator=(ShortcutTag&& other)
     {
+        idx = std::move(other.idx);
         value = std::move(other.value);
         return *this;
     }
@@ -184,6 +189,7 @@ struct Shortcut {
     VDFKeyPair<k_DevkitGameID, std::string, VDFTypeId::String> DevkitGameID{""};
     VDFKeyPair<k_DevkitOverrideAppID, uint32_t, VDFTypeId::Number> DevkitOverrideAppID{0}; //
     VDFKeyPair<k_LastPlayTime, uint32_t, VDFTypeId::Number> LastPlayTime{0};               //
+    VDFKeyPair<k_FlatpakAppID, std::string, VDFTypeId::String> FlatpakAppID{""};         //
     VDFKeyPair<k_tags, std::vector<ShortcutTag>, VDFTypeId::StringList> tags{};
     Shortcut& operator=(const Shortcut& other)
     {
@@ -204,6 +210,7 @@ struct Shortcut {
         DevkitGameID = other.DevkitGameID;
         DevkitOverrideAppID = other.DevkitOverrideAppID;
         LastPlayTime = other.LastPlayTime;
+        FlatpakAppID = other.FlatpakAppID;
         tags = other.tags;
         return *this;
     }
@@ -343,7 +350,7 @@ class Parser {
                 if (ifile.eof()) {
                     break;
                 }
-                auto tid = static_cast<VDFTypeId>(readVDFValue<uint8_t>());
+                const auto tid = static_cast<VDFTypeId>(readVDFValue<uint8_t>());
                 if (tid == 0x08) {
                     auto nextbyte = readVDFValue<uint8_t>();
                     if (nextbyte == 0x08) {
@@ -419,6 +426,10 @@ class Parser {
                     shortcut.LastPlayTime.value = readVDFValue<uint32_t>();
                     continue;
                 }
+                if (key == shortcut.FlatpakAppID.key) {
+                    shortcut.FlatpakAppID.value = readVDFString();
+                    continue;
+                }
                 if (key == shortcut.tags.key) {
                     ShortcutTag tag;
                     while (true) {
@@ -427,8 +438,9 @@ class Parser {
                         }
                         char tbuff[2];
                         readVDFBuffer(tbuff, 2); // 2 bytes POSSIBLE end marker
-                        ifile.seekg(-2, std::ios_base::cur);
+                        ifile.seekg(-1, std::ios_base::cur); // go one back, skip typeId
                         if (tbuff[0] == 0x08 && tbuff[1] == 0x08) {
+                            ifile.seekg(-1, std::ios_base::cur); // another back
                             break;
                         }
                         tag.idx.data = readVDFString();
@@ -436,7 +448,6 @@ class Parser {
                             ifile.seekg(-2, std::ios_base::cur);
                             break;
                         }
-                        ifile.seekg(1, std::ios_base::cur);
                         tag.value = readVDFString();
                         shortcut.tags.value.push_back(tag);
                     }
@@ -556,6 +567,12 @@ class Parser {
             ofile.write((char*)&shortcut.LastPlayTime.type_id, 1);
             ofile.write(shortcut.LastPlayTime.key, 13);
             ofile.write((char*)&shortcut.LastPlayTime.value, 4);
+
+            //
+            ofile.write((char*)&shortcut.FlatpakAppID.type_id, 1);
+            ofile.write(shortcut.FlatpakAppID.key, 13);
+            ofile.write(shortcut.FlatpakAppID.value.data(), shortcut.FlatpakAppID.value.length());
+            ofile.write("\x00", 1);
 
             //
             ofile.write((char*)&shortcut.tags.type_id, 1);
