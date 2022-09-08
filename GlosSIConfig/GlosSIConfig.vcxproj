@@ -68,7 +68,7 @@
       <AdditionalOptions>/Zc:__cplusplus /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\deps\WinReg;..\deps\fifo_map\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -90,7 +90,7 @@
       <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  /permissive- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\deps\WinReg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\deps\WinReg;..\deps\fifo_map\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -155,7 +155,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShortcutsVDF.h" />
     <ClInclude Include="UWPFetch.h" />
-    <ClInclude Include="VDFParser.h" />
     <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>
   <ItemGroup>

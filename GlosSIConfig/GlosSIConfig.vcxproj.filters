@@ -75,9 +75,6 @@
     <ClInclude Include="WinEventFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VDFParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UWPFetch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -85,6 +82,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExeImageProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShortcutsVDF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -100,7 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="$(SolutionDir)\GloSC_Icon.ico">
-        <Filter>Resource Files</Filter>
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
 </Project>

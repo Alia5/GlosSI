@@ -28,3 +28,6 @@
 [submodule "deps/traypp"]
 	path = deps/traypp
 	url = https://github.com/Soundux/traypp.git
+[submodule "deps/fifo_map"]
+	path = deps/fifo_map
+	url = git@github.com:nlohmann/fifo_map.git

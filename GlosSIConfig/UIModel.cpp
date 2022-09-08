@@ -141,9 +141,9 @@ void UIModel::deleteTarget(int index)
 bool UIModel::isInSteam(QVariant shortcut)
 {
     const auto map = shortcut.toMap();
-    for (auto& steam_shortcut : shortcuts_vdf_.shortcuts) {
-        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appName.value)) {
-            if (QString::fromStdString(steam_shortcut.exe.value).toLower().contains("glossitarget.exe")) {
+    for (auto& steam_shortcut : shortcuts_vdf_) {
+        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
+            if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
                 return true;
             }
         }
@@ -161,15 +161,13 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
     const auto launch = map["launch"].toBool();
 
     VDFParser::Shortcut vdfshortcut;
-    vdfshortcut.idx = shortcuts_vdf_.shortcuts.size();
-    vdfshortcut.appName.value = name.toStdString();
-    vdfshortcut.exe.value = ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\"").toStdString();
-    vdfshortcut.StartDir.value = (launch && !maybeLaunchPath.isEmpty()
+    vdfshortcut.appname = name.toStdString();
+    vdfshortcut.exe = ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\"").toStdString();
+    vdfshortcut.StartDir = (launch && !maybeLaunchPath.isEmpty()
                                       ? (std::string("\"") + std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string() + "\"")
                                       : ("\"" + appDir.absolutePath() + "\"").toStdString());
-    vdfshortcut.appId.value = VDFParser::Parser::calculateAppId(vdfshortcut);
     // ShortcutPath; default
-    vdfshortcut.LaunchOptions.value = (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdString();
+    vdfshortcut.LaunchOptions = (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdString();
     // IsHidden; default
     // AllowDesktopConfig; default
     // AllowOverlay; default
@@ -181,25 +179,18 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
     auto maybeIcon = map["icon"].toString();
     if (maybeIcon.isEmpty()) {
         if (launch && !maybeLaunchPath.isEmpty())
-            vdfshortcut.icon.value =
+            vdfshortcut.icon =
                 "\"" + (is_windows_ ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeLaunchPath.toStdString()) + "\"";
     }
     else {
-        vdfshortcut.icon.value =
+        vdfshortcut.icon =
             "\"" + (is_windows_ ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeIcon.toStdString()) + "\"";
     }
     // Add installed locally and GlosSI tag
-    VDFParser::ShortcutTag locallyTag;
-    locallyTag.idx = 0;
-    locallyTag.value = "Installed locally";
-    vdfshortcut.tags.value.push_back(locallyTag);
+    vdfshortcut.tags.push_back("Installed locally");
+    vdfshortcut.tags.push_back("GlosSI");
 
-    VDFParser::ShortcutTag glossitag;
-    glossitag.idx = 1;
-    glossitag.value = "GlosSI";
-    vdfshortcut.tags.value.push_back(glossitag);
-
-    shortcuts_vdf_.shortcuts.push_back(vdfshortcut);
+    shortcuts_vdf_.push_back(vdfshortcut);
 
     return writeShortcutsVDF(L"add", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
@@ -220,16 +211,10 @@ bool UIModel::addToSteam(const QString& name, const QString& shortcutspath, bool
 bool UIModel::removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd)
 {
     qDebug() << "trying to remove " << name << " from steam";
-    auto& scuts = shortcuts_vdf_.shortcuts;
-    scuts.erase(std::remove_if(scuts.begin(), scuts.end(), [&name](const auto& shortcut) {
-                    return shortcut.appName.value == name.toStdString();
-                }),
-                scuts.end());
-    for (int i = 0; i < scuts.size(); i++) {
-        if (scuts[i].idx != i) {
-            scuts[i].idx = i;
-        }
-    }
+    shortcuts_vdf_.erase(std::ranges::remove_if(shortcuts_vdf_, [&name](const auto& shortcut) {
+                    return shortcut.appname == name.toStdString();
+                }).begin(),
+                         shortcuts_vdf_.end());
     return writeShortcutsVDF(L"remove", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
 
@@ -271,7 +256,7 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
 
     bool write_res;
     try {
-        write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+        write_res = VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_, qDebug());
     }
     catch (const std::exception& e) {
         qDebug() << "Couldn't backup shortcuts file: " << e.what();
@@ -413,7 +398,7 @@ void UIModel::parseShortcutVDF()
 {
     const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
     try {
-        shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path);
+        shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path, qDebug());
     }
     catch (const std::exception& e) {
         qDebug() << "Error parsing VDF: " << e.what();
