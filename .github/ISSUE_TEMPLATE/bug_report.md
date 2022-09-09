@@ -23,5 +23,9 @@ assignees: ''
 ## Specifications
 
   - Version:
-  - Platform:
-  - Subsystem:
+  - Platform: (Win10/Win11 / Desktop/SteamDeck)
+  - Application: (GlosSITarget/GlosSIConfig)
+
+## Logs / Additional Files
+
+(Log and config files are located in `%appdata%/GlosSI`)
