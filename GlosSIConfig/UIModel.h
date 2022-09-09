@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #pragma once
-#include "VDFParser.h"
+#include <shortcuts_vdf.hpp>
 #include <QJsonObject>
 #include <QObject>
 #include <QVariant>
@@ -74,7 +74,7 @@ class UIModel : public QObject {
 
     QVariantList targets_;
 
-    VDFParser::VDFFile shortcuts_vdf_;
+    std::vector<VDFParser::Shortcut> shortcuts_vdf_;
 
 #ifdef _WIN32
     bool is_windows_ = true;

@@ -28,3 +28,9 @@
 [submodule "deps/traypp"]
 	path = deps/traypp
 	url = https://github.com/Soundux/traypp.git
+[submodule "deps/fifo_map"]
+	path = deps/fifo_map
+	url = git@github.com:nlohmann/fifo_map.git
+[submodule "deps/Shortcuts_VDF"]
+	path = deps/Shortcuts_VDF
+	url = git@github.com:Alia5/Shortcuts_VDF.git
