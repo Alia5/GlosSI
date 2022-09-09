@@ -146,7 +146,8 @@ inline void Parse(std::wstring arg1)
 
     json_file.close();
 
-    spdlog::debug(L"Read config file \"{}\"", path.wstring());
+    // c++ is stupid...
+    spdlog::debug(L"Read config file \"{}\"; config: {}", path.wstring(), std::filesystem::path(json.dump()).wstring());
 
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
