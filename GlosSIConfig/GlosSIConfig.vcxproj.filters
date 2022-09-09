@@ -84,9 +84,6 @@
     <ClInclude Include="ExeImageProvider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShortcutsVDF.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="manifest.xml">
