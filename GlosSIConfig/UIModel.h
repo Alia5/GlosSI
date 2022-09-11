@@ -28,6 +28,7 @@ class UIModel : public QObject {
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
     Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
     Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
+    Q_PROPERTY(bool steamInputXboxSupportEnabled READ isSteamInputXboxSupportEnabled CONSTANT)
 
   public:
     UIModel();
@@ -42,6 +43,7 @@ class UIModel : public QObject {
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE QVariantMap manualProps(QVariant shortcut);
+    Q_INVOKABLE void enableSteamInputXboxSupport();
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
@@ -71,7 +73,11 @@ class UIModel : public QObject {
     std::wstring getSteamUserId() const;
     bool foundSteam() const;
     void parseShortcutVDF();
+
+    bool isSteamInputXboxSupportEnabled() const;
+
     QString shortcutsfile_ = "/config/shortcuts.vdf";
+    QString user_config_file_ = "/config/localconfig.vdf";
     QString user_data_path_ = "/userdata/";
 
     QVariantList targets_;

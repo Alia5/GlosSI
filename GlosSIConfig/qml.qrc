@@ -16,5 +16,6 @@
         <file>GloSC_Icon_small.png</file>
         <file>svg/help_outline_white_24dp.svg</file>
         <file>qml/SteamNotFoundDialog.qml</file>
+        <file>qml/SteamInputXboxDisabledDialog.qml</file>
     </qresource>
 </RCC>

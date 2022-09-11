@@ -237,6 +237,46 @@ QVariantMap UIModel::manualProps(QVariant shortcut)
     return res;
 }
 
+void UIModel::enableSteamInputXboxSupport()
+{
+    if (foundSteam()) {
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        if (!std::filesystem::exists(config_path)) {
+            qDebug() << "localconfig.vdf does not exist.";
+        }
+        QFile file(config_path);
+        if (file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            QStringList lines;
+            QString line = in.readLine();
+            // simple approach is enough...
+            while (!in.atEnd()) {
+                if (line.contains("SteamController_XBoxSupport")) {
+                    if (line.contains("1")) {
+                        qDebug() << "\"SteamController_XBoxSupport\" is already enabled! aborting write...";
+                        file.close();
+                        return;
+                    }
+                    qDebug() << "found \"SteamController_XBoxSupport\" line, replacing value...";
+                    line.replace("0", "1");
+                }
+                lines.push_back(line);
+                line = in.readLine();
+            }
+            file.close();
+            QFile updatedFile(config_path);
+            if (updatedFile.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
+                qDebug() << "writing localconfig.vdf...";
+                QTextStream out(&updatedFile);
+                for (const auto& l : lines) {
+                    out << l << "\n";
+                }
+            }
+            updatedFile.close();
+        }
+    }
+}
+
 #ifdef _WIN32
 QVariantList UIModel::uwpApps()
 {
@@ -435,4 +475,40 @@ void UIModel::parseShortcutVDF()
     catch (const std::exception& e) {
         qDebug() << "Error parsing VDF: " << e.what();
     }
+}
+
+bool UIModel::isSteamInputXboxSupportEnabled() const
+{
+    // return true as default to not bug the user in error cases.
+    if (foundSteam()) {
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        if (!std::filesystem::exists(config_path)) {
+            qDebug() << "localconfig.vdf does not exist.";
+            return true;
+        }
+        QFile file(config_path);
+        if (file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            QString line = in.readLine();
+            // simple, regex approach should be enough...
+            while (!in.atEnd()) {
+                if (line.contains("SteamController_XBoxSupport")) {
+                    file.close();
+                    if (line.contains("1")) {
+                        qDebug() << "\"SteamController_XBoxSupport\" is enabled!";
+                        return true;
+                    }
+                    qDebug() << "\"SteamController_XBoxSupport\" is disabled!";
+                    return false;
+                }
+                line = in.readLine();
+            }
+            qDebug() << "couldn't find \"SteamController_XBoxSupport\" in localconfig.vdf";
+            file.close();
+        }
+        else {
+            qDebug() << "could not open localconfig.vdf";
+        }
+    }
+    return true;
 }

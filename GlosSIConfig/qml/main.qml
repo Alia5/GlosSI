@@ -48,6 +48,10 @@ Window {
     Component.onCompleted: function() {
         if (!uiModel.foundSteam) {
             steamNotFoundDialog.open();
+            return;
+        }
+        if (!uiModel.steamInputXboxSupportEnabled) {
+            steamXboxDisabledDialog.open();
         }
     }
 
@@ -64,6 +68,10 @@ Window {
     SteamNotFoundDialog {
         id: steamNotFoundDialog
     }
+    SteamInputXboxDisabledDialog {
+        id: steamXboxDisabledDialog
+    }
+
 
     InfoDialog {
         id: steamChangedDialog

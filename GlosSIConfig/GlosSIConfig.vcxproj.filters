@@ -68,6 +68,9 @@
     <None Include="qml\SteamNotFoundDialog.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\SteamInputXboxDisabledDialog.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">

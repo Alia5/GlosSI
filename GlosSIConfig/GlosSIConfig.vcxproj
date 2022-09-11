@@ -137,6 +137,7 @@
     <ClCompile Include="UIModel.cpp" />
     <None Include=".clang-format" />
     <None Include="GetAUMIDs.ps1" />
+    <None Include="qml\SteamInputXboxDisabledDialog.qml" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
     <None Include="qml\InfoDialog.qml" />
