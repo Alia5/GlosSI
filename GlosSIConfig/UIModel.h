@@ -27,6 +27,7 @@ class UIModel : public QObject {
     Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
     Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
+    Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
 
   public:
     UIModel();
@@ -68,6 +69,7 @@ class UIModel : public QObject {
 
     std::filesystem::path getSteamPath() const;
     std::wstring getSteamUserId() const;
+    bool foundSteam() const;
     void parseShortcutVDF();
     QString shortcutsfile_ = "/config/shortcuts.vdf";
     QString user_data_path_ = "/userdata/";

@@ -144,6 +144,7 @@
     <None Include="qml\ShortcutCards.qml" />
     <None Include="qml\ShortcutProps.qml" />
     <None Include="qml\UWPSelectDialog.qml" />
+    <None Include="qml\SteamNotFoundDialog.qml" />
     <QtRcc Include="qml.qrc" />
     <None Include="qml\main.qml" />
   </ItemGroup>

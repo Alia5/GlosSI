@@ -367,12 +367,20 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name)
 
 std::filesystem::path UIModel::getSteamPath() const
 {
+    try {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
-    const auto res = key.GetStringValue(L"SteamPath");
-    return res;
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
+        if (!key.IsValid()) {
+            return "";
+        }
+        const auto res = key.GetStringValue(L"SteamPath");
+        return res;
+    }
+    catch (...) {
+        return "";
+    }
 #else
     return L""; // TODO LINUX
 #endif
@@ -381,17 +389,36 @@ std::filesystem::path UIModel::getSteamPath() const
 std::wstring UIModel::getSteamUserId() const
 {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-    const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
-    if (res == L"0") {
-        qDebug() << "Steam not open?";
+    try {
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
+        if (!key.IsValid()) {
+            return L"0";
+        }
+        const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+        if (res == L"0") {
+            qDebug() << "Steam not open?";
+        }
+        return res;
+    } catch(...) {
+        return L"0";
     }
-    return res;
 #else
     return L""; // TODO LINUX
 #endif
+}
+
+bool UIModel::foundSteam() const
+{
+    if (getSteamPath() == "" || getSteamUserId() == L"0") {
+        return false;
+    }
+    const std::filesystem::path user_config_dir = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId();
+    if (!std::filesystem::exists(user_config_dir)) {
+        return false;
+    }
+    return true;
 }
 
 void UIModel::parseShortcutVDF()

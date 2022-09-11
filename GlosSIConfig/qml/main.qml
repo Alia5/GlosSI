@@ -45,6 +45,12 @@ Window {
 
     property bool steamShortcutsChanged: false
 
+    Component.onCompleted: function() {
+        if (!uiModel.foundSteam) {
+            steamNotFoundDialog.open();
+        }
+    }
+
     Image {
         anchors.top: parent.top
         anchors.left: parent.left
@@ -53,6 +59,10 @@ Window {
         source: "qrc:/noise.png"
         fillMode: Image.Tile
         opacity: 0.033
+    }
+
+    SteamNotFoundDialog {
+        id: steamNotFoundDialog
     }
 
     InfoDialog {
