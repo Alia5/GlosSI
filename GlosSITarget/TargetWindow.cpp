@@ -254,8 +254,11 @@ void TargetWindow::createWindow(bool window_mode)
 #ifdef _WIN32
         // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
         // Scaling down by 1px each direction is barely noticeable and works.
+
+        // Due to some other issue, the (Steam) overlay might get blurred when doing this
+        // as a workaround, start in full size, and scale down later...
         spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
-        window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
+        window_.create(sf::VideoMode(desktop_mode.width -1, desktop_mode.height -1, 32), "GlosSITarget", sf::Style::None);
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
@@ -320,6 +323,9 @@ void TargetWindow::createWindow(bool window_mode)
     else {
         spdlog::warn("Not applying too low screen scale setting");
     }
+
+    // window_.setSize({desktop_mode.width - 1, desktop_mode.height - 1 });
+
     on_window_changed_();
 
 #ifdef _WIN32

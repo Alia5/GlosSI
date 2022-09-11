@@ -1,4 +1,5 @@
 UseTab: false
+BasedOnStyle: LLVM
 IndentWidth: 4
 BreakBeforeBraces: "Stroustrup"
 AllowShortIfStatementsOnASingleLine: false
