@@ -424,6 +424,11 @@ bool UIModel::foundSteam() const
 void UIModel::parseShortcutVDF()
 {
     const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    if (!std::filesystem::exists(config_path)) {
+        qDebug() << "Shortcuts file does not exist.";
+        return;
+    }
+
     try {
         shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path, qDebug());
     }
