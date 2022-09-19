@@ -406,9 +406,11 @@ Item {
                                 onClicked: () => {
                                     helpInfoDialog.titleText = qsTr("Emulate DS4")
                                     helpInfoDialog.text = 
-                                        qsTr("Instead of X360 Pad")
+                                        qsTr("Emulates a DS4 instead of X360 Pad")
                                         + "\n"
-                                        + qsTr("Disable \"Playstation Configuration support\" in Steam")
+                                        qsTr("for usage with, for example, PSNow")
+                                        + "\n"
+                                        + qsTr("If enabled you have to disable \"Playstation Configuration support\" in Steam")
                                     helpInfoDialog.open()
                                 }
                                 width: 48
@@ -441,6 +443,26 @@ Item {
                                 to: 4
                                 onValueChanged: shortcutInfo.maxControllers = value
                             }
+                            RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Max. emulated controllers")
+                                    helpInfoDialog.text = 
+                                        qsTr("GlosSI will only provide [NUMBER] of controllers")
+                                        + "\n"
+                                        + qsTr("Required to set to actually connected controller count when using \"real devuce IDs\" ")
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
                     }
                 }
@@ -453,41 +475,68 @@ Item {
                     Column {
                         spacing: 2
                         width: parent.width
-                        CheckBox {
-                            id: windowMode
-                            text: qsTr("Steam/GlosSI overlay as separate window")
-                            checked: shortcutInfo.windowMode
-                            onCheckedChanged: shortcutInfo.windowMode = checked
-                        }
-                        Label {
-                            text: qsTr("Doesn't show overlay on top, but as separate window")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                            topPadding: -8
-                        }
-                        Label {
-                            text: qsTr("Use if blackscreen-issues are encountered.")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
+                         Row {
+                            CheckBox {
+                                id: windowMode
+                                text: qsTr("Steam/GlosSI overlay as separate window")
+                                checked: shortcutInfo.windowMode
+                                onCheckedChanged: shortcutInfo.windowMode = checked
+                            }
+                             RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Steam/GlosSI overlay as separate window")
+                                    helpInfoDialog.text = 
+                                        qsTr("Doesn't show overlay on top, but as separate window")
+                                        + "\n"
+                                        + qsTr("Use if blackscreen-issues are encountered.")
+
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
                         Item {
                             width: 1
                             height: 4
                         }
-                        CheckBox {
-                            id: disableOverlayCheckbox
-                            text: qsTr("Disable Steam/GlosSI overlay")
-                            checked: shortcutInfo.disableOverlay
-                            onCheckedChanged: shortcutInfo.disableOverlay = checked
-                        }
-                        Label {
-                            text: qsTr("Only controller emulation - No extra window")
-                            wrapMode: Text.WordWrap
-                            width: parent.width
-                            leftPadding: 32
-                            topPadding: -8
+
+                        Row {
+                            CheckBox {
+                                id: disableOverlayCheckbox
+                                text: qsTr("Disable Steam/GlosSI overlay")
+                                checked: shortcutInfo.disableOverlay
+                                onCheckedChanged: shortcutInfo.disableOverlay = checked
+                            }
+                             RoundButton {
+                                onClicked: () => {
+                                    helpInfoDialog.titleText = qsTr("Disable Steam/GlosSI overlay")
+                                    helpInfoDialog.text = 
+                                        qsTr("Only controller emulation - No extra window")
+                                        + "\n"
+                                        + qsTr("Might help with Steam remote play.")
+
+                                    helpInfoDialog.open()
+                                }
+                                width: 48
+                                height: 48
+                                Material.elevation: 0
+                                anchors.topMargin: 16
+                                Image {
+                                    anchors.centerIn: parent
+                                    source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    width: 24
+                                    height: 24
+                                }
+                            }
                         }
                     }
                 }
