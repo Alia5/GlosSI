@@ -103,7 +103,9 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         }
     }
     if (Settings::extendedLogging) {
-        std::ranges::for_each(whitelist, [](const auto& exe) { spdlog::debug(L"Whitelisted executable: {}", exe); });
+        std::ranges::for_each(whitelist, [](const auto& exe) {
+            spdlog::trace(L"Whitelisted executable: {}", exe);
+        });
     }
     setAppWhiteList(whitelist);
 
@@ -131,7 +133,9 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         setActive(true);
         spdlog::info("Hid Gaming Devices; Enabling Overlay element...");
         if (Settings::extendedLogging) {
-            std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+            std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
+                spdlog::trace(L"Blacklisted device: {}", dev);
+            });
         }
         enableOverlayElement();
     }
@@ -234,7 +238,9 @@ void HidHide::enableOverlayElement()
                     }
                     setBlacklistDevices(blacklisted_devices_);
                     if (Settings::extendedLogging) {
-                        std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+                        std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
+                            spdlog::trace(L"Blacklisted device: {}", dev);
+                        });
                     }
                     closeCtrlDevice();
                 }
