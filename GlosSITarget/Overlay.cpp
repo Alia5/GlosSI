@@ -21,6 +21,7 @@ limitations under the License.
 #include <codecvt>
 
 #include "Roboto.h"
+#include "Settings.h"
 
 Overlay::Overlay(
     sf::RenderWindow& window,
@@ -166,6 +167,7 @@ void Overlay::update()
         }
 
         closeOverlayButton();
+        saveSettingsButton();
     }
 
     ImGui::SFML::Render(window_);
@@ -305,4 +307,17 @@ bool Overlay::closeButton() const
     ImGui::PopStyleColor();
     ImGui::PopStyleVar();
     return false;
+}
+
+void Overlay::saveSettingsButton() const
+{
+    if (Settings::settings_path_ != "") {
+        ImGui::SetNextWindowPos({(window_.getSize().x - ImGui::GetWindowWidth()) / 2, (window_.getSize().y - ImGui::GetWindowHeight()) / 2}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSizeConstraints({192, 96}, {512, 512});
+        ImGui::Begin("Shortcut settings");
+        if (ImGui::Button("Save settings", {256, 32})) {
+            Settings::StoreSettings();
+        }
+        ImGui::End();   
+    }
 }

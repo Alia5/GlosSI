@@ -52,6 +52,8 @@ inline struct Controller {
     bool emulateDS4 = false;
 } controller;
 
+inline std::filesystem::path settings_path_ = "";
+
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
     if (launch_path.find(L"://") != std::wstring::npos) {
@@ -87,6 +89,7 @@ inline void Parse(std::wstring arg1)
         spdlog::error(L"Couldn't open settings file {}", path.wstring());
         return;
     }
+    settings_path_ = path;
     const auto json = nlohmann::json::parse(json_file);
     if (json["version"] != 1) { // TODO: versioning stuff
         spdlog::warn("Config version doesn't match application version.");
@@ -102,10 +105,10 @@ inline void Parse(std::wstring arg1)
             value = object[key];
         }
         catch (const nlohmann::json::exception& e) {
-            spdlog::error("Err parsing \"{}\"; {}", key, e.what());
+            spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
         }
         catch (const std::exception& e) {
-            spdlog::error("Err parsing \"{}\"; {}", key, e.what());
+            spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
         }
     };
 
@@ -152,6 +155,35 @@ inline void Parse(std::wstring arg1)
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
     }
+}
+
+inline void StoreSettings()
+{
+    nlohmann::json json;
+    json["version"] = 1;
+    json["launch"]["launch"] = launch.launch;
+    json["launch"]["launchPath"] = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(launch.launchPath);
+    json["launch"]["launchAppArgs"] = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(launch.launchAppArgs);
+    json["launch"]["closeOnExit"] = launch.closeOnExit;
+    json["launch"]["waitForChildProcs"] = launch.waitForChildProcs;
+    json["devices"]["hideDevices"] = devices.hideDevices;
+    json["devices"]["realDeviceIds"] = devices.realDeviceIds;
+    json["window"]["windowMode"] = window.windowMode;
+    json["window"]["maxFps"] = window.maxFps;
+    json["window"]["scale"] = window.scale;
+    json["window"]["disableOverlay"] = window.disableOverlay;
+    json["controller"]["maxControllers"] = controller.maxControllers;
+    json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
+    json["controller"]["emulateDS4"] = controller.emulateDS4;
+
+    std::ofstream json_file;
+    json_file.open(settings_path_);
+    if (!json_file.is_open()) {
+        spdlog::error(L"Couldn't open settings file {}", settings_path_.wstring());
+        return;
+    }
+    json_file << json.dump(4);
+    json_file.close();
 }
 
 } // namespace Settings

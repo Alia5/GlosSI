@@ -50,6 +50,7 @@ class Overlay {
     void showLogs();
     bool closeOverlayButton() const;
     [[nodiscard]] bool closeButton() const;
+    void saveSettingsButton() const;
     bool force_enable_ = false;
     bool log_expanded_ = true;
 
