@@ -47,7 +47,13 @@ There are two (known to me, at time of writing) ways to get a working overlay fo
 
 #define SUBHOOK_STATIC
 #include <atomic>
+#include <filesystem>
 #include <subhook.h>
+
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 
 enum ZBID
 {
@@ -85,13 +91,16 @@ BOOL WINAPI SetGlosSIWindowBand(HWND hWnd, HWND hwndInsertAfter, DWORD dwBand)
 	const auto glossi_hwnd = FindWindowA(nullptr, "GlosSITarget");
 	if (glossi_hwnd)
 	{
+		spdlog::info("Found GlosSI Window");
 		// Most window bands don't really seem to work.
 		// However, notification and system_tools does!
 		// use system tools, as that allows the steam overlay to be interacted with
 		// without UWP apps minimizing
 		SetWindowBand(glossi_hwnd, nullptr, ZBID_SYSTEM_TOOLS);
 		allow_exit = true;
+		spdlog::info("Set GlosSI Window Band to ZBID_SYSTEM_TOOLS");
 	}
+	spdlog::info("Calling original");
 	return SetWindowBand(hWnd, hwndInsertAfter, dwBand);
 }
 
@@ -102,7 +111,10 @@ DWORD WINAPI WaitThread(HMODULE hModule)
 		Sleep(10);
 	}
 	if (SetWindowBandHook.IsInstalled())
+	{
+		spdlog::debug("Uninstalling SetWindowBand hook");
 		SetWindowBandHook.Remove();
+	}
 	FreeLibraryAndExitThread(hModule, 0);
 }
 
@@ -113,17 +125,47 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
+
+		auto path = std::filesystem::temp_directory_path()
+			.parent_path()
+			.parent_path()
+			.parent_path();
+
+		path /= "Roaming";
+		path /= "GlosSI";
+		if (!std::filesystem::exists(path))
+			std::filesystem::create_directories(path);
+		path /= "UWPOverlayEnabler.log";
+		const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.string(), true);
+		std::vector<spdlog::sink_ptr> sinks{ file_sink };
+		auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
+		logger->set_level(spdlog::level::trace);
+		logger->flush_on(spdlog::level::trace);
+		spdlog::set_default_logger(logger);
+
+		spdlog::info("UWPOverlayEnabler loaded");
+
 		const auto hpath = LoadLibrary(L"user32.dll");
 		if (hpath)
 		{
+			spdlog::debug("Loaded user32.dll");
+			spdlog::debug("Installing SetWindowBand hook");
 			SetWindowBand = reinterpret_cast<fSetWindowBand>(GetProcAddress(hpath, "SetWindowBand"));
 			SetWindowBandHook.Install(GetProcAddress(hpath, "SetWindowBand"), &SetGlosSIWindowBand, subhook::HookFlags::HookFlag64BitOffset);
+			spdlog::debug("Creating wait thread");
 			CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)WaitThread, hModule, 0, nullptr));
+		} else
+		{
+			spdlog::error("Loaded user32.dll");
 		}
 	}
 	else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+		spdlog::info("unloading UWPOverlayEnabler");
 		if (SetWindowBandHook.IsInstalled())
+		{
+			spdlog::debug("Uninstalling SetWindowBand hook");
 			SetWindowBandHook.Remove();
+		}
 	}
     return TRUE;
 }
