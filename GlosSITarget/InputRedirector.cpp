@@ -178,7 +178,11 @@ void InputRedirector::runLoop()
                         }
                     }
                     if (target_add_res == VIGEM_ERROR_NONE) {
-                        spdlog::info("Plugged in controller {}, {}", i, vigem_target_get_index(vt_pad_[i]));
+                        spdlog::info("Plugged in controller {}, {}; VID: {:x}; PID: {:x}",
+                            i, 
+                            vigem_target_get_index(vt_pad_[i]),
+                            vigem_target_get_vid(vt_pad_[i]),
+                            vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
                             const auto callback_register_res = vigem_target_ds4_register_notification(
