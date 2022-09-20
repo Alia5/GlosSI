@@ -47,7 +47,7 @@ inline struct Window {
 } window;
 
 inline struct Controller {
-    int maxControllers = 4;
+    int maxControllers = 1;
     bool allowDesktopConfig = false;
     bool emulateDS4 = false;
 } controller;
