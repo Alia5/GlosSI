@@ -189,61 +189,62 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
 void HidHide::enableOverlayElement()
 {
     Overlay::AddOverlayElem([this](bool window_has_focus) {
-        if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
-            openCtrlDevice();
-            bool hidehide_state_store = hidhide_active_;
-            if (Settings::extendedLogging) {
-                spdlog::debug("Refreshing HID devices");
-            }
-            if (hidhide_active_) {
-                setActive(false);
-            }
-            avail_devices_ = GetHidDeviceList();
-            blacklisted_devices_ = getBlackListDevices();
-            if (hidehide_state_store) {
-                setActive(true);
-            }
-            closeCtrlDevice();
-            overlay_elem_clock_.restart();
-        }
         ImGui::SetNextWindowPos({650, 100}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
-        ImGui::Begin("Hidden Devices");
-        ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 64}, true);
-        std::ranges::for_each(avail_devices_, [this](const auto& device) {
-            std::string label = (std::string(device.name.begin(), std::ranges::find(device.name, L'\0')) + "##" + std::string(device.device_instance_path.begin(), device.device_instance_path.end()));
-            const auto findDeviceFn = [&device](const auto& blackdev) {
-                return device.device_instance_path == blackdev || device.base_container_device_instance_path == blackdev;
-            };
-            bool hidden = std::ranges::find_if(blacklisted_devices_, findDeviceFn) != blacklisted_devices_.end();
-            if (ImGui::Checkbox(label.data(), &hidden)) {
+        if (ImGui::Begin("Hidden Devices")) {
+            if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
                 openCtrlDevice();
-                if (hidden) {
-                    if (std::ranges::none_of(blacklisted_devices_, findDeviceFn)) {
-                        if (!device.device_instance_path.empty()) {
-                            blacklisted_devices_.push_back(device.device_instance_path);
-                        }
-                        if (!device.device_instance_path.empty()) {
-                            blacklisted_devices_.push_back(device.base_container_device_instance_path);
-                        }
-                    }
-                }
-                else {
-                    blacklisted_devices_.erase(std::ranges::remove_if(blacklisted_devices_, findDeviceFn).begin(),
-                                               blacklisted_devices_.end());
-                }
-                setBlacklistDevices(blacklisted_devices_);
+                bool hidehide_state_store = hidhide_active_;
                 if (Settings::extendedLogging) {
-                    std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+                    spdlog::debug("Refreshing HID devices");
+                }
+                if (hidhide_active_) {
+                    setActive(false);
+                }
+                avail_devices_ = GetHidDeviceList();
+                blacklisted_devices_ = getBlackListDevices();
+                if (hidehide_state_store) {
+                    setActive(true);
                 }
                 closeCtrlDevice();
+                overlay_elem_clock_.restart();
             }
-        });
-        ImGui::EndChild();
-        if (ImGui::Checkbox("Devices Hidden", &hidhide_active_)) {
-            openCtrlDevice();
-            setActive(hidhide_active_);
-            closeCtrlDevice();
+            ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 64}, true);
+            std::ranges::for_each(avail_devices_, [this](const auto& device) {
+                std::string label = (std::string(device.name.begin(), std::ranges::find(device.name, L'\0')) + "##" + std::string(device.device_instance_path.begin(), device.device_instance_path.end()));
+                const auto findDeviceFn = [&device](const auto& blackdev) {
+                    return device.device_instance_path == blackdev || device.base_container_device_instance_path == blackdev;
+                };
+                bool hidden = std::ranges::find_if(blacklisted_devices_, findDeviceFn) != blacklisted_devices_.end();
+                if (ImGui::Checkbox(label.data(), &hidden)) {
+                    openCtrlDevice();
+                    if (hidden) {
+                        if (std::ranges::none_of(blacklisted_devices_, findDeviceFn)) {
+                            if (!device.device_instance_path.empty()) {
+                                blacklisted_devices_.push_back(device.device_instance_path);
+                            }
+                            if (!device.device_instance_path.empty()) {
+                                blacklisted_devices_.push_back(device.base_container_device_instance_path);
+                            }
+                        }
+                    }
+                    else {
+                        blacklisted_devices_.erase(std::ranges::remove_if(blacklisted_devices_, findDeviceFn).begin(),
+                                                   blacklisted_devices_.end());
+                    }
+                    setBlacklistDevices(blacklisted_devices_);
+                    if (Settings::extendedLogging) {
+                        std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+                    }
+                    closeCtrlDevice();
+                }
+            });
+            ImGui::EndChild();
+            if (ImGui::Checkbox("Devices Hidden", &hidhide_active_)) {
+                openCtrlDevice();
+                setActive(hidhide_active_);
+                closeCtrlDevice();
+            }
         }
         ImGui::End();
     });
