@@ -52,6 +52,8 @@ inline struct Controller {
     bool emulateDS4 = false;
 } controller;
 
+inline bool extendedLogging = true;
+
 inline std::filesystem::path settings_path_ = "";
 
 inline bool checkIsUwp(const std::wstring& launch_path)
@@ -147,6 +149,17 @@ inline void Parse(std::wstring arg1)
         safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
     }
 
+    try {
+        if (auto extlog = json["extendedLogging"]; extlog.is_boolean()) {
+            extendedLogging = extlog;
+        }
+    }
+    catch (...)
+    {
+    }
+
+
+
     json_file.close();
 
     // c++ is stupid...
@@ -175,6 +188,8 @@ inline void StoreSettings()
     json["controller"]["maxControllers"] = controller.maxControllers;
     json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
     json["controller"]["emulateDS4"] = controller.emulateDS4;
+
+    json["extendedLogging"] = extendedLogging;
 
     std::ofstream json_file;
     json_file.open(settings_path_);

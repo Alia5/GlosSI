@@ -17,6 +17,8 @@ limitations under the License.
 
 #include <spdlog/spdlog.h>
 
+#include "Settings.h"
+
 #ifdef _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -44,6 +46,11 @@ void SteamOverlayDetector::update()
     // okey to use nullptr as hwnd. get EVERY message
     if (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
         // filter out some messages as not all get altered by steam...
+
+        if (Settings::extendedLogging && msg.message != 512) {
+            spdlog::trace("PeekMessage: Window msg: {}", msg.message);
+        }
+
         if (msg.message < 1000 && msg.message > 0) {
             return;
         }

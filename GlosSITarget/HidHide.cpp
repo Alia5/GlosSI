@@ -102,6 +102,9 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
             whitelist.push_back(path);
         }
     }
+    if (Settings::extendedLogging) {
+        std::ranges::for_each(whitelist, [](const auto& exe) { spdlog::debug(L"Whitelisted executable: {}", exe); });
+    }
     setAppWhiteList(whitelist);
 
     avail_devices_ = GetHidDeviceList();
@@ -127,6 +130,9 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         setBlacklistDevices(blacklisted_devices_);
         setActive(true);
         spdlog::info("Hid Gaming Devices; Enabling Overlay element...");
+        if (Settings::extendedLogging) {
+            std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+        }
         enableOverlayElement();
     }
     closeCtrlDevice();
@@ -186,6 +192,9 @@ void HidHide::enableOverlayElement()
         if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
             openCtrlDevice();
             bool hidehide_state_store = hidhide_active_;
+            if (Settings::extendedLogging) {
+                spdlog::debug("Refreshing HID devices");
+            }
             if (hidhide_active_) {
                 setActive(false);
             }
@@ -224,6 +233,9 @@ void HidHide::enableOverlayElement()
                                                blacklisted_devices_.end());
                 }
                 setBlacklistDevices(blacklisted_devices_);
+                if (Settings::extendedLogging) {
+                    std::ranges::for_each(blacklisted_devices_, [](const auto& dev) { spdlog::debug(L"Blacklisted device: {}", dev); });
+                }
                 closeCtrlDevice();
             }
         });
@@ -316,6 +328,9 @@ void HidHide::setActive(bool active)
         return;
     }
     hidhide_active_ = active;
+    if (Settings::extendedLogging) {
+        spdlog::debug("HidHide State set to {}", active);
+    }
 }
 
 DWORD HidHide::getRequiredOutputBufferSize(IOCTL_TYPE type) const

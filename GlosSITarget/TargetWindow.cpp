@@ -259,12 +259,21 @@ void TargetWindow::createWindow(bool window_mode)
         // as a workaround, start in full size, and scale down later...
         spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
         window_.create(sf::VideoMode(desktop_mode.width -1, desktop_mode.height -1, 32), "GlosSITarget", sf::Style::None);
+
+        // get size of all monitors combined
+        const auto screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        const auto screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        spdlog::debug("Full screen size: {}x{}", screenWidth, screenHeight);
+
+        spdlog::debug("Primary monitor size: {}x{}", desktop_mode.width, desktop_mode.height);
+
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
         windowed_ = false;
     }
     window_.setActive(true);
+    spdlog::debug("Window position: {}x{}", window_.getPosition().x, window_.getPosition().y);
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
