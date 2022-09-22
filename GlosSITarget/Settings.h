@@ -92,14 +92,8 @@ inline void Parse(std::wstring arg1)
         return;
     }
     settings_path_ = path;
-    const auto json = nlohmann::json::parse(json_file);
-    if (json["version"] != 1) { // TODO: versioning stuff
-        spdlog::warn("Config version doesn't match application version.");
-    }
 
-    // TODO: make this as much generic as fits in about the same amount of code if one would parse every value separately.
-
-    auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
+        auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
         try {
             if (object.is_null() || object.empty() || object.at(key).empty() || object.at(key).is_null()) {
                 return;
@@ -122,6 +116,15 @@ inline void Parse(std::wstring arg1)
             value = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(meh);
         }
     };
+
+    const auto json = nlohmann::json::parse(json_file);
+    int version;
+    safeParseValue(json, "version" ,version);
+    if (version != 1) { // TODO: versioning stuff
+        spdlog::warn("Config version doesn't match application version.");
+    }
+
+    // TODO: make this as much generic as fits in about the same amount of code if one would parse every value separately.
 
     if (auto launchconf = json["launch"]; launchconf.is_object()) {
         safeParseValue(launchconf, "launch", launch.launch);
@@ -149,16 +152,7 @@ inline void Parse(std::wstring arg1)
         safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
     }
 
-    try {
-        if (auto extlog = json["extendedLogging"]; extlog.is_boolean()) {
-            extendedLogging = extlog;
-        }
-    }
-    catch (...)
-    {
-    }
-
-
+    safeParseValue(json, "extendedLogging", extendedLogging);
 
     json_file.close();
 
