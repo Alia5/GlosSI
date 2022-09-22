@@ -208,14 +208,16 @@ void Overlay::showLogs()
     if (!enabled_ && !log_expanded_) {
         return;
     }
+    bool logs_contain_warn_or_worse = false;
     if (enabled_) {
         logs = LOG_MSGS_;
     }
     else {
         std::ranges::copy_if(LOG_MSGS_,
                              std::back_inserter(logs),
-                             [](const auto& log) {
-                                 return (
+                             [&logs_contain_warn_or_worse](const auto& log) {
+
+                                 const auto res = (
                                             log.time.time_since_epoch() + std::chrono::seconds(
                                                                               LOG_RETENTION_TIME_) >
                                             std::chrono::system_clock::now().time_since_epoch())
@@ -223,9 +225,13 @@ void Overlay::showLogs()
                                         && (log.level > spdlog::level::debug)
 #endif
                                      ;
+                                 if (res && log.level > spdlog::level::warn) {
+                                     logs_contain_warn_or_worse = true;
+                                 }
+                                 return res;
                              });
     }
-    if (logs.empty())
+    if (logs.empty() || ( !enabled_ && !logs_contain_warn_or_worse && time_since_start_clock_.getElapsedTime().asSeconds() > HIDE_NORMAL_LOGS_AFTER_S))
         return;
     ImGui::SetNextWindowSizeConstraints({150, 150}, {1000, window_.getSize().y - 250.f});
     if (!enabled_) {
