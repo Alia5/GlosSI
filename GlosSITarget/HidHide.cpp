@@ -110,6 +110,11 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
     setAppWhiteList(whitelist);
 
     avail_devices_ = GetHidDeviceList();
+    if (Settings::extendedLogging) {
+        std::ranges::for_each(avail_devices_, [](const auto& dev) {
+            spdlog::trace(L"AvailDevice device: {}", dev.name);
+        });
+    }
     blacklisted_devices_ = getBlackListDevices();
 
     for (const auto& dev : avail_devices_) {
@@ -207,6 +212,11 @@ void HidHide::enableOverlayElement()
                     setActive(false);
                 }
                 avail_devices_ = GetHidDeviceList();
+                if (Settings::extendedLogging) {
+                    std::ranges::for_each(avail_devices_, [](const auto& dev) {
+                        spdlog::trace(L"AvailDevice device: {}", dev.name);
+                    });
+                }
                 blacklisted_devices_ = getBlackListDevices();
                 if (hidehide_state_store) {
                     setActive(true);
