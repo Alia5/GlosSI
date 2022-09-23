@@ -75,8 +75,8 @@ Window {
 
     InfoDialog {
         id: steamChangedDialog
-        titleText: qsTr("Attention!")
-        text: qsTr("Please restart Steam to reload your changes!")
+        titleText: qsTr("Steam shortcuts changed!")
+        text: qsTr("Please restart Steam to reload your changes")
         onConfirmed: function (callback) {
             callback();
         }

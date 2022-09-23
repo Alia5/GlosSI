@@ -101,7 +101,7 @@ Dialog {
 		}
 		InfoDialog {
 			id: steamChangedDialog2
-			titleText: qsTr("Attention!")
+			titleText: qsTr("Steam config changed!")
 			text: qsTr("Please restart Steam to reload your changes!")
 			onConfirmed: function (callback) {
 				callback();
