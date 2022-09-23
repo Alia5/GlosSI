@@ -140,7 +140,6 @@ Item {
             }
             RPane {
                 width: parent.width
-                height: 248
                 radius: 4
 		        Material.elevation: 32
                 bgOpacity: 0.97
@@ -151,7 +150,6 @@ Item {
                     Row {
                         spacing: 32
                         width: parent.width
-                        height: closeOnExitCol.height
                         CheckBox {
                             id: launchApp
                             text: qsTr("Launch app")
@@ -171,54 +169,6 @@ Item {
                                 }
                             }
                         }
-                        Column {
-                            id: closeOnExitCol
-                            spacing: 2
-                            CheckBox {
-                                id: closeOnExit
-                                text: qsTr("Close when launched app quits")
-                                checked: shortcutInfo.launch.closeOnExit
-                                onCheckedChanged: function() {
-                                    shortcutInfo.launch.closeOnExit = checked
-                                    if (checked) {
-                                        waitForChildren.enabled = true;
-                                    } else {
-                                        waitForChildren.enabled = false;
-                                    }
-                                }
-                            }
-                            Label {
-                                text: qsTr("Recommended to disable for launcher-games")
-                                wrapMode: Text.WordWrap
-                                width: parent.width
-                                leftPadding: 32
-                                topPadding: -8
-                            }
-                            CheckBox {
-                                id: waitForChildren
-                                text: qsTr("Wait for child processes")
-                                checked: shortcutInfo.launch.waitForChildProcs
-                                onCheckedChanged: function(){
-                                    shortcutInfo.launch.waitForChildProcs = checked
-                                }
-                            }
-                        }
-                        Column {
-                            spacing: 2
-                            CheckBox {
-                                id: allowDesktopConfig
-                                text: qsTr("Allow desktop-config")
-                                checked: shortcutInfo.controller.allowDesktopConfig
-                                onCheckedChanged: function(){
-                                    shortcutInfo.controller.allowDesktopConfig = checked
-                                }
-                            }
-                            Label {
-                                text: qsTr("Use desktop-config if launched application is not focused")
-                                leftPadding: 32
-                                topPadding: -8
-                            }
-                        }
                     }
                     Item {
                         width: 1
@@ -227,7 +177,10 @@ Item {
                     RowLayout {
                         id: launchlayout
                         spacing: 4
-                        width: parent.width
+                        anchors.left: parent.left
+						anchors.right: parent.right
+						anchors.leftMargin: 32
+						anchors.rightMargin: 32
                         Image {
                             id: maybeIcon
                             source: shortcutInfo.icon
@@ -317,233 +270,304 @@ Item {
                 Material.elevation: 32
                 bgOpacity: 0.97
 				title: qsTr("Advanced")
-                content: Row {
+                content: 
+                Column {
                     spacing: 16
-                    width: parent.width
 
                     RPane {
-                        width: parent.width / 2 - 8
-                        height: 264
+                        width: parent.width
                         radius: 4
                         Material.elevation: 32
                         bgOpacity: 0.97
-
+						height: advancedLaunchCol.height + 24
                         Column {
-                            spacing: 2
-                            width: parent.width
+						    id: advancedLaunchCol
+                            spacing: 4
+							height: advancedLaunchedRow.height
                             Row {
-                                CheckBox {
-                                    id: hideDevices
-                                    text: qsTr("Hide (Real) Controllers")
-                                    checked: shortcutInfo.devices.hideDevices
-                                    onCheckedChanged: shortcutInfo.devices.hideDevices = checked
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Hide (Real) Controllers")
-                                        helpInfoDialog.text = 
-                                            qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
-                                            + "\n"
-                                            + qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
-                                
-                                        helpInfoDialog.open()
+							    id: advancedLaunchedRow
+                                spacing: 32
+                                width: parent.width
+								height: closeOnExitCol.height
+                                Column {
+                                    id: closeOnExitCol
+                                    spacing: 2
+                                    CheckBox {
+                                        id: closeOnExit
+                                        text: qsTr("Close when launched app quits")
+                                        checked: shortcutInfo.launch.closeOnExit
+                                        onCheckedChanged: function() {
+                                            shortcutInfo.launch.closeOnExit = checked
+                                            if (checked) {
+                                                waitForChildren.enabled = true;
+                                            } else {
+                                                waitForChildren.enabled = false;
+                                            }
+                                        }
                                     }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
+                                    Label {
+                                        text: qsTr("Recommended to disable for launcher-games")
+                                        wrapMode: Text.WordWrap
+                                        width: parent.width
+                                        leftPadding: 32
+                                        topPadding: -8
                                     }
-                                }
-                            }
-                            Item {
-                                width: 1
-                                height: 4
-                            }
-                            Row {
-                                CheckBox {
-                                    id: realDeviceIds
-                                    text: qsTr("Use real device (USB)-IDs")
-                                    checked: shortcutInfo.devices.realDeviceIds
-                                    onCheckedChanged: shortcutInfo.devices.realDeviceIds = checked
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Use real device (USB)-IDs")
-                                        helpInfoDialog.text = 
-                                            qsTr("Only enable if input's are not recognized by the game")
-                                            + "\n"
-                                            + qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
-                                
-                                        helpInfoDialog.open()
-                                    }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
+                                    CheckBox {
+                                        id: waitForChildren
+                                        text: qsTr("Wait for child processes")
+                                        checked: shortcutInfo.launch.waitForChildProcs
+                                        onCheckedChanged: function(){
+                                            shortcutInfo.launch.waitForChildProcs = checked
+                                        }
                                     }
                                 }
-                            }
-                            Item {
-                                width: 1
-                                height: 4
-                            }
-                            Row {
-                                CheckBox {
-                                    id: emulateDS4
-                                    text: qsTr("Emulate DS4")
-                                    checked: shortcutInfo.controller.emulateDS4 || false
-                                    onCheckedChanged: shortcutInfo.controller.emulateDS4 = checked
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Emulate DS4")
-                                        helpInfoDialog.text = 
-                                            qsTr("Emulates a DS4 instead of X360 Pad")
-                                            + "\n"
-                                            qsTr("for usage with, for example, PSNow")
-                                            + "\n"
-                                            + qsTr("If enabled you have to disable \"Playstation Configuration support\" in Steam")
-                                        helpInfoDialog.open()
+                                Column {
+                                    spacing: 2
+                                    CheckBox {
+                                        id: allowDesktopConfig
+                                        text: qsTr("Allow desktop-config")
+                                        checked: shortcutInfo.controller.allowDesktopConfig
+                                        onCheckedChanged: function(){
+                                            shortcutInfo.controller.allowDesktopConfig = checked
+                                        }
                                     }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
-                                    }
-                                }
-                            }
-                            Item {
-                                width: 1
-                                height: 4
-                            }
-                            Row {
-                                leftPadding: 16
-                                Label {
-                                    text: qsTr("Max. emulated controllers")
-                                    topPadding: 16
-                                }
-                                SpinBox {
-                                    id: maxControllersSpinBox
-                                    width: 128
-                                    value: shortcutInfo.controller.maxControllers
-                                    from: 0
-                                    to: 4
-                                    onValueChanged: shortcutInfo.controller.maxControllers = value
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Max. emulated controllers")
-                                        helpInfoDialog.text = 
-                                            qsTr("GlosSI will only provide [NUMBER] of controllers")
-                                            + "\n"
-                                            + qsTr("Required to set to actually connected controller count when using \"real devuce IDs\" ")
-                                        helpInfoDialog.open()
-                                    }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
+                                    Label {
+                                        text: qsTr("Use desktop-config if launched application is not focused")
+                                        leftPadding: 32
+                                        topPadding: -8
                                     }
                                 }
                             }
                         }
                     }
-                    RPane {
-                        width: parent.width / 2 - 8
-                        height: 264
-                        radius: 4
-                        Material.elevation: 32
-                        bgOpacity: 0.97
-                        Column {
-                            spacing: 2
-                            width: parent.width
-                            Row {
-                                CheckBox {
-                                    id: windowMode
-                                    text: qsTr("Steam/GlosSI overlay as separate window")
-                                    checked: shortcutInfo.window.windowMode
-                                    onCheckedChanged: shortcutInfo.window.windowMode = checked
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Steam/GlosSI overlay as separate window")
-                                        helpInfoDialog.text = 
-                                            qsTr("Doesn't show overlay on top, but as separate window")
-                                            + "\n"
-                                            + qsTr("Use if blackscreen-issues are encountered.")
 
-                                        helpInfoDialog.open()
+                    Row {
+                        spacing: 16
+                        width: parent.width
+
+                        RPane {
+                            width: parent.width / 2 - 8
+                            height: 264
+                            radius: 4
+                            Material.elevation: 32
+                            bgOpacity: 0.97
+
+                            Column {
+                                spacing: 2
+                                width: parent.width
+                                Row {
+                                    CheckBox {
+                                        id: hideDevices
+                                        text: qsTr("Hide (Real) Controllers")
+                                        checked: shortcutInfo.devices.hideDevices
+                                        onCheckedChanged: shortcutInfo.devices.hideDevices = checked
                                     }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Hide (Real) Controllers")
+                                            helpInfoDialog.text = 
+                                                qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
+                                                + "\n"
+                                                + qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                                    
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+                                Row {
+                                    CheckBox {
+                                        id: realDeviceIds
+                                        text: qsTr("Use real device (USB)-IDs")
+                                        checked: shortcutInfo.devices.realDeviceIds
+                                        onCheckedChanged: shortcutInfo.devices.realDeviceIds = checked
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Use real device (USB)-IDs")
+                                            helpInfoDialog.text = 
+                                                qsTr("Only enable if input's are not recognized by the game")
+                                                + "\n"
+                                                + qsTr("If enabled, device-hiding won't work.\nUse the \"Max. Controller count\" setting!")
+                                    
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+                                Row {
+                                    CheckBox {
+                                        id: emulateDS4
+                                        text: qsTr("Emulate DS4")
+                                        checked: shortcutInfo.controller.emulateDS4 || false
+                                        onCheckedChanged: shortcutInfo.controller.emulateDS4 = checked
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Emulate DS4")
+                                            helpInfoDialog.text = 
+                                                qsTr("Emulates a DS4 instead of X360 Pad")
+                                                + "\n"
+                                                qsTr("for usage with, for example, PSNow")
+                                                + "\n"
+                                                + qsTr("If enabled you have to disable \"Playstation Configuration support\" in Steam")
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+                                Row {
+                                    leftPadding: 16
+                                    Label {
+                                        text: qsTr("Max. emulated controllers")
+                                        topPadding: 16
+                                    }
+                                    SpinBox {
+                                        id: maxControllersSpinBox
+                                        width: 128
+                                        value: shortcutInfo.controller.maxControllers
+                                        from: 0
+                                        to: 4
+                                        onValueChanged: shortcutInfo.controller.maxControllers = value
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Max. emulated controllers")
+                                            helpInfoDialog.text = 
+                                                qsTr("GlosSI will only provide [NUMBER] of controllers")
+                                                + "\n"
+                                                + qsTr("Required to set to actually connected controller count when using \"real device IDs\" ")
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
                                     }
                                 }
                             }
-                            Item {
-                                width: 1
-                                height: 4
-                            }
-
-                            Row {
-                                CheckBox {
-                                    id: disableOverlayCheckbox
-                                    text: qsTr("Disable Steam/GlosSI overlay")
-                                    checked: shortcutInfo.window.disableOverlay
-                                    onCheckedChanged: shortcutInfo.window.disableOverlay = checked
-                                }
-                                RoundButton {
-                                    onClicked: () => {
-                                        helpInfoDialog.titleText = qsTr("Disable Steam/GlosSI overlay")
-                                        helpInfoDialog.text = 
-                                            qsTr("Only controller emulation - No extra window")
-                                            + "\n"
-                                            + qsTr("Might help with Steam remote play.")
-
-                                        helpInfoDialog.open()
+                        }
+                        RPane {
+                            width: parent.width / 2 - 8
+                            height: 264
+                            radius: 4
+                            Material.elevation: 32
+                            bgOpacity: 0.97
+                            Column {
+                                spacing: 2
+                                width: parent.width
+                                Row {
+                                    CheckBox {
+                                        id: windowMode
+                                        text: qsTr("Steam/GlosSI overlay as separate window")
+                                        checked: shortcutInfo.window.windowMode
+                                        onCheckedChanged: shortcutInfo.window.windowMode = checked
                                     }
-                                    width: 48
-                                    height: 48
-                                    Material.elevation: 0
-                                    anchors.topMargin: 16
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/svg/help_outline_white_24dp.svg"
-                                        width: 24
-                                        height: 24
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Steam/GlosSI overlay as separate window")
+                                            helpInfoDialog.text = 
+                                                qsTr("Doesn't show overlay on top, but as separate window")
+                                                + "\n"
+                                                + qsTr("Use if blackscreen-issues are encountered.")
+
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+
+                                Row {
+                                    CheckBox {
+                                        id: disableOverlayCheckbox
+                                        text: qsTr("Disable Steam/GlosSI overlay")
+                                        checked: shortcutInfo.window.disableOverlay
+                                        onCheckedChanged: shortcutInfo.window.disableOverlay = checked
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Disable Steam/GlosSI overlay")
+                                            helpInfoDialog.text = 
+                                                qsTr("Only controller emulation - No extra window")
+                                                + "\n"
+                                                + qsTr("Might help with Steam remote play.")
+
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             }
 
             Item {

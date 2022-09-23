@@ -25,7 +25,7 @@ RPane {
 
     property alias content: ldr.sourceComponent
     clip: true
-    height: paneTitle.height + collapseColumn.spacing
+    height: paneHeader.height + collapseColumn.spacing
     property bool collapsed: true
 	id: collapsePane
 
@@ -41,8 +41,9 @@ RPane {
 	    width: parent.width
         spacing: 16
 		Item {
+		    id: paneHeader
         	width: parent.width
-			height: paneTitle.height
+			height: paneTitle.height + 32
         	Label {
 		        id: paneTitle
                 anchors.left: parent.left
@@ -50,7 +51,7 @@ RPane {
                 font.bold: true
                 font.pixelSize: 24
 				anchors.top: parent.top
-				anchors.topMargin: -2
+				anchors.topMargin: 14
             }
             RoundButton {
 			    width: 48
@@ -58,13 +59,13 @@ RPane {
                 Material.elevation: 0
                 anchors.rightMargin: 0
 				anchors.top: parent.top
-				anchors.topMargin: -12
+				anchors.topMargin: 0
 				onClicked: function(){
                     collapsed = !collapsed;
                     if (collapsed) {
-                        collapsePane.height = paneTitle.height + collapseColumn.spacing
+                        collapsePane.height = paneHeader.height + collapseColumn.spacing
                     } else {
-                        collapsePane.height = paneTitle.height + collapseColumn.spacing * 3 + ldr.item.height
+                        collapsePane.height = paneHeader.height + collapseColumn.spacing * 3 + ldr.item.height
                     }
 				}
                 Image {
