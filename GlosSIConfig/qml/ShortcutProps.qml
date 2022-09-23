@@ -68,7 +68,9 @@ Item {
 
     onShortcutInfoChanged: function() {
         nameInput.text = shortcutInfo.name || ""
-        extendedLogging.checked = shortcutInfo.extendedLogging
+        if (extendedLogging) {
+            extendedLogging.checked = shortcutInfo.extendedLogging || false
+        }
         launchApp.checked = shortcutInfo.launch.launch
         pathInput.text = shortcutInfo.launch.launchPath || ""
         argsInput.text = shortcutInfo.launch.launchAppArgs || ""
@@ -78,6 +80,8 @@ Item {
         realDeviceIds.checked = shortcutInfo.devices.realDeviceIds 
         windowMode.checked = shortcutInfo.window.windowMode
         disableOverlayCheckbox.checked = shortcutInfo.window.disableOverlay
+        scaleSpinBox.value = shortcutInfo.window.scale
+        maxFPSSpinBox.value = shortcutInfo.window.maxFps
         maxControllersSpinBox.value = shortcutInfo.controller.maxControllers
         allowDesktopConfig.checked = shortcutInfo.controller.allowDesktopConfig 
         emulateDS4.checked = shortcutInfo.controller.emulateDS4
@@ -157,9 +161,11 @@ Item {
                             onCheckedChanged: function() {
                                 shortcutInfo.launch.launch = checked
                                 if (checked) {
-                                    closeOnExit.enabled = true;
-                                    if (closeOnExit.checked) {
-                                        waitForChildren.enabled = true;
+                                    if (closeOnExit) {
+                                        closeOnExit.enabled = true;
+                                        if (closeOnExit.checked) {
+                                            waitForChildren.enabled = true;
+                                        }
                                     }
                                     allowDesktopConfig.enabled = true;
                                 } else {
@@ -332,7 +338,7 @@ Item {
                                         }
                                     }
                                     Label {
-                                        text: qsTr("Use desktop-config if launched application is not focused")
+                                        text: qsTr("Allow desktop-config if launched application is not focused")
                                         leftPadding: 32
                                         topPadding: -8
                                     }
@@ -347,13 +353,13 @@ Item {
 
                         RPane {
                             width: parent.width / 2 - 8
-                            height: 264
+                            height: 248
                             radius: 4
                             Material.elevation: 32
                             bgOpacity: 0.97
 
                             Column {
-                                spacing: 2
+                                spacing: 0
                                 width: parent.width
                                 Row {
                                     CheckBox {
@@ -464,6 +470,7 @@ Item {
                                     SpinBox {
                                         id: maxControllersSpinBox
                                         width: 128
+										editable: true
                                         value: shortcutInfo.controller.maxControllers
                                         from: 0
                                         to: 4
@@ -494,12 +501,12 @@ Item {
                         }
                         RPane {
                             width: parent.width / 2 - 8
-                            height: 264
+                            height: 248
                             radius: 4
                             Material.elevation: 32
                             bgOpacity: 0.97
                             Column {
-                                spacing: 2
+                                spacing: 0
                                 width: parent.width
                                 Row {
                                     CheckBox {
@@ -563,6 +570,160 @@ Item {
                                             height: 24
                                         }
                                     }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+                                Row {
+                                    leftPadding: 16
+                                    Label {
+                                        text: qsTr("GlosSI-Overlay scale")
+                                        topPadding: 16
+                                    }
+                                    SpinBox {
+                                        id: scaleSpinBox
+                                        width: 172
+                                        from: -100
+                                        value: shortcutInfo.window.scale * 100 || 0
+                                        to: 350
+                                        stepSize: 10
+                                        editable: true
+
+                                        property int decimals: 2
+                                        property real realValue: value / 100
+
+                                        validator: DoubleValidator {
+                                            bottom: Math.min(scaleSpinBox.from, scaleSpinBox.to)
+                                            top:  Math.max(scaleSpinBox.from, scaleSpinBox.to)
+                                        }
+
+                                        textFromValue: function(value, locale) {
+                                            return Number(value / 100).toLocaleString(locale, 'f', scaleSpinBox.decimals)
+                                        }
+
+                                        valueFromText: function(text, locale) {
+                                            return Number.fromLocaleString(locale, text) * 100
+                                        }
+                                        onValueChanged: function() {
+										    if (value <= 0) {
+											    shortcutInfo.window.scale = null
+											    return
+                                            }
+                                            shortcutInfo.window.scale = value / 100
+										}
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("GloSI-Overlay scaling")
+                                            helpInfoDialog.text = 
+                                                qsTr("Scales the elements of the GlosSI-Overlay (not Steam Overlay)")
+                                                + "\n"
+                                                + qsTr(" <= 0.0 to use auto-detection")
+
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                                Item {
+                                    width: 1
+                                    height: 4
+                                }
+                                Row {
+                                    leftPadding: 16
+                                    Label {
+                                        text: qsTr("Max. Overlay FPS")
+                                        topPadding: 16
+                                    }
+                                    SpinBox {
+                                        id: maxFPSSpinBox
+                                        width: 172
+                                        from: -1
+                                        value: shortcutInfo.window.maxFps || 0
+                                        to: 244
+                                        stepSize: 5
+                                        editable: true
+
+                                        onValueChanged: function() {
+										    if (value <= 0) {
+											    shortcutInfo.window.maxFps = null
+											    return
+                                            }
+                                            shortcutInfo.window.maxFps = value
+										}
+                                    }
+                                    RoundButton {
+                                        onClicked: () => {
+                                            helpInfoDialog.titleText = qsTr("Max. Overlay FPS")
+                                            helpInfoDialog.text = 
+                                                qsTr("Restricts the FPS of the overlay to the given value")
+                                                + "\n"
+                                                + qsTr(" <= 0.0 to use screen refresh rate")
+
+                                            helpInfoDialog.open()
+                                        }
+                                        width: 48
+                                        height: 48
+                                        Material.elevation: 0
+                                        anchors.topMargin: 16
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/svg/help_outline_white_24dp.svg"
+                                            width: 24
+                                            height: 24
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    RPane {
+                        width: parent.width
+                        radius: 4
+                        Material.elevation: 32
+                        bgOpacity: 0.97
+                        Column {
+                            spacing: 4
+                            Row {
+                                Row {
+                                    CheckBox {
+                                        id: extendedLogging
+                                        text: qsTr("Extended Logging")
+                                        checked: shortcutInfo.extendedLogging
+                                        onCheckedChanged: shortcutInfo.extendedLogging = checked
+                                    }
+                                    // RoundButton {
+                                    //     onClicked: () => {
+                                    //         helpInfoDialog.titleText = qsTr("Hide (Real) Controllers")
+                                    //         helpInfoDialog.text = 
+                                    //             qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
+                                    //             + "\n"
+                                    //             + qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                                    
+                                    //         helpInfoDialog.open()
+                                    //     }
+                                    //     width: 48
+                                    //     height: 48
+                                    //     Material.elevation: 0
+                                    //     anchors.topMargin: 16
+                                    //     Image {
+                                    //         anchors.centerIn: parent
+                                    //         source: "qrc:/svg/help_outline_white_24dp.svg"
+                                    //         width: 24
+                                    //         height: 24
+                                    //     }
+                                    // }
                                 }
                             }
                         }
