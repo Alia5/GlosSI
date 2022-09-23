@@ -158,7 +158,7 @@ void HidHide::UnPatchValveHooks()
     // need to load addresses that way.. Otherwise we land before some jumps...
     if (const auto setupapidll = GetModuleHandle(L"setupapi.dll")) {
         UnPatchHook("SetupDiEnumDeviceInfo", setupapidll);
-        //UnPatchHook("SetupDiGetClassDevsW", setupapidll);
+        UnPatchHook("SetupDiGetClassDevsW", setupapidll);
     }
     if (const auto hiddll = GetModuleHandle(L"hid.dll")) {
         for (const auto& name : ORIGINAL_BYTES | std::views::keys) {
@@ -197,6 +197,7 @@ void HidHide::enableOverlayElement()
         ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
         if (ImGui::Begin("Hidden Devices")) {
             if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
+                // UnPatchValveHooks();
                 openCtrlDevice();
                 bool hidehide_state_store = hidhide_active_;
                 if (Settings::extendedLogging) {
