@@ -33,7 +33,7 @@ class UIModel : public QObject {
   public:
     UIModel();
 
-    Q_INVOKABLE void readConfigs();
+    Q_INVOKABLE void readTargetConfigs();
     Q_INVOKABLE QVariantList getTargetList() const;
     Q_INVOKABLE void addTarget(QVariant shortcut);
     Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
@@ -64,17 +64,15 @@ class UIModel : public QObject {
     void targetListChanged();
 
   private:
+#ifdef _WIN32
+    bool is_windows_ = true;
+#else
+    bool is_windows_ = false;
+#endif
+    bool has_acrylic_affect_ = false;
+
     std::filesystem::path config_path_;
     QString config_dir_name_;
-    
-    void writeTarget(const QJsonObject& json, const QString& name);
-
-    std::filesystem::path getSteamPath() const;
-    std::wstring getSteamUserId() const;
-    bool foundSteam() const;
-    void parseShortcutVDF();
-
-    bool isSteamInputXboxSupportEnabled() const;
 
     QString shortcutsfile_ = "/config/shortcuts.vdf";
     QString user_config_file_ = "/config/localconfig.vdf";
@@ -83,11 +81,13 @@ class UIModel : public QObject {
     QVariantList targets_;
 
     std::vector<VDFParser::Shortcut> shortcuts_vdf_;
+    
+    void writeTarget(const QJsonObject& json, const QString& name) const;
 
-#ifdef _WIN32
-    bool is_windows_ = true;
-#else
-    bool is_windows_ = false;
-#endif
-    bool has_acrylic_affect_ = false;
+    std::filesystem::path getSteamPath() const;
+    std::wstring getSteamUserId() const;
+    bool foundSteam() const;
+    void parseShortcutVDF();
+
+    bool isSteamInputXboxSupportEnabled() const;
 };

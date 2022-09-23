@@ -39,16 +39,16 @@ UIModel::UIModel() : QObject(nullptr)
         std::filesystem::create_directories(path);
 
     config_path_ = path;
-    config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring().data());
+    config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring());
 
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
 
     parseShortcutVDF();
-    readConfigs();
+    readTargetConfigs();
 }
 
-void UIModel::readConfigs()
+void UIModel::readTargetConfigs()
 {
     QDir dir(config_dir_name_);
     auto entries = dir.entryList(QDir::Files, QDir::SortFlag::Name);
@@ -68,29 +68,13 @@ void UIModel::readConfigs()
         const auto data = file.readAll();
         file.close();
         const auto jsondoc = QJsonDocument::fromJson(data);
-        const auto filejson = jsondoc.object();
+        auto filejson = jsondoc.object();
 
-        QJsonObject json;
-        json["version"] = filejson["version"];
-        json["icon"] = filejson["icon"];
-        json["launch"] = filejson["launch"]["launch"];
-        json["launchPath"] = filejson["launch"]["launchPath"];
-        json["launchAppArgs"] = filejson["launch"]["launchAppArgs"];
-        json["closeOnExit"] = filejson["launch"]["closeOnExit"];
-        json["waitForChildProcs"] = filejson["launch"]["waitForChildProcs"];
-        json["hideDevices"] = filejson["devices"]["hideDevices"];
-        json["realDeviceIds"] = filejson["devices"]["realDeviceIds"];
-        json["windowMode"] = filejson["window"]["windowMode"];
-        json["maxFps"] = filejson["window"]["maxFps"];
-        json["scale"] = filejson["window"]["scale"];
-        json["disableOverlay"] = filejson["window"]["disableOverlay"];
-        json["maxControllers"] = filejson["controller"]["maxControllers"];
-        json["allowDesktopConfig"] = filejson["controller"]["allowDesktopConfig"];
-        json["emulateDS4"] = filejson["controller"]["emulateDS4"];
+        filejson["name"] = filejson.contains("name")
+                               ? filejson["name"].toString()
+            : QString(name).replace(QRegularExpression("\\.json"), "");
 
-        json["name"] = filejson.contains("name") ? filejson["name"] : QString(name).replace(QRegularExpression("\\.json"), "");
-
-        targets_.append(json.toVariantMap());
+        targets_.append(filejson.toVariantMap());
     });
 
     emit targetListChanged();
@@ -359,49 +343,22 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     emit acrylicChanged();
 }
 
-void UIModel::writeTarget(const QJsonObject& json, const QString& name)
+void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
 {
     auto path = config_path_;
     path /= config_dir_name_.toStdWString();
     path /= (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdWString();
     QFile file(path);
     if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
-        // meh
+        qDebug() << "Couldn't open file for writing: " << path;
         return;
     }
-    QJsonObject fileJson;
-    fileJson["version"] = json["version"];
-    fileJson["icon"] = json["icon"];
-    fileJson["name"] = json["name"];
 
-    QJsonObject launchObject;
-    launchObject["launch"] = json["launch"];
-    launchObject["launchPath"] = json["launchPath"];
-    launchObject["launchAppArgs"] = json["launchAppArgs"];
-    launchObject["closeOnExit"] = json["closeOnExit"];
-    launchObject["waitForChildProcs"] = json["waitForChildProcs"];
-    fileJson["launch"] = launchObject;
-
-    QJsonObject devicesObject;
-    devicesObject["hideDevices"] = json["hideDevices"];
-    devicesObject["realDeviceIds"] = json["realDeviceIds"];
-    fileJson["devices"] = devicesObject;
-
-    QJsonObject windowObject;
-    windowObject["windowMode"] = json["windowMode"];
-    windowObject["maxFps"] = json["maxFps"];
-    windowObject["scale"] = json["scale"];
-    windowObject["disableOverlay"] = json["disableOverlay"];
-    fileJson["window"] = windowObject;
-
-    QJsonObject controllerObject;
-    controllerObject["maxControllers"] = json["maxControllers"];
-    controllerObject["allowDesktopConfig"] = json["allowDesktopConfig"];
-    controllerObject["emulateDS4"] = json["emulateDS4"];
-    fileJson["controller"] = controllerObject;
-
-    auto wtf = QString(QJsonDocument(fileJson).toJson(QJsonDocument::Indented)).toStdString();
-    file.write(wtf.data());
+    file.write(
+        QString(QJsonDocument(json).toJson(QJsonDocument::Indented))
+        .toStdString()
+        .data()
+    );
     file.close();
 }
 

@@ -29,62 +29,58 @@ Item {
     signal cancel()
     signal done(var shortcut)
 
-    property var shortcutInfo: ({
-            version:  1,
-            name: null,
-            launch: false,
-            launchPath: null,
-            launchAppArgs: null,
-            closeOnExit: true,
-            waitForChildProcs: true,
-            hideDevices: true,
-            windowMode: false,
-            maxFps: null,
-            scale: null,
-            icon: null,
-            maxControllers: 1,
-            disableOverlay: false,
-            realDeviceIds: false,
-            allowDesktopConfig: false,
-            emulateDS4: false,
-        })
+    property var shortcutInfo: ({})
 
     function resetInfo() {
         shortcutInfo = ({
-            version:  1,
-            name: null,
-            launch: false,
-            launchPath: null,
-            launchAppArgs: null,
-            closeOnExit: true,
-            waitForChildProcs: true,
-            hideDevices: true,
-            windowMode: false,
-            maxFps: null,
-            scale: null,
-            icon: null,
-            maxControllers: 1,
-            disableOverlay: false,
-            realDeviceIds: false,
-            allowDesktopConfig: false,
-            emulateDS4: false,
+            "controller": {
+                "maxControllers": 1,
+                "emulateDS4": false,
+                "allowDesktopConfig": false
+            },
+            "devices": {
+                "hideDevices": true,
+                "realDeviceIds": false
+            },
+            "icon": null,
+            "launch": {
+                "closeOnExit": true,
+                "launch": false,
+                "launchAppArgs": null,
+                "launchPath": null,
+                "waitForChildProcs": true
+            },
+            "name": null,
+            "version": 1,
+            "window": {
+                "disableOverlay": false,
+                "maxFps": null,
+                "scale": null,
+                "windowMode": false
+            },
+            "extendedLogging": false
         })
+    }
+	
+    Component.onCompleted: function() {
+        resetInfo()
     }
 
     onShortcutInfoChanged: function() {
         nameInput.text = shortcutInfo.name || ""
-        launchApp.checked = shortcutInfo.launch || false
-        pathInput.text = shortcutInfo.launchPath || ""
-        argsInput.text = shortcutInfo.launchAppArgs || ""
-        closeOnExit.checked = shortcutInfo.closeOnExit || false
-        waitForChildren.checked = shortcutInfo.waitForChildProcs
-        hideDevices.checked = shortcutInfo.hideDevices || false
-        windowMode.checked = shortcutInfo.windowMode || false
-        maxControllersSpinBox.value = shortcutInfo.maxControllers
-        disableOverlayCheckbox.checked = shortcutInfo.disableOverlay || false
-        realDeviceIds.checked = shortcutInfo.realDeviceIds || false
-        allowDesktopConfig.checked = shortcutInfo.allowDesktopConfig || false
-        emulateDS4.checked = shortcutInfo.emulateDS4 || false
+        extendedLogging.checked = shortcutInfo.extendedLogging
+        launchApp.checked = shortcutInfo.launch.launch
+        pathInput.text = shortcutInfo.launch.launchPath || ""
+        argsInput.text = shortcutInfo.launch.launchAppArgs || ""
+        closeOnExit.checked = shortcutInfo.launch.closeOnExit
+        waitForChildren.checked = shortcutInfo.launch.waitForChildProcs
+        hideDevices.checked = shortcutInfo.devices.hideDevices
+        realDeviceIds.checked = shortcutInfo.devices.realDeviceIds 
+        windowMode.checked = shortcutInfo.window.windowMode
+        disableOverlayCheckbox.checked = shortcutInfo.window.disableOverlay
+        maxControllersSpinBox.value = shortcutInfo.controller.maxControllers
+        allowDesktopConfig.checked = shortcutInfo.controller.allowDesktopConfig 
+        emulateDS4.checked = shortcutInfo.controller.emulateDS4
     }
 
     Flickable {
@@ -159,9 +155,9 @@ Item {
                         CheckBox {
                             id: launchApp
                             text: qsTr("Launch app")
-                            checked: shortcutInfo.launch
+                            checked: shortcutInfo.launch.launch
                             onCheckedChanged: function() {
-                                shortcutInfo.launch = checked
+                                shortcutInfo.launch.launch = checked
                                 if (checked) {
                                     closeOnExit.enabled = true;
                                     if (closeOnExit.checked) {
@@ -181,9 +177,9 @@ Item {
                             CheckBox {
                                 id: closeOnExit
                                 text: qsTr("Close when launched app quits")
-                                checked: shortcutInfo.closeOnExit
+                                checked: shortcutInfo.launch.closeOnExit
                                 onCheckedChanged: function() {
-                                    shortcutInfo.closeOnExit = checked
+                                    shortcutInfo.launch.closeOnExit = checked
                                     if (checked) {
                                         waitForChildren.enabled = true;
                                     } else {
@@ -201,9 +197,9 @@ Item {
                             CheckBox {
                                 id: waitForChildren
                                 text: qsTr("Wait for child processes")
-                                checked: shortcutInfo.waitForChildProcs
+                                checked: shortcutInfo.launch.waitForChildProcs
                                 onCheckedChanged: function(){
-                                    shortcutInfo.waitForChildProcs = checked
+                                    shortcutInfo.launch.waitForChildProcs = checked
                                 }
                             }
                         }
@@ -212,9 +208,9 @@ Item {
                             CheckBox {
                                 id: allowDesktopConfig
                                 text: qsTr("Allow desktop-config")
-                                checked: shortcutInfo.allowDesktopConfig
+                                checked: shortcutInfo.controller.allowDesktopConfig
                                 onCheckedChanged: function(){
-                                    shortcutInfo.allowDesktopConfig = checked
+                                    shortcutInfo.controller.allowDesktopConfig = checked
                                 }
                             }
                             Label {
@@ -238,7 +234,7 @@ Item {
                                 ? shortcutInfo.icon.endsWith(".exe")
                                     ? "image://exe/" + shortcutInfo.icon
                                     : "file:///" + shortcutInfo.icon
-                                : null
+                                : ''
                             Layout.preferredWidth: 48
                             Layout.preferredHeight: 48
                             visible: shortcutInfo.icon
@@ -267,8 +263,8 @@ Item {
                                 id: pathInput
                                 placeholderText: qsTr("...")
                                 enabled: launchApp.checked
-                                text: shortcutInfo.launchPath || ""
-                                onTextChanged: shortcutInfo.launchPath = text
+                                text: shortcutInfo.launch.launchPath || ""
+                                onTextChanged: shortcutInfo.launch.launchPath = text
                             }
                         }
                         Button {
@@ -304,8 +300,8 @@ Item {
                                 anchors.topMargin: 4
                                 id: argsInput
                                 enabled: launchApp.checked
-                                text: shortcutInfo.launchAppArgs
-                                onTextChanged: shortcutInfo.launchAppArgs = text
+                                text: shortcutInfo.launch.launchAppArgs
+                                onTextChanged: shortcutInfo.launch.launchAppArgs = text
                             }
                         }
                     }
@@ -333,8 +329,8 @@ Item {
                             CheckBox {
                                 id: hideDevices
                                 text: qsTr("Hide (Real) Controllers")
-                                checked: shortcutInfo.hideDevices
-                                onCheckedChanged: shortcutInfo.hideDevices = checked
+                                checked: shortcutInfo.devices.hideDevices
+                                onCheckedChanged: shortcutInfo.devices.hideDevices = checked
                             }
                             RoundButton {
                                 onClicked: () => {
@@ -366,8 +362,8 @@ Item {
                             CheckBox {
                                 id: realDeviceIds
                                 text: qsTr("Use real device (USB)-IDs")
-                                checked: shortcutInfo.realDeviceIds
-                                onCheckedChanged: shortcutInfo.realDeviceIds = checked
+                                checked: shortcutInfo.devices.realDeviceIds
+                                onCheckedChanged: shortcutInfo.devices.realDeviceIds = checked
                             }
                             RoundButton {
                                 onClicked: () => {
@@ -399,8 +395,8 @@ Item {
                             CheckBox {
                                 id: emulateDS4
                                 text: qsTr("Emulate DS4")
-                                checked: shortcutInfo.emulateDS4
-                                onCheckedChanged: shortcutInfo.emulateDS4 = checked
+                                checked: shortcutInfo.controller.emulateDS4 || false
+                                onCheckedChanged: shortcutInfo.controller.emulateDS4 = checked
                             }
                              RoundButton {
                                 onClicked: () => {
@@ -438,10 +434,10 @@ Item {
                             SpinBox {
                                 id: maxControllersSpinBox
                                 width: 128
-                                value: 4
+                                value: shortcutInfo.controller.maxControllers
                                 from: 0
                                 to: 4
-                                onValueChanged: shortcutInfo.maxControllers = value
+                                onValueChanged: shortcutInfo.controller.maxControllers = value
                             }
                             RoundButton {
                                 onClicked: () => {
@@ -479,8 +475,8 @@ Item {
                             CheckBox {
                                 id: windowMode
                                 text: qsTr("Steam/GlosSI overlay as separate window")
-                                checked: shortcutInfo.windowMode
-                                onCheckedChanged: shortcutInfo.windowMode = checked
+                                checked: shortcutInfo.window.windowMode
+                                onCheckedChanged: shortcutInfo.window.windowMode = checked
                             }
                              RoundButton {
                                 onClicked: () => {
@@ -513,8 +509,8 @@ Item {
                             CheckBox {
                                 id: disableOverlayCheckbox
                                 text: qsTr("Disable Steam/GlosSI overlay")
-                                checked: shortcutInfo.disableOverlay
-                                onCheckedChanged: shortcutInfo.disableOverlay = checked
+                                checked: shortcutInfo.window.disableOverlay
+                                onCheckedChanged: shortcutInfo.window.disableOverlay = checked
                             }
                              RoundButton {
                                 onClicked: () => {
