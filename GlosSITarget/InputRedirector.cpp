@@ -163,7 +163,8 @@ void InputRedirector::runLoop()
                     // Multiple controllers can be worked around with by setting max count.
                     if (!use_real_vid_pid_) {
                         vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                        vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        //vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
                     } else {
                         vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
                         vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller

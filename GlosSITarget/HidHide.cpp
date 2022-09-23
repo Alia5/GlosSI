@@ -117,7 +117,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
                 return blackdev == dev.device_instance_path || blackdev == dev.base_container_device_instance_path;
             })) {
             // Valve emulated gamepad PID/VID; mirrord by ViGEm
-            if (!(dev.vendor_id == 0x28de && dev.product_id == 0x11FF)) {
+            if (!(dev.vendor_id == 0x28de && (dev.product_id == 0x11FF || dev.product_id == 0x028E))) {
                 if (!dev.device_instance_path.empty()) {
                     blacklisted_devices_.push_back(dev.device_instance_path);
                 }
