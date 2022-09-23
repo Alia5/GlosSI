@@ -197,9 +197,8 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
 
 void HidHide::enableOverlayElement()
 {
-    Overlay::AddOverlayElem([this](bool window_has_focus) {
-        ImGui::SetNextWindowPos({650, 100}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
+    Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         if (ImGui::Begin("Hidden Devices")) {
             if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
                 // UnPatchValveHooks();

@@ -13,9 +13,8 @@ inline void init()
 {
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-    Overlay::AddOverlayElem([](bool window_has_focus) {
-        ImGui::SetNextWindowPos({913, 418}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({170, 325}, {1000, 1000});
+    Overlay::AddOverlayElem([](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin("Process Priority");
         ImGui::Text("Might help with input-lag or bad game performance");
         if (ImGui::RadioButton("Realtime", current_priority == REALTIME_PRIORITY_CLASS)) {

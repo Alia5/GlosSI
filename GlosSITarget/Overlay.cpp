@@ -38,12 +38,14 @@ Overlay::Overlay(
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 
     io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
     auto fontconf = ImFontConfig{};
     fontconf.FontDataOwnedByAtlas = false;
     io.Fonts->AddFontFromMemoryTTF(Roboto_Regular_ttf.data(), Roboto_Regular_ttf.size(), 24, &fontconf);
-    ImGui::SFML::UpdateFontTexture(); // important call: updates font texture
+    ImGui::SFML::UpdateFontTexture();
 
 #ifdef _WIN32
     auto config_path = std::filesystem::temp_directory_path()
@@ -56,6 +58,7 @@ Overlay::Overlay(
     if (!std::filesystem::exists(config_path))
         std::filesystem::create_directories(config_path);
     config_path /= "imgui.ini";
+
     // This assumes that char is utf8 and wchar_t is utf16, which is guaranteed on Windows.
     config_file_name_ = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(config_path.wstring());
     io.IniFilename = config_file_name_.data();
@@ -152,14 +155,31 @@ void Overlay::update()
 {
     ImGui::SFML::Update(window_, update_clock_.restart());
 
-    showLogs();
+    showLogs(0);
+    
 
     if (enabled_ || force_enable_) {
+        // Create a DockSpace node where any window can be docked
+        ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.6f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 150 }, ImGuiCond_FirstUseEver);
+        ImGui::Begin("GlosSI Settings");
+        if (Settings::settings_path_ != "") {
+            if (ImGui::Button("Save shortcut settings", {256, 32})) {
+                Settings::StoreSettings();
+            }
+        }
+        ImGuiID dockspace_id = ImGui::GetID("GlosSI-DockSpace");
+        ImGui::DockSpace(dockspace_id);
+
         window_.clear(sf::Color(0, 0, 0, 128)); // make window slightly dim screen with overlay
-        std::ranges::for_each(OVERLAY_ELEMS_, [this](const auto& elem) {
-            elem.second(window_.hasFocus());
+		
+
+        std::ranges::for_each(OVERLAY_ELEMS_, [this, &dockspace_id](const auto& elem) {
+            elem.second(window_.hasFocus(), dockspace_id);
         });
 
+        ImGui::End();
+        
         // ImGui::ShowDemoWindow();
 
         if (closeButton()) {
@@ -167,7 +187,6 @@ void Overlay::update()
         }
 
         closeOverlayButton();
-        saveSettingsButton();
     }
 
     ImGui::SFML::Render(window_);
@@ -188,7 +207,7 @@ void Overlay::AddLog(const spdlog::details::log_msg& msg)
     LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
 }
 
-int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus)>& elem_fn)
+int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn)
 {
     OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
     // keep this non confusing, but longer...
@@ -202,7 +221,7 @@ void Overlay::RemoveOverlayElem(int id)
     OVERLAY_ELEMS_.erase(id);
 }
 
-void Overlay::showLogs()
+void Overlay::showLogs(ImGuiID dockspace_id)
 {
     std::vector<Log> logs;
     if (!enabled_ && !log_expanded_) {
@@ -240,6 +259,9 @@ void Overlay::showLogs()
                      ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
     }
     else {
+        //ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.2f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.05f, 150}, ImGuiCond_FirstUseEver);
         log_expanded_ = ImGui::Begin("Log");
     }
     if (log_expanded_) {
@@ -313,17 +335,4 @@ bool Overlay::closeButton() const
     ImGui::PopStyleColor();
     ImGui::PopStyleVar();
     return false;
-}
-
-void Overlay::saveSettingsButton() const
-{
-    if (Settings::settings_path_ != "") {
-        ImGui::SetNextWindowPos({(window_.getSize().x - ImGui::GetWindowWidth()) / 2, (window_.getSize().y - ImGui::GetWindowHeight()) / 2}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({192, 96}, {512, 512});
-        ImGui::Begin("Shortcut settings");
-        if (ImGui::Button("Save settings", {256, 32})) {
-            Settings::StoreSettings();
-        }
-        ImGui::End();   
-    }
 }

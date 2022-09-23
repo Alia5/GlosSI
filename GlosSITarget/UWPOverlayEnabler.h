@@ -60,10 +60,8 @@ inline void EnableUwpOverlay()
 
 inline void AddUwpOverlayOvWidget()
 {
-    Overlay::AddOverlayElem([](bool window_has_focus) {
-        ImGui::SetNextWindowPos({1200, 250}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({170, 325}, {1000, 1000});
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+    Overlay::AddOverlayElem([](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin("UWP-Overlay");
         ImGui::Text("To enable the overlay on top of \"fullscreen\" UWP-Apps,");
         ImGui::Text("a .dll has to be injected into explorer.exe");

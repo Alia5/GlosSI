@@ -53,9 +53,8 @@ void InputRedirector::run()
     max_controller_count_ = Settings::controller.maxControllers;
     use_real_vid_pid_ = Settings::devices.realDeviceIds;
 #ifdef _WIN32
-    Overlay::AddOverlayElem([this](bool window_has_focus) {
-        ImGui::SetNextWindowPos({650, 450}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
+    Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin("Controller Emulation");
         int countcopy = max_controller_count_;
         ImGui::Text("Max. controller count");

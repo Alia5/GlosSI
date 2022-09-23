@@ -50,9 +50,9 @@ TargetWindow::TargetWindow(
 {
     createWindow(Settings::window.windowMode);
 
-    Overlay::AddOverlayElem([this](bool window_has_focus) {
+    Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         bool windowed_copy = windowed_;
-        ImGui::SetNextWindowPos({window_.getSize().x - 370.f, 100}, ImGuiCond_FirstUseEver);
         ImGui::Begin("Window mode");
         if (ImGui::Checkbox("Window mode", &windowed_copy)) {
             toggle_window_mode_after_frame_ = true;
