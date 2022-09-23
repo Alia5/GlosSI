@@ -39,16 +39,16 @@ UIModel::UIModel() : QObject(nullptr)
         std::filesystem::create_directories(path);
 
     config_path_ = path;
-    config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring().data());
+    config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring());
 
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
 
     parseShortcutVDF();
-    readConfigs();
+    readTargetConfigs();
 }
 
-void UIModel::readConfigs()
+void UIModel::readTargetConfigs()
 {
     QDir dir(config_dir_name_);
     auto entries = dir.entryList(QDir::Files, QDir::SortFlag::Name);
@@ -68,29 +68,13 @@ void UIModel::readConfigs()
         const auto data = file.readAll();
         file.close();
         const auto jsondoc = QJsonDocument::fromJson(data);
-        const auto filejson = jsondoc.object();
+        auto filejson = jsondoc.object();
 
-        QJsonObject json;
-        json["version"] = filejson["version"];
-        json["icon"] = filejson["icon"];
-        json["launch"] = filejson["launch"]["launch"];
-        json["launchPath"] = filejson["launch"]["launchPath"];
-        json["launchAppArgs"] = filejson["launch"]["launchAppArgs"];
-        json["closeOnExit"] = filejson["launch"]["closeOnExit"];
-        json["waitForChildProcs"] = filejson["launch"]["waitForChildProcs"];
-        json["hideDevices"] = filejson["devices"]["hideDevices"];
-        json["realDeviceIds"] = filejson["devices"]["realDeviceIds"];
-        json["windowMode"] = filejson["window"]["windowMode"];
-        json["maxFps"] = filejson["window"]["maxFps"];
-        json["scale"] = filejson["window"]["scale"];
-        json["disableOverlay"] = filejson["window"]["disableOverlay"];
-        json["maxControllers"] = filejson["controller"]["maxControllers"];
-        json["allowDesktopConfig"] = filejson["controller"]["allowDesktopConfig"];
-        json["emulateDS4"] = filejson["controller"]["emulateDS4"];
+        filejson["name"] = filejson.contains("name")
+                               ? filejson["name"].toString()
+            : QString(name).replace(QRegularExpression("\\.json"), "");
 
-        json["name"] = filejson.contains("name") ? filejson["name"] : QString(name).replace(QRegularExpression("\\.json"), "");
-
-        targets_.append(json.toVariantMap());
+        targets_.append(filejson.toVariantMap());
     });
 
     emit targetListChanged();
@@ -237,6 +221,46 @@ QVariantMap UIModel::manualProps(QVariant shortcut)
     return res;
 }
 
+void UIModel::enableSteamInputXboxSupport()
+{
+    if (foundSteam()) {
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        if (!std::filesystem::exists(config_path)) {
+            qDebug() << "localconfig.vdf does not exist.";
+        }
+        QFile file(config_path);
+        if (file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            QStringList lines;
+            QString line = in.readLine();
+            // simple approach is enough...
+            while (!in.atEnd()) {
+                if (line.contains("SteamController_XBoxSupport")) {
+                    if (line.contains("1")) {
+                        qDebug() << "\"SteamController_XBoxSupport\" is already enabled! aborting write...";
+                        file.close();
+                        return;
+                    }
+                    qDebug() << "found \"SteamController_XBoxSupport\" line, replacing value...";
+                    line.replace("0", "1");
+                }
+                lines.push_back(line);
+                line = in.readLine();
+            }
+            file.close();
+            QFile updatedFile(config_path);
+            if (updatedFile.open(QFile::WriteOnly | QFile::Truncate | QFile::Text)) {
+                qDebug() << "writing localconfig.vdf...";
+                QTextStream out(&updatedFile);
+                for (const auto& l : lines) {
+                    out << l << "\n";
+                }
+            }
+            updatedFile.close();
+        }
+    }
+}
+
 #ifdef _WIN32
 QVariantList UIModel::uwpApps()
 {
@@ -319,60 +343,41 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     emit acrylicChanged();
 }
 
-void UIModel::writeTarget(const QJsonObject& json, const QString& name)
+void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
 {
     auto path = config_path_;
     path /= config_dir_name_.toStdWString();
     path /= (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdWString();
     QFile file(path);
     if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
-        // meh
+        qDebug() << "Couldn't open file for writing: " << path;
         return;
     }
-    QJsonObject fileJson;
-    fileJson["version"] = json["version"];
-    fileJson["icon"] = json["icon"];
-    fileJson["name"] = json["name"];
 
-    QJsonObject launchObject;
-    launchObject["launch"] = json["launch"];
-    launchObject["launchPath"] = json["launchPath"];
-    launchObject["launchAppArgs"] = json["launchAppArgs"];
-    launchObject["closeOnExit"] = json["closeOnExit"];
-    launchObject["waitForChildProcs"] = json["waitForChildProcs"];
-    fileJson["launch"] = launchObject;
-
-    QJsonObject devicesObject;
-    devicesObject["hideDevices"] = json["hideDevices"];
-    devicesObject["realDeviceIds"] = json["realDeviceIds"];
-    fileJson["devices"] = devicesObject;
-
-    QJsonObject windowObject;
-    windowObject["windowMode"] = json["windowMode"];
-    windowObject["maxFps"] = json["maxFps"];
-    windowObject["scale"] = json["scale"];
-    windowObject["disableOverlay"] = json["disableOverlay"];
-    fileJson["window"] = windowObject;
-
-    QJsonObject controllerObject;
-    controllerObject["maxControllers"] = json["maxControllers"];
-    controllerObject["allowDesktopConfig"] = json["allowDesktopConfig"];
-    controllerObject["emulateDS4"] = json["emulateDS4"];
-    fileJson["controller"] = controllerObject;
-
-    auto wtf = QString(QJsonDocument(fileJson).toJson(QJsonDocument::Indented)).toStdString();
-    file.write(wtf.data());
+    file.write(
+        QString(QJsonDocument(json).toJson(QJsonDocument::Indented))
+        .toStdString()
+        .data()
+    );
     file.close();
 }
 
 std::filesystem::path UIModel::getSteamPath() const
 {
+    try {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
-    const auto res = key.GetStringValue(L"SteamPath");
-    return res;
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
+        if (!key.IsValid()) {
+            return "";
+        }
+        const auto res = key.GetStringValue(L"SteamPath");
+        return res;
+    }
+    catch (...) {
+        return "";
+    }
 #else
     return L""; // TODO LINUX
 #endif
@@ -381,26 +386,86 @@ std::filesystem::path UIModel::getSteamPath() const
 std::wstring UIModel::getSteamUserId() const
 {
 #ifdef _WIN32
-    // TODO: check if keys/value exist
-    // steam should always be open and have written reg values...
-    winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-    const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
-    if (res == L"0") {
-        qDebug() << "Steam not open?";
+    try {
+        // TODO: check if keys/value exist
+        // steam should always be open and have written reg values...
+        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
+        if (!key.IsValid()) {
+            return L"0";
+        }
+        const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
+        if (res == L"0") {
+            qDebug() << "Steam not open?";
+        }
+        return res;
+    } catch(...) {
+        return L"0";
     }
-    return res;
 #else
     return L""; // TODO LINUX
 #endif
 }
 
+bool UIModel::foundSteam() const
+{
+    if (getSteamPath() == "" || getSteamUserId() == L"0") {
+        return false;
+    }
+    const std::filesystem::path user_config_dir = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId();
+    if (!std::filesystem::exists(user_config_dir)) {
+        return false;
+    }
+    return true;
+}
+
 void UIModel::parseShortcutVDF()
 {
     const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    if (!std::filesystem::exists(config_path)) {
+        qDebug() << "Shortcuts file does not exist.";
+        return;
+    }
+
     try {
         shortcuts_vdf_ = VDFParser::Parser::parseShortcuts(config_path, qDebug());
     }
     catch (const std::exception& e) {
         qDebug() << "Error parsing VDF: " << e.what();
     }
+}
+
+bool UIModel::isSteamInputXboxSupportEnabled() const
+{
+    // return true as default to not bug the user in error cases.
+    if (foundSteam()) {
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        if (!std::filesystem::exists(config_path)) {
+            qDebug() << "localconfig.vdf does not exist.";
+            return true;
+        }
+        QFile file(config_path);
+        if (file.open(QIODevice::Text | QIODevice::ReadOnly)) {
+            QTextStream in(&file);
+            QString line = in.readLine();
+            // simple, regex approach should be enough...
+            while (!in.atEnd()) {
+                if (line.contains("SteamController_XBoxSupport")) {
+                    file.close();
+                    if (line.contains("1")) {
+                        qDebug() << "\"SteamController_XBoxSupport\" is enabled!";
+                        return true;
+                    }
+                    qDebug() << "\"SteamController_XBoxSupport\" is disabled!";
+                    return false;
+                }
+                line = in.readLine();
+            }
+            qDebug() << "couldn't find \"SteamController_XBoxSupport\" in localconfig.vdf";
+            file.close();
+        }
+        else {
+            qDebug() << "could not open localconfig.vdf";
+        }
+    }
+    return true;
 }

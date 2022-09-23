@@ -45,6 +45,16 @@ Window {
 
     property bool steamShortcutsChanged: false
 
+    Component.onCompleted: function() {
+        if (!uiModel.foundSteam) {
+            steamNotFoundDialog.open();
+            return;
+        }
+        if (!uiModel.steamInputXboxSupportEnabled) {
+            steamXboxDisabledDialog.open();
+        }
+    }
+
     Image {
         anchors.top: parent.top
         anchors.left: parent.left
@@ -55,10 +65,18 @@ Window {
         opacity: 0.033
     }
 
+    SteamNotFoundDialog {
+        id: steamNotFoundDialog
+    }
+    SteamInputXboxDisabledDialog {
+        id: steamXboxDisabledDialog
+    }
+
+
     InfoDialog {
         id: steamChangedDialog
-        titleText: qsTr("Attention!")
-        text: qsTr("Please restart Steam to reload your changes!")
+        titleText: qsTr("Steam shortcuts changed!")
+        text: qsTr("Please restart Steam to reload your changes")
         onConfirmed: function (callback) {
             callback();
         }

@@ -65,6 +65,15 @@
     </None>
     <None Include=".clang-format" />
     <None Include="GetAUMIDs.ps1" />
+    <None Include="qml\SteamNotFoundDialog.qml">
+      <Filter>qml</Filter>
+    </None>
+    <None Include="qml\SteamInputXboxDisabledDialog.qml">
+      <Filter>qml</Filter>
+    </None>
+    <None Include="qml\CollapsiblePane.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">

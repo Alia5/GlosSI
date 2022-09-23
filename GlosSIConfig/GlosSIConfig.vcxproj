@@ -137,6 +137,8 @@
     <ClCompile Include="UIModel.cpp" />
     <None Include=".clang-format" />
     <None Include="GetAUMIDs.ps1" />
+    <None Include="qml\CollapsiblePane.qml" />
+    <None Include="qml\SteamInputXboxDisabledDialog.qml" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
     <None Include="qml\InfoDialog.qml" />
@@ -144,6 +146,7 @@
     <None Include="qml\ShortcutCards.qml" />
     <None Include="qml\ShortcutProps.qml" />
     <None Include="qml\UWPSelectDialog.qml" />
+    <None Include="qml\SteamNotFoundDialog.qml" />
     <QtRcc Include="qml.qrc" />
     <None Include="qml\main.qml" />
   </ItemGroup>

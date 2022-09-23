@@ -181,6 +181,9 @@ void SteamTarget::toggleGlossiOverlay()
 
 void SteamTarget::focusWindow(WindowHandle hndl)
 {
+    if (reinterpret_cast<uint64_t>(hndl) == 0) {
+        return;
+    }
 #ifdef _WIN32
     if (hndl == target_window_handle_) {
         spdlog::debug("Bring own window to foreground");

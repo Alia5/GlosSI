@@ -27,11 +27,13 @@ class UIModel : public QObject {
     Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
     Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
+    Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
+    Q_PROPERTY(bool steamInputXboxSupportEnabled READ isSteamInputXboxSupportEnabled CONSTANT)
 
   public:
     UIModel();
 
-    Q_INVOKABLE void readConfigs();
+    Q_INVOKABLE void readTargetConfigs();
     Q_INVOKABLE QVariantList getTargetList() const;
     Q_INVOKABLE void addTarget(QVariant shortcut);
     Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
@@ -41,6 +43,7 @@ class UIModel : public QObject {
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE QVariantMap manualProps(QVariant shortcut);
+    Q_INVOKABLE void enableSteamInputXboxSupport();
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
@@ -61,25 +64,30 @@ class UIModel : public QObject {
     void targetListChanged();
 
   private:
-    std::filesystem::path config_path_;
-    QString config_dir_name_;
-    
-    void writeTarget(const QJsonObject& json, const QString& name);
-
-    std::filesystem::path getSteamPath() const;
-    std::wstring getSteamUserId() const;
-    void parseShortcutVDF();
-    QString shortcutsfile_ = "/config/shortcuts.vdf";
-    QString user_data_path_ = "/userdata/";
-
-    QVariantList targets_;
-
-    std::vector<VDFParser::Shortcut> shortcuts_vdf_;
-
 #ifdef _WIN32
     bool is_windows_ = true;
 #else
     bool is_windows_ = false;
 #endif
     bool has_acrylic_affect_ = false;
+
+    std::filesystem::path config_path_;
+    QString config_dir_name_;
+
+    QString shortcutsfile_ = "/config/shortcuts.vdf";
+    QString user_config_file_ = "/config/localconfig.vdf";
+    QString user_data_path_ = "/userdata/";
+
+    QVariantList targets_;
+
+    std::vector<VDFParser::Shortcut> shortcuts_vdf_;
+    
+    void writeTarget(const QJsonObject& json, const QString& name) const;
+
+    std::filesystem::path getSteamPath() const;
+    std::wstring getSteamUserId() const;
+    bool foundSteam() const;
+    void parseShortcutVDF();
+
+    bool isSteamInputXboxSupportEnabled() const;
 };

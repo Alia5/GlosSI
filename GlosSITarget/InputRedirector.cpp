@@ -53,9 +53,8 @@ void InputRedirector::run()
     max_controller_count_ = Settings::controller.maxControllers;
     use_real_vid_pid_ = Settings::devices.realDeviceIds;
 #ifdef _WIN32
-    Overlay::AddOverlayElem([this](bool window_has_focus) {
-        ImGui::SetNextWindowPos({650, 450}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSizeConstraints({400, 270}, {1000, 1000});
+    Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin("Controller Emulation");
         int countcopy = max_controller_count_;
         ImGui::Text("Max. controller count");
@@ -163,7 +162,11 @@ void InputRedirector::runLoop()
                     // Multiple controllers can be worked around with by setting max count.
                     if (!use_real_vid_pid_) {
                         vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                        // vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        //vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                    } else {
+                        vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
+                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
                     }
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
                     //and filter out emulated controllers to support a greater amount of controllers simultaneously
@@ -178,7 +181,11 @@ void InputRedirector::runLoop()
                         }
                     }
                     if (target_add_res == VIGEM_ERROR_NONE) {
-                        spdlog::info("Plugged in controller {}, {}", i, vigem_target_get_index(vt_pad_[i]));
+                        spdlog::info("Plugged in controller {}, {}; VID: {:x}; PID: {:x}",
+                            i, 
+                            vigem_target_get_index(vt_pad_[i]),
+                            vigem_target_get_vid(vt_pad_[i]),
+                            vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
                             const auto callback_register_res = vigem_target_ds4_register_notification(

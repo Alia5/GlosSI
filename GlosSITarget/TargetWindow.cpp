@@ -50,9 +50,9 @@ TargetWindow::TargetWindow(
 {
     createWindow(Settings::window.windowMode);
 
-    Overlay::AddOverlayElem([this](bool window_has_focus) {
+    Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         bool windowed_copy = windowed_;
-        ImGui::SetNextWindowPos({window_.getSize().x - 370.f, 100}, ImGuiCond_FirstUseEver);
         ImGui::Begin("Window mode");
         if (ImGui::Checkbox("Window mode", &windowed_copy)) {
             toggle_window_mode_after_frame_ = true;
@@ -254,14 +254,26 @@ void TargetWindow::createWindow(bool window_mode)
 #ifdef _WIN32
         // For some completely odd reason, the Background becomes black when enabled dpi-awareness and making the window desktop-size.
         // Scaling down by 1px each direction is barely noticeable and works.
+
+        // Due to some other issue, the (Steam) overlay might get blurred when doing this
+        // as a workaround, start in full size, and scale down later...
         spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
-        window_.create(sf::VideoMode(desktop_mode.width - 1, desktop_mode.height - 1, 32), "GlosSITarget", sf::Style::None);
+        window_.create(sf::VideoMode(desktop_mode.width -1, desktop_mode.height -1, 32), "GlosSITarget", sf::Style::None);
+
+        // get size of all monitors combined
+        const auto screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        const auto screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        spdlog::debug("Full screen size: {}x{}", screenWidth, screenHeight);
+
+        spdlog::debug("Primary monitor size: {}x{}", desktop_mode.width, desktop_mode.height);
+
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
         windowed_ = false;
     }
     window_.setActive(true);
+    spdlog::debug("Window position: {}x{}", window_.getPosition().x, window_.getPosition().y);
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
@@ -320,6 +332,9 @@ void TargetWindow::createWindow(bool window_mode)
     else {
         spdlog::warn("Not applying too low screen scale setting");
     }
+
+    // window_.setSize({desktop_mode.width - 1, desktop_mode.height - 1 });
+
     on_window_changed_();
 
 #ifdef _WIN32

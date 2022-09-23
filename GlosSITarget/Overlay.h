@@ -38,7 +38,7 @@ class Overlay {
     static void Shutdown();
     static void AddLog(const spdlog::details::log_msg& msg);
 
-    static int AddOverlayElem(const std::function<void(bool window_has_focus)>& elem_fn);
+    static int AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn);
     static void RemoveOverlayElem(int id);
 
   private:
@@ -47,11 +47,12 @@ class Overlay {
     bool enabled_ = true;
     std::function<void()> on_close_;
     std::function<void()> trigger_state_change_;
-    void showLogs();
+    void showLogs(ImGuiID dockspace_id);
     bool closeOverlayButton() const;
     [[nodiscard]] bool closeButton() const;
     bool force_enable_ = false;
     bool log_expanded_ = true;
+    sf::Clock time_since_start_clock_;
 
     struct Log {
         std::chrono::system_clock::time_point time;
@@ -60,9 +61,10 @@ class Overlay {
     };
     static inline std::vector<Log> LOG_MSGS_;
     static constexpr int LOG_RETENTION_TIME_ = 5;
+    static constexpr int HIDE_NORMAL_LOGS_AFTER_S = 20;
 
     static inline int overlay_element_id_ = 0;
-    static inline std::map<int, std::function<void(bool window_has_focus)>> OVERLAY_ELEMS_;
+    static inline std::map<int, std::function<void(bool window_has_focus, ImGuiID dockspace_id)>> OVERLAY_ELEMS_;
 
 #ifdef _WIN32
     std::string config_file_name_;
