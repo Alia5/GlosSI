@@ -161,7 +161,7 @@ void Overlay::update()
     if (enabled_ || force_enable_) {
         // Create a DockSpace node where any window can be docked
         ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.6f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 150 }, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 100 }, ImGuiCond_FirstUseEver);
         ImGui::Begin("GlosSI Settings");
         if (Settings::settings_path_ != "") {
             if (ImGui::Button("Save shortcut settings", {256, 32})) {
@@ -261,7 +261,7 @@ void Overlay::showLogs(ImGuiID dockspace_id)
     else {
         //ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.2f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.05f, 150}, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.05f, 100}, ImGuiCond_FirstUseEver);
         log_expanded_ = ImGui::Begin("Log");
     }
     if (log_expanded_) {
