@@ -52,7 +52,7 @@ inline struct Controller {
     bool emulateDS4 = false;
 } controller;
 
-inline bool extendedLogging = true;
+inline bool extendedLogging = false;
 
 inline std::filesystem::path settings_path_ = "";
 
