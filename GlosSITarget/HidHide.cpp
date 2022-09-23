@@ -121,7 +121,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
                 if (!dev.device_instance_path.empty()) {
                     blacklisted_devices_.push_back(dev.device_instance_path);
                 }
-                if (!dev.device_instance_path.empty()) {
+                if (!dev.base_container_device_instance_path.empty()) {
                     blacklisted_devices_.push_back(dev.base_container_device_instance_path);
                 }
             }
