@@ -71,6 +71,9 @@
     <None Include="qml\SteamInputXboxDisabledDialog.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\CollapsiblePane.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">

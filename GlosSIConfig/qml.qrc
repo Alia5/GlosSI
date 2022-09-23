@@ -17,5 +17,7 @@
         <file>svg/help_outline_white_24dp.svg</file>
         <file>qml/SteamNotFoundDialog.qml</file>
         <file>qml/SteamInputXboxDisabledDialog.qml</file>
+        <file>qml/CollapsiblePane.qml</file>
+        <file>svg/expand_more_white_24dp.svg</file>
     </qresource>
 </RCC>
