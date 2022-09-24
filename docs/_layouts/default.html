@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <meta http-equiv="refresh" content="0;url=https://glossi.flatspot.pictures">
+    
 {% seo %}
     <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
     <!--[if lt IE 9]>
@@ -13,6 +15,20 @@
     {% include head-custom.html %}
   </head>
   <body>
+    
+    <script type="text/javascript">
+    var url = "https://glossi.flatspot.pictures/";
+    if(typeof IE_fix != "undefined") // IE8 and lower fix to pass the http referer
+    {
+        document.write("redirecting..."); // Don't remove this line or appendChild() will fail because it is called before document.onload to make the redirect as fast as possible. Nobody will see this text, it is only a tech fix.
+        var referLink = document.createElement("a");
+        referLink.href = url;
+        document.body.appendChild(referLink);
+        referLink.click();
+    }
+    else { window.location.replace(url); } // All other browsers
+    </script>
+    
     <div class="wrapper">
       <header>
         <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
