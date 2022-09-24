@@ -186,8 +186,12 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
     if (!address) {
         spdlog::error("failed to unpatch \"{}\"", name);
     }
-
-    auto bytes = ORIGINAL_BYTES.at(name);
+    std::string bytes;
+    if (Settings::isWin10 && ORIGINAL_BYTES_WIN10.contains(name)) {
+        bytes = ORIGINAL_BYTES_WIN10.at(name);
+    } else {
+        bytes = ORIGINAL_BYTES.at(name);
+    }
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
     VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..

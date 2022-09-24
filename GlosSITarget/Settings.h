@@ -23,6 +23,12 @@ limitations under the License.
 #include <locale>
 #include <codecvt>
 
+#ifdef WIN32
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
+
 namespace Settings {
 
 inline struct Launch {
@@ -56,6 +62,7 @@ inline bool extendedLogging = false;
 
 inline std::filesystem::path settings_path_ = "";
 
+
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
     if (launch_path.find(L"://") != std::wstring::npos) {
@@ -67,6 +74,45 @@ inline bool checkIsUwp(const std::wstring& launch_path)
     }
     return false;
 }
+
+#ifdef WIN32
+inline bool isWin10 = false;
+
+ typedef LONG NTSTATUS, *PNTSTATUS;
+#define STATUS_SUCCESS (0x00000000)
+
+typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+inline RTL_OSVERSIONINFOW GetRealOSVersion()
+{
+    HMODULE hMod = ::GetModuleHandleW(L"ntdll.dll");
+    if (hMod) {
+        RtlGetVersionPtr fxPtr = (RtlGetVersionPtr)::GetProcAddress(hMod, "RtlGetVersion");
+        if (fxPtr != nullptr) {
+            RTL_OSVERSIONINFOW rovi = {0};
+            rovi.dwOSVersionInfoSize = sizeof(rovi);
+            if (STATUS_SUCCESS == fxPtr(&rovi)) {
+                return rovi;
+            }
+        }
+    }
+    RTL_OSVERSIONINFOW rovi = {0};
+    return rovi;
+}
+
+inline void checkWinVer()
+{
+    auto VN = GetRealOSVersion();
+    isWin10 = VN.dwBuildNumber < 22000;
+
+    if (isWin10) {
+        spdlog::info("Running on Windows 10");
+    } else {
+        spdlog::info("Running on Windows 11");
+    }
+
+}
+#endif
 
 inline void Parse(std::wstring arg1)
 {
