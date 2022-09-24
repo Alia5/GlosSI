@@ -169,7 +169,7 @@ void HidHide::UnPatchValveHooks()
         for (const auto& name : ORIGINAL_BYTES | std::views::keys) {
             if (name.starts_with("Hid")) {
                 UnPatchHook(name, hiddll);
-            }            
+            }
         }
     }
 }
@@ -187,7 +187,7 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
     VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..
-    for (DWORD i = 0; i < len; i++)                                        //unpatch Valve's hook
+    for (DWORD i = 0; i < len; i++)                                        // unpatch Valve's hook
     {
         *(address + i) = bytes[i];
     }
@@ -496,6 +496,12 @@ HidHide::SmallHidInfo HidHide::GetDeviceInfo(const DeviceInstancePath& instance_
     res.name = (HidD_GetProductString(device_object.get(), buffer.data(), static_cast<ULONG>(sizeof(WCHAR) * buffer.size()))
                     ? buffer
                     : L"");
+    for (size_t i = 0; i < res.name.size(); ++i) {
+        if (res.name[i] == L'\0') {
+            res.name.resize(i + 1);
+            break;
+        }
+    }
     // Valve emulated gamepad PID/VID; mirrord by ViGEm
     if (attributes.VendorID == 0x28de /* && attributes.ProductID == 0x11FF*/) {
         res.name = std::wstring(L"ViGEm Emulated: ") + res.name;
