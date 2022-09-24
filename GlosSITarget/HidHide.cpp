@@ -68,6 +68,10 @@ void HidHide::closeCtrlDevice()
 
 void HidHide::hideDevices(const std::filesystem::path& steam_path)
 {
+    if (!Settings::devices.hideDevices) {
+        spdlog::info("Hiding devices is disabled; Not un-patching valve hooks, not looking for HidHide");
+        return;
+    }
     UnPatchValveHooks();
 
     openCtrlDevice();
