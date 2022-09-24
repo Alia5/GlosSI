@@ -191,6 +191,12 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
     VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..
+    const auto opcode = *(address);
+    if (!std::ranges::any_of(JUMP_INSTR_OPCODES, [&opcode](const auto& op) { return op == opcode; })) {
+        spdlog::debug("\"{}\" Doesn't appear to be hooked, skipping!", name);
+        VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+        return;
+    }
     for (DWORD i = 0; i < len; i++)                                        // unpatch Valve's hook
     {
         *(address + i) = bytes[i];
