@@ -167,6 +167,7 @@ void AppLauncher::getProcessHwnds()
 #ifdef _WIN32
 void AppLauncher::UnPatchValveHooks()
 {
+    // TODO: move and re-use reusable unhook util from HidHide.cpp
     spdlog::debug("Unpatching Valve CreateProcess hook...");
     // need to load addresses that way.. Otherwise we may land before some jumps...
     auto kernel32dll = GetModuleHandle(L"kernel32.dll");
@@ -176,12 +177,18 @@ void AppLauncher::UnPatchValveHooks()
             DWORD dw_old_protect, dw_bkup;
             const auto len = CREATE_PROC_ORIG_BYTES.size();
             VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); //Change permissions of memory..
-            for (DWORD i = 0; i < len; i++)                                        //unpatch Valve's hook
-            {
-                *(address + i) = CREATE_PROC_ORIG_BYTES[i];
+            const auto opcode = *(address); 
+            if (opcode != 0xE9 && opcode != 0xE8 && opcode != 0xEB && opcode != 0xEA && opcode != 0xFF) {
+                spdlog::debug("\"CreateProcessW\" Doesn't appear to be hooked, skipping!");
+                VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+            } else {
+                for (DWORD i = 0; i < len; i++) // unpatch Valve's hook
+                {
+                    *(address + i) = CREATE_PROC_ORIG_BYTES[i];
+                }
+                VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+                spdlog::trace("Unpatched CreateProcessW");   
             }
-            VirtualProtect(address, len, dw_old_protect, &dw_bkup); //Revert permission change...
-            spdlog::trace("Unpatched CreateProcessW");
         }
         else {
             spdlog::error("failed to unpatch CreateProcessW");

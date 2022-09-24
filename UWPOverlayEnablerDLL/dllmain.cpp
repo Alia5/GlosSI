@@ -55,6 +55,7 @@ There are two (known to me, at time of writing) ways to get a working overlay fo
 #include <spdlog/spdlog.h>
 
 #include <fstream>
+#include <chrono>
 
 enum ZBID
 {
@@ -89,6 +90,10 @@ std::atomic<bool> allow_exit = false;
 
 std::atomic<ZBID> to_set_window_band = ZBID_SYSTEM_TOOLS;
 
+std::chrono::time_point<std::chrono::system_clock> start_time;
+
+static constexpr int hook_timeout_seconds_ = 60;
+
 BOOL WINAPI SetGlosSIWindowBand(HWND hWnd, HWND hwndInsertAfter, DWORD dwBand)
 {
 	subhook::ScopedHookRemove remove(&SetWindowBandHook);
@@ -103,6 +108,13 @@ BOOL WINAPI SetGlosSIWindowBand(HWND hWnd, HWND hwndInsertAfter, DWORD dwBand)
 		auto success = SetWindowBand(glossi_hwnd, nullptr, to_set_window_band);
 		allow_exit = true;
 		spdlog::info("Set GlosSI Window Band to {}; success: {}", static_cast<int>(to_set_window_band), success);
+	} else if (allow_exit == false) {
+		const auto time = std::chrono::system_clock::now();
+		if (std::chrono::duration_cast<std::chrono::seconds>(time - start_time).count() > hook_timeout_seconds_)
+		{
+			spdlog::info("GlosSI Window not found after {} seconds, exiting", hook_timeout_seconds_);
+			allow_exit = true;
+		}
 	}
 	return SetWindowBand(hWnd, hwndInsertAfter, dwBand);
 }
@@ -208,6 +220,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 		const auto hpath = LoadLibrary(L"user32.dll");
 		if (hpath)
 		{
+			start_time = std::chrono::system_clock::now();
 			spdlog::debug("Loaded user32.dll");
 			spdlog::debug("Installing SetWindowBand hook");
 			SetWindowBand = reinterpret_cast<fSetWindowBand>(GetProcAddress(hpath, "SetWindowBand"));

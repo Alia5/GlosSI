@@ -68,6 +68,10 @@ void HidHide::closeCtrlDevice()
 
 void HidHide::hideDevices(const std::filesystem::path& steam_path)
 {
+    if (!Settings::devices.hideDevices) {
+        spdlog::info("Hiding devices is disabled; Not un-patching valve hooks, not looking for HidHide");
+        return;
+    }
     UnPatchValveHooks();
 
     openCtrlDevice();
@@ -169,7 +173,7 @@ void HidHide::UnPatchValveHooks()
         for (const auto& name : ORIGINAL_BYTES | std::views::keys) {
             if (name.starts_with("Hid")) {
                 UnPatchHook(name, hiddll);
-            }            
+            }
         }
     }
 }
@@ -182,12 +186,22 @@ void HidHide::UnPatchHook(const std::string& name, HMODULE module)
     if (!address) {
         spdlog::error("failed to unpatch \"{}\"", name);
     }
-
-    auto bytes = ORIGINAL_BYTES.at(name);
+    std::string bytes;
+    if (Settings::isWin10 && ORIGINAL_BYTES_WIN10.contains(name)) {
+        bytes = ORIGINAL_BYTES_WIN10.at(name);
+    } else {
+        bytes = ORIGINAL_BYTES.at(name);
+    }
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
     VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..
-    for (DWORD i = 0; i < len; i++)                                        //unpatch Valve's hook
+    const auto opcode = *(address);
+    if (!std::ranges::any_of(JUMP_INSTR_OPCODES, [&opcode](const auto& op) { return op == opcode; })) {
+        spdlog::debug("\"{}\" Doesn't appear to be hooked, skipping!", name);
+        VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+        return;
+    }
+    for (DWORD i = 0; i < len; i++)                                        // unpatch Valve's hook
     {
         *(address + i) = bytes[i];
     }
@@ -496,6 +510,12 @@ HidHide::SmallHidInfo HidHide::GetDeviceInfo(const DeviceInstancePath& instance_
     res.name = (HidD_GetProductString(device_object.get(), buffer.data(), static_cast<ULONG>(sizeof(WCHAR) * buffer.size()))
                     ? buffer
                     : L"");
+    for (size_t i = 0; i < res.name.size(); ++i) {
+        if (res.name[i] == L'\0') {
+            res.name.resize(i + 1);
+            break;
+        }
+    }
     // Valve emulated gamepad PID/VID; mirrord by ViGEm
     if (attributes.VendorID == 0x28de /* && attributes.ProductID == 0x11FF*/) {
         res.name = std::wstring(L"ViGEm Emulated: ") + res.name;

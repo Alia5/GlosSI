@@ -158,6 +158,7 @@ int main(int argc, char* argv[])
                 argsv += i == 1 ? args[i] : std::wstring(L" ") + args[i];
         }
         Settings::Parse(argsv);
+        Settings::checkWinVer();
         SteamTarget target;
 #else // Code below is broken now due to parse requiring std::wstring instead of std:string. Sorry.
         std::string argsv = "";

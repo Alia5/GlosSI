@@ -85,6 +85,19 @@ class HidHide {
         {"HidP_GetButtonCaps", "\x48\x83\xEC\x48\x49"},
     };
 
+    static inline const std::map<std::string, std::string> ORIGINAL_BYTES_WIN10 = {
+        {"SetupDiEnumDeviceInfo", "\x40\x53\x56\x57\x41\x54\x41\x55"},
+        {"SetupDiGetClassDevsW", "\x48\x8B\xC4\x48\x89\x58\x08"},
+    };
+
+    static inline const std::vector<uint8_t> JUMP_INSTR_OPCODES = {
+        0xE9,
+        0xE8,
+        0xEB,
+        0xEA,
+        0xFF
+    };
+
     static void UnPatchValveHooks();
     static void UnPatchHook(const std::string& name, HMODULE module);
 

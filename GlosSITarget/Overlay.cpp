@@ -250,7 +250,7 @@ void Overlay::showLogs(ImGuiID dockspace_id)
                                  return res;
                              });
     }
-    if (logs.empty() || ( !enabled_ && !logs_contain_warn_or_worse && time_since_start_clock_.getElapsedTime().asSeconds() > HIDE_NORMAL_LOGS_AFTER_S))
+    if (logs.empty() || ( !enabled_ && !force_enable_ && !logs_contain_warn_or_worse && time_since_start_clock_.getElapsedTime().asSeconds() > HIDE_NORMAL_LOGS_AFTER_S))
         return;
     ImGui::SetNextWindowSizeConstraints({150, 150}, {1000, window_.getSize().y - 250.f});
     if (!enabled_) {

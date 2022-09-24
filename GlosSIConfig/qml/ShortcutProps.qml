@@ -752,7 +752,7 @@ Item {
             }
         }
         Button {
-            text: qsTr("Done")
+            text: qsTr("Save")
             highlighted: true
             enabled: nameInput.acceptableInput
             onClicked: function() {
