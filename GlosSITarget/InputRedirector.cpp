@@ -167,10 +167,19 @@ void InputRedirector::runLoop()
                     if (!Settings::devices.realDeviceIds) {
                         vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
                         //vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
-                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                        if (Settings::controller.emulateDS4) {
+                            vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
+                        } else {
+                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                        }
                     } else {
-                        vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
-                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                        if (Settings::controller.emulateDS4) {
+                            vigem_target_set_vid(vt_pad_[i], 0x054C); // Sony Corp.
+                            vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
+                        } else {
+                            vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
+                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller   
+                        }
                     }
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
                     //and filter out emulated controllers to support a greater amount of controllers simultaneously
