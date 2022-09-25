@@ -128,7 +128,12 @@ void AppLauncher::getChildPids(DWORD parent_pid)
     if (Process32First(hp, &pe)) {
         do {
             if (pe.th32ParentProcessID == parent_pid) {
-                pids_.push_back(pe.th32ProcessID);
+                if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
+                    if (Settings::extendedLogging) {
+                        spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
+                    }
+                    pids_.push_back(pe.th32ProcessID);
+                }
             }
         } while (Process32Next(hp, &pe));
     }
