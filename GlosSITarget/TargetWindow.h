@@ -77,8 +77,7 @@ class TargetWindow {
 
     std::shared_ptr<Overlay> overlay_;
 
-    void createWindow(bool window_mode);
+    void createWindow();
 
-    bool windowed_ = false;
     bool toggle_window_mode_after_frame_ = false;
 };

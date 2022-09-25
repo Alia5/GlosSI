@@ -48,15 +48,16 @@ TargetWindow::TargetWindow(
       screenshot_keys_(std::move(screenshot_hotkey)),
       on_window_changed_(std::move(on_window_changed))
 {
-    createWindow(Settings::window.windowMode);
+    createWindow();
 
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        bool windowed_copy = windowed_;
+        bool windowed_copy = Settings::window.windowMode;
         ImGui::Begin("Window mode");
         if (ImGui::Checkbox("Window mode", &windowed_copy)) {
             toggle_window_mode_after_frame_ = true;
         }
+        Settings::window.windowMode = windowed_copy;
         ImGui::End();
     });
 
@@ -102,7 +103,7 @@ void TargetWindow::update()
     overlay_->update();
     window_.display();
     if (toggle_window_mode_after_frame_) {
-        createWindow(!windowed_);
+        createWindow();
     }
     // As SFML screws us out of most windows-events, just poll resolution every once in a while
     // If changed, recreate window.
@@ -110,7 +111,7 @@ void TargetWindow::update()
     // (WHY?!)
     if (check_resolution_clock_.getElapsedTime().asSeconds() > RES_CHECK_SECONDS) {
         if (sf::VideoMode::getDesktopMode().width != old_desktop_mode_.width) {
-            createWindow(windowed_);
+            createWindow();
         }
         check_resolution_clock_.restart();
     }
@@ -238,17 +239,16 @@ WORD TargetWindow::GetWindowDPI(HWND hWnd)
 }
 #endif
 
-void TargetWindow::createWindow(bool window_mode)
+void TargetWindow::createWindow()
 {
     toggle_window_mode_after_frame_ = false;
 
     auto desktop_mode = sf::VideoMode::getDesktopMode();
     spdlog::info("Detected resolution: {}x{}", desktop_mode.width, desktop_mode.height);
     old_desktop_mode_ = desktop_mode;
-    if (window_mode) {
+    if (Settings::window.windowMode) {
         spdlog::info("Creating Overlay window...");
         window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
-        windowed_ = true;
     }
     else {
 #ifdef _WIN32
@@ -270,12 +270,11 @@ void TargetWindow::createWindow(bool window_mode)
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
-        windowed_ = false;
     }
     window_.setActive(true);
     spdlog::debug("Window position: {}x{}", window_.getPosition().x, window_.getPosition().y);
 
-    if (!window_mode) {
+    if (!Settings::window.windowMode) {
         spdlog::info("Resizing window to 1px smaller than fullscreen...");
         window_.setSize(sf::Vector2u(desktop_mode.width - 1, desktop_mode.height - 1));
     }
@@ -315,7 +314,7 @@ void TargetWindow::createWindow(bool window_mode)
     }
 
     overlay_ = std::make_shared<Overlay>(
-        window_, [this]() { close(); }, toggle_overlay_state_, windowed_);
+        window_, [this]() { close(); }, toggle_overlay_state_, Settings::window.windowMode);
 
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
