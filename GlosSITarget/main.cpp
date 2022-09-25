@@ -29,6 +29,8 @@ limitations under the License.
 #include "Settings.h"
 #include <iostream>
 
+#include "../version.hpp"
+
 #ifdef _WIN32
 
 // default to high performance GPU
@@ -147,6 +149,7 @@ int main(int argc, char* argv[])
     logger->flush_on(spdlog::level::trace);
     spdlog::set_default_logger(logger);
     SetUnhandledExceptionFilter(static_cast<LPTOP_LEVEL_EXCEPTION_FILTER>(Win32FaultHandler));
+    spdlog::info("GlosSITarget version: {}", version::VERSION_STR);
     auto exit = 1;
     try {
 #ifdef _WIN32
