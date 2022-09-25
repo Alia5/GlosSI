@@ -147,7 +147,9 @@ inline void Parse(std::wstring arg1)
             value = object[key];
         }
         catch (const nlohmann::json::exception& e) {
-            spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
+            e.id == 403
+                ? spdlog::trace("Err parsing \"{}\"; {}", key, e.what())
+                : spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
         }
         catch (const std::exception& e) {
             spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
