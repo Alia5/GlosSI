@@ -69,6 +69,10 @@ class HidHide {
   private:
     HANDLE hidhide_handle = nullptr;
 
+    std::filesystem::path steam_path_;
+    bool device_hiding_setup_ = false;
+
+
     // Valve Hooks various functions and hides Gaming devices like this.
     // To be able to query them, unpatch the hook with the original bytes...
     static inline const std::map<std::string, std::string> ORIGINAL_BYTES = {
