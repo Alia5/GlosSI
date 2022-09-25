@@ -194,6 +194,7 @@ void Overlay::update()
                 Settings::StoreSettings();
             }
         }
+        ImGui::Checkbox("Extended logging", &Settings::extendedLogging);
         ImGuiID dockspace_id = ImGui::GetID("GlosSI-DockSpace");
         ImGui::DockSpace(dockspace_id);
 
