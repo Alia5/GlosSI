@@ -258,7 +258,7 @@ void TargetWindow::createWindow(bool window_mode)
         // Due to some other issue, the (Steam) overlay might get blurred when doing this
         // as a workaround, start in full size, and scale down later...
         spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
-        window_.create(sf::VideoMode(desktop_mode.width -1, desktop_mode.height -1, 32), "GlosSITarget", sf::Style::None);
+        window_.create(sf::VideoMode(desktop_mode.width, desktop_mode.height, 32), "GlosSITarget", sf::Style::None);
 
         // get size of all monitors combined
         const auto screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -274,6 +274,11 @@ void TargetWindow::createWindow(bool window_mode)
     }
     window_.setActive(true);
     spdlog::debug("Window position: {}x{}", window_.getPosition().x, window_.getPosition().y);
+
+    if (!window_mode) {
+        spdlog::info("Resizing window to 1px smaller than fullscreen...");
+        window_.setSize(sf::Vector2u(desktop_mode.width - 1, desktop_mode.height - 1));
+    }
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
