@@ -9,3 +9,9 @@ cd deps/traypp
 git apply ../../traypp_unicode.patch
 
 cd ../../
+
+cd .\GlosSIConfig\
+
+..\version_help.ps1
+
+cd ../
