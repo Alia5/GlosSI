@@ -65,6 +65,11 @@ void InputRedirector::run()
             countcopy = 0;
         }
         Settings::controller.maxControllers = countcopy;
+
+        if (ImGui::Checkbox("Emulate DS4 (instead of Xbox360 controller)", &Settings::controller.emulateDS4)) {
+            controller_settings_changed_ = true;
+        }
+
         bool enable_rumbe_copy = enable_rumble_;
         ImGui::Checkbox("Enable Rumble", &enable_rumbe_copy);
         enable_rumble_ = enable_rumbe_copy;
@@ -78,7 +83,7 @@ void InputRedirector::run()
             bool use_real_copy = Settings::devices.realDeviceIds;
             ImGui::Checkbox("Use real USB-IDs", &use_real_copy);
             if (Settings::devices.realDeviceIds != use_real_copy) {
-                use_real_vid_pid_changed_ = true;
+                controller_settings_changed_ = true;
             }
             Settings::devices.realDeviceIds = use_real_copy;
         }
@@ -107,9 +112,9 @@ void InputRedirector::runLoop()
     }
     while (run_) {
 #ifdef _WIN32
-        if (use_real_vid_pid_changed_) {
+        if (controller_settings_changed_) {
             // unplug all.
-            use_real_vid_pid_changed_ = false;
+            controller_settings_changed_ = false;
             for (int i = 0; i < XUSER_MAX_COUNT; i++) {
                 unplugVigemPad(i);
             }

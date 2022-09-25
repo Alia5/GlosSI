@@ -42,7 +42,7 @@ class InputRedirector {
 
     // variables for overlay element; run in different thread
     static inline std::atomic<bool> enable_rumble_ = true;
-    static inline std::atomic<bool> use_real_vid_pid_changed_ = false;
+    static inline std::atomic<bool> controller_settings_changed_ = false;
 
     bool vigem_connected_;
 
