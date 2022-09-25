@@ -35,7 +35,10 @@ AppLauncher::AppLauncher(
     std::function<void()> shutdown) : process_hwnds_(process_hwnds), shutdown_(std::move(shutdown))
 {
 #ifdef _WIN32
-    UnPatchValveHooks();
+    if (Settings::launch.launch) {
+        spdlog::debug("App launch requested");
+        UnPatchValveHooks();
+    }
 #endif
 };
 
