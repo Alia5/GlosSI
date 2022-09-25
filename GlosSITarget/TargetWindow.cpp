@@ -81,8 +81,6 @@ TargetWindow::TargetWindow(
         float scale_copy = Settings::window.scale;
         ImGui::DragFloat("##UISCale", &scale_copy, 0.1f, 0.0f, 6.f);
         ImGui::Text("Values smaller than 0.3 reset to 1");
-
-
         if (scale_copy > Settings::window.scale + 0.01f || scale_copy < Settings::window.scale - 0.01f) {
             Settings::window.scale = scale_copy;
             if (Settings::window.scale < 0.3f) {

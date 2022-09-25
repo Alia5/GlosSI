@@ -190,7 +190,7 @@ void Overlay::update()
         ImGui::Text("Version: %s", version::VERSION_STR);
         if (Settings::settings_path_ != "") {
             ImGui::SameLine();
-            if (ImGui::Button("Save shortcut settings", {256, 32})) {
+            if (ImGui::Button("Save shortcut settings", {256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
                 Settings::StoreSettings();
             }
         }
@@ -320,8 +320,8 @@ bool Overlay::closeOverlayButton() const
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.f, 0.f, 0.0f));
     ImGui::Begin("##CloseOverlayButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     ImGui::SetWindowPos({(window_.getSize().x - ImGui::GetWindowWidth()) / 2, 32});
-    ImGui::SetWindowSize({256, 32});
-    if (ImGui::Button("Return to Game", {256, 32})) {
+    ImGui::SetWindowSize({256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale});
+    if (ImGui::Button("Return to Game", {256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
         trigger_state_change_();
         ImGui::End();
         ImGui::PopStyleColor();
@@ -341,9 +341,9 @@ bool Overlay::closeButton() const
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.6f, 0.f, 0.f, 0.9f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 0.16f, 0.16f, 1.00f));
     ImGui::Begin("##CloseButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-    ImGui::SetWindowSize({56 + 32, 32 + 32});
+    ImGui::SetWindowSize({(56 + 32) * ImGui::GetIO().FontGlobalScale, (32 + 32) * ImGui::GetIO().FontGlobalScale});
     ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 32, -32});
-    if (ImGui::Button("X##Close", {56, 32})) {
+    if (ImGui::Button("X##Close", {56 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
         ImGui::End();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
