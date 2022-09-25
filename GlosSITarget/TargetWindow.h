@@ -74,6 +74,8 @@ class TargetWindow {
     sf::Clock check_resolution_clock_;
     static constexpr int RES_CHECK_SECONDS = 1;
 
+    unsigned int screen_refresh_rate_ = 0;
+
 
     std::shared_ptr<Overlay> overlay_;
 

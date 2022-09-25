@@ -52,12 +52,27 @@ TargetWindow::TargetWindow(
 
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        bool windowed_copy = Settings::window.windowMode;
-        ImGui::Begin("Window mode");
-        if (ImGui::Checkbox("Window mode", &windowed_copy)) {
+        ImGui::Begin("Window");
+        if (ImGui::Checkbox("Window mode", &Settings::window.windowMode)) {
             toggle_window_mode_after_frame_ = true;
         }
-        Settings::window.windowMode = windowed_copy;
+        ImGui::Text("Max. FPS");
+        ImGui::SameLine();
+        int max_fps_copy = Settings::window.maxFps;
+        ImGui::InputInt("##max_fps", &max_fps_copy, 20, 20);
+        if (max_fps_copy != Settings::window.maxFps) {
+            Settings::window.maxFps = max_fps_copy; 
+            if (Settings::window.maxFps > 240) {
+                Settings::window.maxFps = 240;
+            }
+            if (Settings::window.maxFps < 15 && Settings::window.maxFps > 0) {
+                Settings::window.maxFps = 0;
+                setFpsLimit(screen_refresh_rate_);
+            } else {
+                setFpsLimit(Settings::window.maxFps);
+            }
+        }
+        ImGui::Text("Values smaller than 15 set the limit to the screen refresh rate.");
         ImGui::End();
     });
 
@@ -66,6 +81,7 @@ TargetWindow::TargetWindow(
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
 {
+    spdlog::trace("Limiting FPS to {}", fps_limit);
     window_.setFramerateLimit(fps_limit);
 }
 
@@ -307,10 +323,11 @@ void TargetWindow::createWindow()
     if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
         setFpsLimit(60);
         spdlog::warn("Couldn't detect screen refresh rate; Limiting overlay to 60");
+        screen_refresh_rate_ = 60;
     }
     else {
         setFpsLimit(dev_mode.dmDisplayFrequency);
-        spdlog::debug("Limiting overlay to FPS to {}", dev_mode.dmDisplayFrequency);
+        screen_refresh_rate_ = dev_mode.dmDisplayFrequency;
     }
 
     overlay_ = std::make_shared<Overlay>(
@@ -325,8 +342,8 @@ void TargetWindow::createWindow()
 #endif
 
     if (Settings::window.maxFps > 0) {
+        spdlog::debug("Config file fps limit seems sane...");
         setFpsLimit(Settings::window.maxFps);
-        spdlog::debug("Limiting overlay to FPS from config-file to {}", Settings::window.maxFps);
     }
     if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
         ImGuiIO& io = ImGui::GetIO();
