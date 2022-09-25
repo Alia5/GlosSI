@@ -69,7 +69,7 @@ inline bool checkIsUwp(const std::wstring& launch_path)
         return false;
     }
     std::wsmatch m;
-    if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,3}:"))) {
+    if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,5}:"))) {
         return true;
     }
     return false;
