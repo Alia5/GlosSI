@@ -30,6 +30,9 @@ class UIModel : public QObject {
     Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
     Q_PROPERTY(bool steamInputXboxSupportEnabled READ isSteamInputXboxSupportEnabled CONSTANT)
 
+        
+    Q_PROPERTY(QString versionString READ getVersionString CONSTANT)
+
   public:
     UIModel();
 
@@ -83,6 +86,8 @@ class UIModel : public QObject {
     std::vector<VDFParser::Shortcut> shortcuts_vdf_;
     
     void writeTarget(const QJsonObject& json, const QString& name) const;
+
+    QString getVersionString() const;
 
     std::filesystem::path getSteamPath() const;
     std::wstring getSteamUserId() const;

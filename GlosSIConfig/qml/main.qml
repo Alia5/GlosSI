@@ -258,6 +258,15 @@ Window {
             }
         }
 
+		Label {
+            id: versionInfo
+			anchors.bottom: parent.bottom
+			anchors.left: parent.left
+			anchors.margins: 8
+			opacity: 0.5
+			text: uiModel.versionString
+        }
+
         AddSelectTypeDialog {
             id: selectTypeDialog
             visible: false

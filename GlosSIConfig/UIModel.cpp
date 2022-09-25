@@ -26,6 +26,8 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
+#include "../version.hpp"
+
 UIModel::UIModel() : QObject(nullptr)
 {
     auto path = std::filesystem::temp_directory_path()
@@ -360,6 +362,11 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
         .data()
     );
     file.close();
+}
+
+QString UIModel::getVersionString() const
+{
+    return QString(version::VERSION_STR);
 }
 
 std::filesystem::path UIModel::getSteamPath() const
