@@ -106,9 +106,9 @@ inline void checkWinVer()
     isWin10 = VN.dwBuildNumber < 22000;
 
     if (isWin10) {
-        spdlog::info("Running on Windows 10");
+        spdlog::info("Running on Windows 10; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
     } else {
-        spdlog::info("Running on Windows 11");
+        spdlog::info("Running on Windows 11; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
     }
 
 }
