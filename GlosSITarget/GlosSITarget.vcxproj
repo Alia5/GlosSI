@@ -201,6 +201,7 @@
     <ClInclude Include="..\deps\subhook\subhook.h" />
     <ClInclude Include="AppLauncher.h" />
     <ClInclude Include="DllInjector.h" />
+    <ClInclude Include="GlosSI_logo.h" />
     <ClInclude Include="HidHide.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="InputRedirector.h" />

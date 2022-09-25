@@ -50,9 +50,13 @@ class Overlay {
     void showLogs(ImGuiID dockspace_id);
     bool closeOverlayButton() const;
     [[nodiscard]] bool closeButton() const;
+    void showSplash(uint8_t alpha = 128);
     bool force_enable_ = false;
     bool log_expanded_ = true;
     sf::Clock time_since_start_clock_;
+
+    sf::Texture logo_texture_;
+    sf::Sprite logo_sprite_;
 
     struct Log {
         std::chrono::system_clock::time_point time;
@@ -62,6 +66,7 @@ class Overlay {
     static inline std::vector<Log> LOG_MSGS_;
     static constexpr int LOG_RETENTION_TIME_ = 5;
     static constexpr int HIDE_NORMAL_LOGS_AFTER_S = 20;
+    static constexpr int SPLASH_DURATION_S_ = 3;
 
     static inline int overlay_element_id_ = 0;
     static inline std::map<int, std::function<void(bool window_has_focus, ImGuiID dockspace_id)>> OVERLAY_ELEMS_;
