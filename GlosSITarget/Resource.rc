@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,8,1031000051035
- PRODUCTVERSION 0,0,8,1031000051035
+ FILEVERSION 0,0,9,1014000053108
+ PRODUCTVERSION 0,0,9,1014000053108
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Peter Repukat - FlatspotSoftware"
             VALUE "FileDescription", "GlosSI - SteamTarget"
-            VALUE "FileVersion", "0.0.8.1-31-gda51d35"
+            VALUE "FileVersion", "0.0.9.1-14-gda531f8"
             VALUE "InternalName", "GlosSITarget"
             VALUE "LegalCopyright", "Copyright (C) 2021 Peter Repukat - FlatspotSoftware"
             VALUE "OriginalFilename", "GlosSITarget.exe"
             VALUE "ProductName", "GlosSI"
-            VALUE "ProductVersion", "0.0.8.1-31-gda51d35"
+            VALUE "ProductVersion", "0.0.9.1-14-gda531f8"
         END
     END
     BLOCK "VarFileInfo"
@@ -91,7 +91,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "GloSC_Icon.ico"
+IDI_ICON1               ICON                    "..\GlosSI_Icon.ico"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
