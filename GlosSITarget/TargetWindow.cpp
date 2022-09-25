@@ -60,6 +60,7 @@ TargetWindow::TargetWindow(
         ImGui::SameLine();
         int max_fps_copy = Settings::window.maxFps;
         ImGui::InputInt("##max_fps", &max_fps_copy, 20, 20);
+        ImGui::Text("Values smaller than 15 set the limit to the screen refresh rate.");
         if (max_fps_copy != Settings::window.maxFps) {
             Settings::window.maxFps = max_fps_copy; 
             if (Settings::window.maxFps > 240) {
@@ -72,7 +73,32 @@ TargetWindow::TargetWindow(
                 setFpsLimit(Settings::window.maxFps);
             }
         }
-        ImGui::Text("Values smaller than 15 set the limit to the screen refresh rate.");
+
+        ImGui::Spacing();
+
+        ImGui::Text("Overlay scale");
+        ImGui::SameLine();
+        float scale_copy = Settings::window.scale;
+        ImGui::DragFloat("##UISCale", &scale_copy, 0.1f, 0.0f, 6.f);
+        ImGui::Text("Values smaller than 0.3 reset to 1");
+
+
+        if (scale_copy > Settings::window.scale + 0.01f || scale_copy < Settings::window.scale - 0.01f) {
+            Settings::window.scale = scale_copy;
+            if (Settings::window.scale < 0.3f) {
+                spdlog::trace("Scale to small! Scaling overlay to 1");
+                Settings::window.scale = 0.0f;
+                ImGuiIO& io = ImGui::GetIO();
+                io.FontGlobalScale = 1;
+                ImGui::SFML::UpdateFontTexture();
+            } else {
+                spdlog::trace("Scaling overlay: {}", Settings::window.scale);
+                ImGuiIO& io = ImGui::GetIO();
+                io.FontGlobalScale = Settings::window.scale;
+                ImGui::SFML::UpdateFontTexture();   
+            }
+        }
+
         ImGui::End();
     });
 
