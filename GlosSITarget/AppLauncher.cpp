@@ -225,7 +225,7 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        &info,
                        &process_info)) {
         //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
-        spdlog::info(L"Started Program: \"{}\"", native_seps_path);
+        spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
         pids_.push_back(process_info.dwProcessId);
     }
     else {
@@ -268,7 +268,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
                 pids_.clear();
             }
             else {
-                spdlog::info(L"Launched UWP Package \"{}\"", package_full_name);
+                spdlog::info(L"Launched UWP Package \"{}\"; PID: {}", package_full_name, pids_[0]);
             }
         }
         else {
@@ -311,6 +311,7 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
     if (execute_info.hProcess != nullptr) {
         if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
             pids_.push_back(pid);
+            spdlog::trace("Launched URL; PID: {}", pid);
             return;
         }
     }
