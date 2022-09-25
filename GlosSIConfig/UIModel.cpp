@@ -40,6 +40,8 @@ UIModel::UIModel() : QObject(nullptr)
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
 
+    qDebug() << "Version: " << getVersionString();
+
     config_path_ = path;
     config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring());
 
