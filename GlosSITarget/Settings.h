@@ -28,7 +28,6 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-
 namespace Settings {
 
 inline struct Launch {
@@ -62,7 +61,6 @@ inline bool extendedLogging = false;
 
 inline std::filesystem::path settings_path_ = "";
 
-
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
     if (launch_path.find(L"://") != std::wstring::npos) {
@@ -78,7 +76,7 @@ inline bool checkIsUwp(const std::wstring& launch_path)
 #ifdef WIN32
 inline bool isWin10 = false;
 
- typedef LONG NTSTATUS, *PNTSTATUS;
+typedef LONG NTSTATUS, *PNTSTATUS;
 #define STATUS_SUCCESS (0x00000000)
 
 typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
@@ -107,10 +105,10 @@ inline void checkWinVer()
 
     if (isWin10) {
         spdlog::info("Running on Windows 10; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
-    } else {
+    }
+    else {
         spdlog::info("Running on Windows 11; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
     }
-
 }
 #endif
 
@@ -139,7 +137,7 @@ inline void Parse(std::wstring arg1)
     }
     settings_path_ = path;
 
-        auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
+    auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
         try {
             if (object.is_null() || object.empty() || object.at(key).empty() || object.at(key).is_null()) {
                 return;
@@ -167,37 +165,44 @@ inline void Parse(std::wstring arg1)
 
     const auto json = nlohmann::json::parse(json_file);
     int version;
-    safeParseValue(json, "version" ,version);
+    safeParseValue(json, "version", version);
     if (version != 1) { // TODO: versioning stuff
         spdlog::warn("Config version doesn't match application version.");
     }
 
     // TODO: make this as much generic as fits in about the same amount of code if one would parse every value separately.
+    try {
+        if (auto launchconf = json["launch"]; launchconf.is_null() && launchconf.empty() && launchconf.is_object()) {
+            safeParseValue(launchconf, "launch", launch.launch);
+            safeWStringParse(launchconf, "launchPath", launch.launchPath);
+            safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
+            safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
+            safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
+        }
 
-    if (auto launchconf = json["launch"]; launchconf.is_object()) {
-        safeParseValue(launchconf, "launch", launch.launch);
-        safeWStringParse(launchconf, "launchPath", launch.launchPath);
-        safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
-        safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
-        safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
+        if (auto devconf = json["devices"]; devconf.is_null() && devconf.empty() && devconf.is_object()) {
+            safeParseValue(devconf, "hideDevices", devices.hideDevices);
+            safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
+        }
+
+        if (auto winconf = json["window"]; winconf.is_null() && winconf.empty() && winconf.is_object()) {
+            safeParseValue(winconf, "windowMode", window.windowMode);
+            safeParseValue(winconf, "maxFps", window.maxFps);
+            safeParseValue(winconf, "scale", window.scale);
+            safeParseValue(winconf, "disableOverlay", window.disableOverlay);
+        }
+
+        if (auto controllerConf = json["controller"]; controllerConf.is_null() && controllerConf.empty() && controllerConf.is_object()) {
+            safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
+            safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
+            safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
+        }
     }
-
-    if (auto devconf = json["devices"]; devconf.is_object()) {
-        safeParseValue(devconf, "hideDevices", devices.hideDevices);
-        safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
+    catch (const nlohmann::json::exception& e) {
+        spdlog::warn("Err parsing config: {}", e.what());
     }
-
-    if (auto winconf = json["window"]; winconf.is_object()) {
-        safeParseValue(winconf, "windowMode", window.windowMode);
-        safeParseValue(winconf, "maxFps", window.maxFps);
-        safeParseValue(winconf, "scale", window.scale);
-        safeParseValue(winconf, "disableOverlay", window.disableOverlay);
-    }
-
-    if (auto controllerConf = json["controller"]; controllerConf.is_object()) {
-        safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
-        safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
-        safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
+    catch (const std::exception& e) {
+        spdlog::warn("Err parsing config: {}", e.what());
     }
 
     safeParseValue(json, "extendedLogging", extendedLogging);
