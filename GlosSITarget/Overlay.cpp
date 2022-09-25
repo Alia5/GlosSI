@@ -23,6 +23,8 @@ limitations under the License.
 #include "Roboto.h"
 #include "Settings.h"
 
+#include "../version.hpp"
+
 Overlay::Overlay(
     sf::RenderWindow& window,
     std::function<void()> on_close,
@@ -163,7 +165,9 @@ void Overlay::update()
         ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.6f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 100 }, ImGuiCond_FirstUseEver);
         ImGui::Begin("GlosSI Settings");
+        ImGui::Text("Version: %s", version::VERSION_STR);
         if (Settings::settings_path_ != "") {
+            ImGui::SameLine();
             if (ImGui::Button("Save shortcut settings", {256, 32})) {
                 Settings::StoreSettings();
             }
