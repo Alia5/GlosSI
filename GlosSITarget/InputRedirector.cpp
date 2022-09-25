@@ -56,6 +56,7 @@ void InputRedirector::run()
         ImGui::Begin("Controller Emulation");
         int countcopy = Settings::controller.maxControllers;
         ImGui::Text("Max. controller count");
+        ImGui::SameLine();
         ImGui::InputInt("##Max. controller count", &countcopy, 1, 1);
         if (countcopy > XUSER_MAX_COUNT) {
             countcopy = XUSER_MAX_COUNT;
