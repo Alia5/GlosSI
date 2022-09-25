@@ -172,7 +172,7 @@ inline void Parse(std::wstring arg1)
 
     // TODO: make this as much generic as fits in about the same amount of code if one would parse every value separately.
     try {
-        if (auto launchconf = json["launch"]; launchconf.is_null() && launchconf.empty() && launchconf.is_object()) {
+        if (auto launchconf = json["launch"]; !launchconf.is_null() && !launchconf.empty() && launchconf.is_object()) {
             safeParseValue(launchconf, "launch", launch.launch);
             safeWStringParse(launchconf, "launchPath", launch.launchPath);
             safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
@@ -180,19 +180,19 @@ inline void Parse(std::wstring arg1)
             safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
         }
 
-        if (auto devconf = json["devices"]; devconf.is_null() && devconf.empty() && devconf.is_object()) {
+        if (auto devconf = json["devices"]; !devconf.is_null() && !devconf.empty() && devconf.is_object()) {
             safeParseValue(devconf, "hideDevices", devices.hideDevices);
             safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
         }
 
-        if (auto winconf = json["window"]; winconf.is_null() && winconf.empty() && winconf.is_object()) {
+        if (auto winconf = json["window"]; !winconf.is_null() && !winconf.empty() && winconf.is_object()) {
             safeParseValue(winconf, "windowMode", window.windowMode);
             safeParseValue(winconf, "maxFps", window.maxFps);
             safeParseValue(winconf, "scale", window.scale);
             safeParseValue(winconf, "disableOverlay", window.disableOverlay);
         }
 
-        if (auto controllerConf = json["controller"]; controllerConf.is_null() && controllerConf.empty() && controllerConf.is_object()) {
+        if (auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object()) {
             safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
             safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
             safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
