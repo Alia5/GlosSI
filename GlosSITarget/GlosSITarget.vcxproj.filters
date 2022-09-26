@@ -188,9 +188,6 @@
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-window-d-2.dll" />
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-graphics-d-2.dll" />
     <None Include=".clang-format" />
-    <None Include="example_conf.json">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-graphics-2.dll" />
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-system-2.dll" />
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-window-2.dll" />
