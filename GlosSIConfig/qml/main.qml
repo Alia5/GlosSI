@@ -82,6 +82,18 @@ Window {
         }
     }
 
+	InfoDialog {
+	    id: newVersionDialog
+		titleText: qsTr("New version available!")
+		text: qsTr("Would you like to visit the download page now?")
+		onConfirmed: function () {
+		    Qt.openUrlExternally(`https://glossi.flatspot.pictures/#downloads-${uiModel.newVersionName}`);
+		}
+		extraButton: true
+		extraButtonText: qsTr("Remind me later")
+		visible: !!uiModel.newVersionName
+    }
+
     Rectangle {
         id: titleBar
         visible: uiModel.isWindows
