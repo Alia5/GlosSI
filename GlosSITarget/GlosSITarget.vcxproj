@@ -194,6 +194,7 @@
     <ClCompile Include="SteamOverlayDetector.cpp" />
     <ClCompile Include="SteamTarget.cpp" />
     <ClCompile Include="TargetWindow.cpp" />
+    <ClCompile Include="UnhookUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\deps\imgui-sfml\imgui-SFML.h" />
@@ -215,6 +216,7 @@
     <ClInclude Include="SteamTarget.h" />
     <ClInclude Include="steam_sf_keymap.h" />
     <ClInclude Include="TargetWindow.h" />
+    <ClInclude Include="UnhookUtil.h" />
     <ClInclude Include="UWPOverlayEnabler.h" />
   </ItemGroup>
   <ItemGroup>

@@ -36,6 +36,8 @@ limitations under the License.
 #include <devpkey.h>
 #include <regex>
 
+#include "UnhookUtil.h"
+
 // {D61CA365-5AF4-4486-998B-9DB4734C6CA3}add the XUSB class GUID as it is missing in the public interfaces
 DEFINE_GUID(GUID_DEVCLASS_XUSBCLASS, 0xD61CA365, 0x5AF4, 0x4486, 0x99, 0x8B, 0x9D, 0xB4, 0x73, 0x4C, 0x6C, 0xA3);
 // {EC87F1E3-C13B-4100-B5F7-8B84D54260CB} add the XUSB interface class GUID as it is missing in the public interfaces
@@ -171,48 +173,18 @@ void HidHide::UnPatchValveHooks()
     spdlog::debug("Unpatching Valve HID hooks...");
     // need to load addresses that way.. Otherwise we land before some jumps...
     if (const auto setupapidll = GetModuleHandle(L"setupapi.dll")) {
-        UnPatchHook("SetupDiEnumDeviceInfo", setupapidll);
-        UnPatchHook("SetupDiGetClassDevsW", setupapidll);
+        UnhookUtil::UnPatchHook("SetupDiEnumDeviceInfo", setupapidll);
+        UnhookUtil::UnPatchHook("SetupDiGetClassDevsW", setupapidll);
     }
     if (const auto hiddll = GetModuleHandle(L"hid.dll")) {
-        for (const auto& name : ORIGINAL_BYTES | std::views::keys) {
+        for (const auto& name : UnhookUtil::UNHOOK_BYTES_ORIGINAL_22000 | std::views::keys) {
             if (name.starts_with("Hid")) {
-                UnPatchHook(name, hiddll);
+                UnhookUtil::UnPatchHook(name, hiddll);
             }
         }
     }
 }
 
-void HidHide::UnPatchHook(const std::string& name, HMODULE module)
-{
-    spdlog::trace("Patching \"{}\"...", name);
-
-    BYTE* address = reinterpret_cast<BYTE*>(GetProcAddress(module, name.c_str()));
-    if (!address) {
-        spdlog::error("failed to unpatch \"{}\"", name);
-    }
-    std::string bytes;
-    if (Settings::isWin10 && ORIGINAL_BYTES_WIN10.contains(name)) {
-        bytes = ORIGINAL_BYTES_WIN10.at(name);
-    } else {
-        bytes = ORIGINAL_BYTES.at(name);
-    }
-    DWORD dw_old_protect, dw_bkup;
-    const auto len = bytes.size();
-    VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); // Change permissions of memory..
-    const auto opcode = *(address);
-    if (!std::ranges::any_of(JUMP_INSTR_OPCODES, [&opcode](const auto& op) { return op == opcode; })) {
-        spdlog::debug("\"{}\" Doesn't appear to be hooked, skipping!", name);
-        VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
-        return;
-    }
-    for (DWORD i = 0; i < len; i++)                                        // unpatch Valve's hook
-    {
-        *(address + i) = bytes[i];
-    }
-    VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
-    spdlog::trace("Unpatched \"{}\"", name);
-}
 
 void HidHide::enableOverlayElement()
 {

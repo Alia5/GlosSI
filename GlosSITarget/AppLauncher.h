@@ -45,10 +45,7 @@ class AppLauncher {
     std::vector<HWND>& process_hwnds_;
 
     std::wstring launched_uwp_path_;
-
-    // Valve also hooks "CreateProcess"
-    // Unpatch that so that launched programs don't also get hooked...
-    static inline const std::string CREATE_PROC_ORIG_BYTES = "\x4C\x8B\xDC\x48\x83";
+    
     static void UnPatchValveHooks();
     void launchWin32App(const std::wstring& path, const std::wstring& args = L"");
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");

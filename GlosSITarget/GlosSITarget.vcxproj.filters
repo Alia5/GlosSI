@@ -114,6 +114,9 @@
     <ClCompile Include="..\deps\traypp\tray\src\components\toggle.cpp">
       <Filter>Source Files\tray</Filter>
     </ClCompile>
+    <ClCompile Include="UnhookUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
@@ -174,6 +177,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GlosSI_logo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UnhookUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
