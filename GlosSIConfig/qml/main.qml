@@ -76,7 +76,34 @@ Window {
     InfoDialog {
         id: steamChangedDialog
         titleText: qsTr("Steam shortcuts changed!")
-        text: qsTr("Please restart Steam to reload your changes")
+        text: qsTr("You have to restart Steam before your changes become visible")
+        onConfirmed: function (callback) {
+            callback();
+        }
+    }
+
+    InfoDialog {
+        id: steamChangedOnCloseDialog
+        titleText: qsTr("Steam shortcuts changed!")
+        text: qsTr("Please restart Steam to reload your changes\nRestart Steam now?")
+        onConfirmed: function (closeWindow) {
+			if (uiModel.restartSteam()) {
+                closeWindow();            
+            } else {
+                // meh I really should write a dialogUtil or some shit...
+                failedRestartingSteamDialog.confirmedParam = closeWindow;
+                failedRestartingSteamDialog.open();
+            }
+        }
+		buttonText: qsTr("Yes")
+        extraButton: true
+		extraButtonText: qsTr("No")
+    }
+
+    InfoDialog {
+        id: failedRestartingSteamDialog
+        titleText: qsTr("Failed restarting Steam!")
+        text: qsTr("You have to restart Steam before your changes become visible")
         onConfirmed: function (callback) {
             callback();
         }
@@ -86,9 +113,11 @@ Window {
 	    id: newVersionDialog
 		titleText: qsTr("New version available!")
 		text: qsTr("Would you like to visit the download page now?")
-		onConfirmed: function () {
+		onConfirmed: function (callback) {
+            callback();
 		    Qt.openUrlExternally(`https://glossi.flatspot.pictures/#downloads-${uiModel.newVersionName}`);
 		}
+        buttonText: qsTr("Yes")
 		extraButton: true
 		extraButtonText: qsTr("Remind me later")
 		visible: !!uiModel.newVersionName
@@ -136,10 +165,10 @@ Window {
                 text: "🗙"
                 onClicked: steamShortcutsChanged
                     ? (function(){
-                        steamChangedDialog.confirmedParam = () => {
+                        steamChangedOnCloseDialog.confirmedParam = () => {
                             window.close()
                         }
-                        steamChangedDialog.open()
+                        steamChangedOnCloseDialog.open()
                     })()
                     : window.close()
                 background: Rectangle {

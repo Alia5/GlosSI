@@ -50,16 +50,15 @@ class UIModel : public QObject {
     Q_INVOKABLE QVariantMap manualProps(QVariant shortcut);
     Q_INVOKABLE void enableSteamInputXboxSupport();
 
+    Q_INVOKABLE bool restartSteam();
+
     Q_INVOKABLE void updateCheck();
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
 
-    [[nodiscard]] bool writeShortcutsVDF(
-        const std::wstring& mode,
-        const std::wstring& name,
-        const std::wstring& shortcutspath,
-        bool is_admin_try = false) const;
+    [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
+                                         const std::wstring& shortcutspath, bool is_admin_try = false) const;
 
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
@@ -87,6 +86,7 @@ class UIModel : public QObject {
     QString shortcutsfile_ = "/config/shortcuts.vdf";
     QString user_config_file_ = "/config/localconfig.vdf";
     QString user_data_path_ = "/userdata/";
+    QString steam_executable_name_ = "steam.exe";
 
     QVariantList targets_;
 

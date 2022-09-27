@@ -275,6 +275,16 @@ void UIModel::enableSteamInputXboxSupport()
     }
 }
 
+bool UIModel::restartSteam()
+{
+    const auto path = getSteamPath();
+    if (QProcess::execute("taskkill.exe", {"/im", steam_executable_name_, "/f"}) != 0) {
+        return false;
+    }
+    QProcess::startDetached(QString::fromStdWString(path) + "/" + steam_executable_name_);
+    return true;
+}
+
 void UIModel::updateCheck()
 {
     auto manager = new QNetworkAccessManager();
