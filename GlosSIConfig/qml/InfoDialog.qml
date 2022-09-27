@@ -22,6 +22,7 @@ Dialog {
 	property var confirmedParam: null
 	signal confirmed(var param)
 	signal confirmedExtra(var param)
+	property alias buttonText: okbutton.text
 
 	visible: false
 	modal: true
