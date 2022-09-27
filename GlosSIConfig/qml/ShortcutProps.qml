@@ -275,7 +275,7 @@ Item {
                 radius: 4
                 Material.elevation: 32
                 bgOpacity: 0.97
-				title: qsTr("Advanced")
+				title: qsTr("Advanced ⚙️")
                 content: 
                 Column {
                     spacing: 16
@@ -752,7 +752,7 @@ Item {
             }
         }
         Button {
-            text: qsTr("Save")
+            text: qsTr("💾 Save")
             highlighted: true
             enabled: nameInput.acceptableInput
             onClicked: function() {
