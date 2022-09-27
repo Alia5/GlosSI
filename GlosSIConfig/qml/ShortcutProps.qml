@@ -67,24 +67,29 @@ Item {
     }
 
     onShortcutInfoChanged: function() {
-        nameInput.text = shortcutInfo.name || ""
-        if (extendedLogging) {
-            extendedLogging.checked = shortcutInfo.extendedLogging || false
+	    if (!shortcutInfo) {
+            return;
         }
-        launchApp.checked = shortcutInfo.launch.launch
-        pathInput.text = shortcutInfo.launch.launchPath || ""
-        argsInput.text = shortcutInfo.launch.launchAppArgs || ""
-        closeOnExit.checked = shortcutInfo.launch.closeOnExit
-        waitForChildren.checked = shortcutInfo.launch.waitForChildProcs
-        hideDevices.checked = shortcutInfo.devices.hideDevices
-        realDeviceIds.checked = shortcutInfo.devices.realDeviceIds 
-        windowMode.checked = shortcutInfo.window.windowMode
-        disableOverlayCheckbox.checked = shortcutInfo.window.disableOverlay
-        scaleSpinBox.value = shortcutInfo.window.scale
-        maxFPSSpinBox.value = shortcutInfo.window.maxFps
-        maxControllersSpinBox.value = shortcutInfo.controller.maxControllers
-        allowDesktopConfig.checked = shortcutInfo.controller.allowDesktopConfig 
-        emulateDS4.checked = shortcutInfo.controller.emulateDS4
+	    if (nameInput) { // basic info (not in collapsible container)
+            nameInput.text = shortcutInfo.name || ""
+			launchApp.checked = shortcutInfo.launch.launch
+            pathInput.text = shortcutInfo.launch.launchPath || ""
+            argsInput.text = shortcutInfo.launch.launchAppArgs || ""
+		}
+		if (extendedLogging) { // advanced settings (collapsible container)
+            extendedLogging.checked = shortcutInfo.extendedLogging || false
+            closeOnExit.checked = shortcutInfo.launch.closeOnExit
+            waitForChildren.checked = shortcutInfo.launch.waitForChildProcs
+            hideDevices.checked = shortcutInfo.devices.hideDevices
+            realDeviceIds.checked = shortcutInfo.devices.realDeviceIds 
+            windowMode.checked = shortcutInfo.window.windowMode
+            disableOverlayCheckbox.checked = shortcutInfo.window.disableOverlay
+            scaleSpinBox.value = shortcutInfo.window.scale
+            maxFPSSpinBox.value = shortcutInfo.window.maxFps
+            maxControllersSpinBox.value = shortcutInfo.controller.maxControllers
+            allowDesktopConfig.checked = shortcutInfo.controller.allowDesktopConfig 
+            emulateDS4.checked = shortcutInfo.controller.emulateDS4
+        }
     }
 
     Flickable {
@@ -157,7 +162,7 @@ Item {
                         CheckBox {
                             id: launchApp
                             text: qsTr("Launch app")
-                            checked: shortcutInfo.launch.launch
+                            checked: shortcutInfo ? shortcutInfo.launch.launch : false
                             onCheckedChanged: function() {
                                 shortcutInfo.launch.launch = checked
                                 if (checked) {
@@ -748,6 +753,7 @@ Item {
         Button {
             text: qsTr("Cancel")
             onClicked: function() {
+                resetInfo();
                 cancel()
             }
         }
