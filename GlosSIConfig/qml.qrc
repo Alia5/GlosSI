@@ -19,5 +19,6 @@
         <file>qml/CollapsiblePane.qml</file>
         <file>svg/expand_more_white_24dp.svg</file>
         <file>GlosSI_Logo_512.png</file>
+        <file>qml/AdvancedTargetSettings.qml</file>
     </qresource>
 </RCC>
