@@ -114,25 +114,35 @@ inline void checkWinVer()
 
 inline void Parse(std::wstring arg1)
 {
-    if (!arg1.ends_with(L".json")) {
-        arg1 += L".json";
+    const auto config_specified = !std::views::filter(arg1, [](const auto& ch) {
+                                       return ch != ' ';
+                                   }).empty();
+    if (config_specified) {
+        if (!arg1.ends_with(L".json")) {
+            arg1 += L".json";
+        }
     }
-    std::filesystem::path path(arg1);
-    if (path.has_extension() && !std::filesystem::exists(path)) {
-        path = std::filesystem::temp_directory_path()
-                   .parent_path()
-                   .parent_path()
-                   .parent_path();
+    std::filesystem::path path = std::filesystem::temp_directory_path()
+                                     .parent_path()
+                                     .parent_path()
+                                     .parent_path();
 
-        path /= "Roaming";
-        path /= "GlosSI";
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (config_specified) {
         path /= "Targets";
         path /= arg1;
     }
+    else {
+        spdlog::info("No config file specified, using default");
+        path /= "default.json";
+    }
+
     std::ifstream json_file;
     json_file.open(path);
     if (!json_file.is_open()) {
         spdlog::error(L"Couldn't open settings file {}", path.wstring());
+        spdlog::debug(L"Using sane defaults...");
         return;
     }
     settings_path_ = path;
