@@ -53,6 +53,10 @@ class UIModel : public QObject {
     Q_INVOKABLE bool restartSteam();
 
     Q_INVOKABLE void updateCheck();
+
+    Q_INVOKABLE QVariantMap getDefaultConf() const;
+    Q_INVOKABLE void saveDefaultConf(QVariantMap conf) const;
+    
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif

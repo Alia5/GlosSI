@@ -305,6 +305,88 @@ void UIModel::updateCheck()
     connect(manager, &QNetworkAccessManager::finished, this, &UIModel::onAvailFilesResponse);
 }
 
+QVariantMap UIModel::getDefaultConf() const
+{
+    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    path /= "default.json";
+
+    if (std::filesystem::exists(path)) {
+        QFile file(QString::fromStdWString(path));
+        if (file.open(QIODevice::ReadOnly)) {
+            const auto data = file.readAll();
+            file.close();
+            return QJsonDocument::fromJson(data).object().toVariantMap();
+        }
+    }
+
+    QJsonObject obj = {
+        {"icon", QJsonValue::Null},
+        {"name", QJsonValue::Null},
+        {"version", 1},
+        {"extendedLogging", false},
+        {"snapshotNotify", false},
+        {
+            "controller",
+            QJsonObject{
+                {"maxControllers", 1},
+                {"emulateDS4", false},
+            {"allowDesktopConfig", false}
+            }
+        },
+        {
+            "devices",
+            QJsonObject{
+                {"hideDevices", true},
+                {"realDeviceIds", false},
+            }
+        },
+        {
+            "launch",
+            QJsonObject{
+                {"closeOnExit", true},
+                {"launch", false},
+                {"launchAppArgs", QJsonValue::Null},
+                {"launchPath", QJsonValue::Null},
+                {"waitForChildProcs", true},
+            }
+        },
+        {
+            "window",
+            QJsonObject{
+                {"disableOverlay", false},
+                {"maxFps", QJsonValue::Null},
+                {"scale", QJsonValue::Null},
+                {"windowMode", false},
+            }
+        },
+    };
+
+    saveDefaultConf(obj.toVariantMap());
+    return getDefaultConf();
+    
+}
+
+void UIModel::saveDefaultConf(QVariantMap conf) const
+{
+    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    path /= "default.json";
+
+    QFile file(path);
+    if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
+        qDebug() << "Couldn't open file for writing: " << path;
+        return;
+    }
+
+    file.write(QString(QJsonDocument::fromVariant(conf).toJson(QJsonDocument::Indented)).toStdString().data());
+    file.close();
+}
+
 #ifdef _WIN32
 QVariantList UIModel::uwpApps() { return UWPFetch::UWPAppList(); }
 #endif
@@ -391,6 +473,12 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 
         QJsonObject json = QJsonDocument::fromJson(respStr).object();
 
+        const auto defaultConf = getDefaultConf();
+        bool snapshotNotify =
+            defaultConf.contains("snapshotNotify")
+                ? defaultConf["snapshotNotify"].toJsonValue().toBool()
+                : false;
+
         struct VersionInfo {
             int major;
             int minor;
@@ -401,8 +489,9 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 
         std::vector<std::pair<QString, VersionInfo>> new_versions;
         for (const auto& info :
-             json.keys() | std::ranges::views::filter([this, &json](const auto& key) {
-                 return notify_on_snapshots_ ? true : json[key].toObject().value("type") == "release";
+             json.keys() | std::ranges::views::filter([this, &json, snapshotNotify](const auto& key) {
+                 return notify_on_snapshots_ ? true
+                                             : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
              }) | std::ranges::views::transform([&json](const auto& key) -> std::pair<QString, VersionInfo> {
                  const auto versionString = json[key].toObject().value("version").toString();
                  const auto cleanVersion = versionString.split("-")[0];

@@ -77,6 +77,9 @@
     <None Include="qml\AdvancedTargetSettings.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\GlobalConf.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">

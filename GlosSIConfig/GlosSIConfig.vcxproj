@@ -143,6 +143,7 @@
     <None Include="GetAUMIDs.ps1" />
     <None Include="qml\AdvancedTargetSettings.qml" />
     <None Include="qml\CollapsiblePane.qml" />
+    <None Include="qml\GlobalConf.qml" />
     <None Include="qml\SteamInputXboxDisabledDialog.qml" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />

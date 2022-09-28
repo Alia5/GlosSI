@@ -20,5 +20,7 @@
         <file>svg/expand_more_white_24dp.svg</file>
         <file>GlosSI_Logo_512.png</file>
         <file>qml/AdvancedTargetSettings.qml</file>
+        <file>qml/GlobalConf.qml</file>
+        <file>svg/settings_fill_white_24dp.svg</file>
     </qresource>
 </RCC>

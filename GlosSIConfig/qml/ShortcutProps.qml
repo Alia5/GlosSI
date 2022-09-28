@@ -32,34 +32,7 @@ Item {
     property var shortcutInfo: ({})
 
     function resetInfo() {
-        shortcutInfo = ({
-            "controller": {
-                "maxControllers": 1,
-                "emulateDS4": false,
-                "allowDesktopConfig": false
-            },
-            "devices": {
-                "hideDevices": true,
-                "realDeviceIds": false
-            },
-            "icon": null,
-            "launch": {
-                "closeOnExit": true,
-                "launch": false,
-                "launchAppArgs": null,
-                "launchPath": null,
-                "waitForChildProcs": true
-            },
-            "name": null,
-            "version": 1,
-            "window": {
-                "disableOverlay": false,
-                "maxFps": null,
-                "scale": null,
-                "windowMode": false
-            },
-            "extendedLogging": false
-        })
+        shortcutInfo = uiModel.getDefaultConf() 
     }
 	
     Component.onCompleted: function() {
@@ -267,6 +240,7 @@ Item {
 
 			AdvancedTargetSettings {
                 id: advancedTargetSettings
+                shortcutInfo: shortcutInfo
             }
 
             Item {

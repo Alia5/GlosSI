@@ -25,11 +25,21 @@ CollapsiblePane {
     bgOpacity: 0.97
     title: qsTr("Advanced ⚙️")
 
+	property string subTitle: ""
+
     property var shortcutInfo: ({})
 
     content: 
     Column {
         spacing: 16
+
+		Label {
+            id: subTitleLabel
+			width: parent.width
+			font.pixelSize: 16
+			text: subTitle
+			height: text == "" ? 0 : 24
+        }
 
         RPane {
             width: parent.width
@@ -41,6 +51,7 @@ CollapsiblePane {
                 id: advancedLaunchCol
                 spacing: 4
                 height: advancedLaunchedRow.height
+
                 Row {
                     id: advancedLaunchedRow
                     spacing: 32

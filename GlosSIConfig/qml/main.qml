@@ -234,24 +234,46 @@ Window {
                     windowContent.editedIndex = index;
                 }
             }
-            RoundButton {
-                id: addBtn
+			Column {
+                spacing: 8
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 24
-                width: 64
-                height: 64
-                text: "+"
-                contentItem: Label {
-                    anchors.centerIn: parent
-                    text: addBtn.text
-                    font.pixelSize: 32
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
+				RoundButton {
+                    id: optionsBtn
+                    width: 64
+                    height: 64
+                    text: ""
+                    contentItem: Item {
+                        Image {
+                            anchors.centerIn: parent
+                            source: "qrc:/svg/settings_fill_white_24dp.svg"
+                            width: 24
+                            height: 24
+                        }
+					}
+                    highlighted: true
+                    onClicked: function() {
+                        globalConf.opacity = 1;
+                        homeContent.opacity = 0;
+                    }
                 }
-                highlighted: true
-                onClicked: selectTypeDialog.open()
+                RoundButton {
+                    id: addBtn
+                    width: 64
+                    height: 64
+                    text: "+"
+                    contentItem: Label {
+                        anchors.centerIn: parent
+                        text: addBtn.text
+                        font.pixelSize: 32
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                    }
+                    highlighted: true
+                    onClicked: selectTypeDialog.open()
+                }
             }
         }
 
@@ -298,6 +320,46 @@ Window {
                 }
             }
         }
+
+		Item {
+            id: globalConf
+            height: parent.height
+            width: parent.width
+            opacity: 0
+            property real animMarg: opacity == 0 ? parent.height : 0 
+            y: animMarg
+            visible: opacity === 0 ? false : true
+            Behavior on opacity {
+                ParallelAnimation {
+                    NumberAnimation {
+                        duration: 300
+                        property: "opacity"
+                        easing.type: opacity === 0 ? Easing.OutQuad : Easing.InOutQuad
+                    }
+                    PropertyAnimation {
+                        duration: 300
+                        target: globalConf
+                        property: "animMarg";
+                        from: globalConf.animMarg
+                        to: globalConf.animMarg > 0 ? 0 : globalConf.parent.height;
+                        easing.type: opacity === 0 ? Easing.OutQuad : Easing.InOutQuad
+                    }
+                }
+            }
+            GlobalConf {
+                id: glConf
+                anchors.fill: parent
+                onCancel: function() {
+                    globalConf.opacity = 0;
+                    homeContent.opacity = 1;
+                }
+                onDone: function() {
+                    globalConf.opacity = 0;
+                    homeContent.opacity = 1;
+                }
+            }
+        }
+
 
 		Label {
             id: versionInfo
