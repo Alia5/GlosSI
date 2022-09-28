@@ -70,9 +70,21 @@ void InputRedirector::run()
             controller_settings_changed_ = true;
         }
 
+        ImGui::Spacing();
+
+        if (Settings::launch.launch) {
+            ImGui::Checkbox("Allow desktop config", &Settings::controller.allowDesktopConfig);
+            ImGui::Text("Allows desktop config if the launched application is not focused");
+
+            ImGui::Spacing();
+        }
+
         bool enable_rumbe_copy = enable_rumble_;
         ImGui::Checkbox("Enable Rumble", &enable_rumbe_copy);
         enable_rumble_ = enable_rumbe_copy;
+
+        ImGui::Spacing();
+
         if (ImGui::CollapsingHeader("Advanced", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::Text("GlosSI uses different USB-IDs for it's emulated controllers");
             ImGui::Text("This can cause issues with some games");
@@ -165,24 +177,27 @@ void InputRedirector::runLoop()
                     // This however is configurable withon GlosSI overlay;
                     // Multiple controllers can be worked around with by setting max count.
                     if (!Settings::devices.realDeviceIds) {
-                        vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                        //vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        vigem_target_set_vid(vt_pad_[i], 0x28de); // VALVE_DIRECTINPUT_GAMEPAD_VID
+                        // vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
                         if (Settings::controller.emulateDS4) {
                             vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
-                        } else {
+                        }
+                        else {
                             vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
                         }
-                    } else {
+                    }
+                    else {
                         if (Settings::controller.emulateDS4) {
                             vigem_target_set_vid(vt_pad_[i], 0x054C); // Sony Corp.
                             vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
-                        } else {
+                        }
+                        else {
                             vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
-                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller   
+                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
                         }
                     }
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
-                    //and filter out emulated controllers to support a greater amount of controllers simultaneously
+                    // and filter out emulated controllers to support a greater amount of controllers simultaneously
 
                     const int target_add_res = vigem_target_add(driver_, vt_pad_[i]);
                     if (target_add_res == VIGEM_ERROR_TARGET_UNINITIALIZED) {
@@ -195,10 +210,10 @@ void InputRedirector::runLoop()
                     }
                     if (target_add_res == VIGEM_ERROR_NONE) {
                         spdlog::info("Plugged in controller {}, {}; VID: {:x}; PID: {:x}",
-                            i, 
-                            vigem_target_get_index(vt_pad_[i]),
-                            vigem_target_get_vid(vt_pad_[i]),
-                            vigem_target_get_pid(vt_pad_[i]));
+                                     i,
+                                     vigem_target_get_index(vt_pad_[i]),
+                                     vigem_target_get_vid(vt_pad_[i]),
+                                     vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
                             const auto callback_register_res = vigem_target_ds4_register_notification(
