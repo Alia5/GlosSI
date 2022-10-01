@@ -112,7 +112,7 @@ Window {
 	InfoDialog {
 	    id: newVersionDialog
 		titleText: qsTr("New version available!")
-		text: qsTr("Would you like to visit the download page now?")
+		text: uiModel.newVersionName + "\n\n" + qsTr("Would you like to visit the download page now?")
 		onConfirmed: function (callback) {
             callback();
 		    Qt.openUrlExternally(`https://glossi.flatspot.pictures/#downloads-${uiModel.newVersionName}`);
