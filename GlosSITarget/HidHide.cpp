@@ -29,7 +29,10 @@ limitations under the License.
 
 #include <initguid.h>
 //
+#ifndef WATCHDOG
 #include "Overlay.h"
+#endif
+
 #include "Settings.h"
 
 #include <devguid.h>
@@ -71,7 +74,9 @@ void HidHide::closeCtrlDevice()
 void HidHide::hideDevices(const std::filesystem::path& steam_path)
 {
     steam_path_ = steam_path;
+#ifndef WATCHDOG
     enableOverlayElement();
+#endif
     if (!Settings::devices.hideDevices) {
         spdlog::info("Hiding devices is disabled; Not un-patching valve hooks, not looking for HidHide");
         return;
@@ -185,7 +190,7 @@ void HidHide::UnPatchValveHooks()
     }
 }
 
-
+#ifndef WATCHDOG
 void HidHide::enableOverlayElement()
 {
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
@@ -265,6 +270,7 @@ void HidHide::enableOverlayElement()
         ImGui::End();
     });
 }
+#endif
 
 std::wstring HidHide::DosDeviceForVolume(const std::wstring& volume)
 {

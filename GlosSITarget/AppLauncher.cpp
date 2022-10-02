@@ -34,12 +34,13 @@ limitations under the License.
 
 AppLauncher::AppLauncher(
     std::vector<HWND>& process_hwnds,
-    std::function<void()> shutdown) : process_hwnds_(process_hwnds), shutdown_(std::move(shutdown))
+    std::function<void()> shutdown) : shutdown_(std::move(shutdown)), process_hwnds_(process_hwnds)
 {
 #ifdef _WIN32
+    spdlog::debug("Unpatching Valve CreateProcess Hooks");
+    UnPatchValveHooks();
     if (Settings::launch.launch) {
         spdlog::debug("App launch requested");
-        UnPatchValveHooks();
     }
 #endif
 };
@@ -111,6 +112,29 @@ void AppLauncher::close()
 #endif
 }
 
+void AppLauncher::launchWatchdog()
+{
+    // wchar_t buff[MAX_PATH];
+    // GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+    // const std::wstring glossipath(buff);
+
+    // GetWindowsDirectory(buff, MAX_PATH);
+    // const std::wstring winpath(buff);
+
+    // launchWin32App(
+    //     (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + L"GlosSIWatchdog.exe"),
+    //     L"",
+    //     true);
+
+    spdlog::debug("Launching GlosSIWatchdog");
+
+    char buff[MAX_PATH];
+    GetModuleFileNameA(GetModuleHandle(NULL), buff, MAX_PATH);
+    const std::string glossipath(buff);
+    // hack to start a TRULY detached process...
+    system(("start " + (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + "GlosSIWatchdog.exe")).data());
+}
+
 #ifdef _WIN32
 bool AppLauncher::IsProcessRunning(DWORD pid)
 {
@@ -180,41 +204,43 @@ void AppLauncher::UnPatchValveHooks()
     // need to load addresses that way.. Otherwise we may land before some jumps...
     auto kernel32dll = GetModuleHandle(L"kernel32.dll");
     if (kernel32dll) {
-         UnhookUtil::UnPatchHook("CreateProcessW", kernel32dll);
+        UnhookUtil::UnPatchHook("CreateProcessW", kernel32dll);
     }
     else {
         spdlog::error("kernel32.dll not found... sure...");
     }
 }
 
-void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& args)
+void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& args, bool watchdog)
 {
     const auto native_seps_path = std::regex_replace(path, std::wregex(L"(\\/|\\\\)"), L"\\");
-    //std::wstring launch_dir;
-    //std::wsmatch m;
-    //if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
-    //    spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
-    //} else {
-    //    launch_dir = m[0];
-    //}
+    // std::wstring launch_dir;
+    // std::wsmatch m;
+    // if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
+    //     spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
+    // } else {
+    //     launch_dir = m[0];
+    // }
     std::wstring args_cpy(args);
     spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
                        args_cpy.data(),
                        nullptr,
                        nullptr,
-                       TRUE,
-                       0,
+                       watchdog ? FALSE : TRUE,
+                       watchdog ? DETACHED_PROCESS : 0,
                        nullptr,
-                       nullptr, //launch_dir.empty() ? nullptr : launch_dir.data(),
+                       nullptr, // launch_dir.empty() ? nullptr : launch_dir.data(),
                        &info,
                        &process_info)) {
-        //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        // spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
-        pids_.push_back(process_info.dwProcessId);
+        if (!watchdog) {
+            pids_.push_back(process_info.dwProcessId);
+        }
     }
     else {
-        //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        // spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::error(L"Couldn't start program: \"{}\"", native_seps_path);
     }
 }

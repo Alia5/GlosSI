@@ -34,6 +34,8 @@ class AppLauncher {
     void update();
     void close();
 
+    void launchWatchdog();
+
   private:
     std::function<void()> shutdown_;
     sf::Clock process_check_clock_;
@@ -47,7 +49,7 @@ class AppLauncher {
     std::wstring launched_uwp_path_;
     
     static void UnPatchValveHooks();
-    void launchWin32App(const std::wstring& path, const std::wstring& args = L"");
+    void launchWin32App(const std::wstring& path, const std::wstring& args = L"", bool watchdog = false);
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
     void launchURL(const std::wstring& url, const std::wstring& args = L"", const std::wstring& verb = L"open");
     STARTUPINFO info{sizeof(info)};

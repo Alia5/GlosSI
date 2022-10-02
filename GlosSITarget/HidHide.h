@@ -25,7 +25,9 @@ limitations under the License.
 #include <map>
 #include <string>
 #include <vector>
+#ifndef WATCHDOG
 #include <SFML/System/Clock.hpp>
+#endif
 
 class HidHide {
   private:
@@ -74,8 +76,11 @@ class HidHide {
 
     static void UnPatchValveHooks();
 
+
+#ifndef WATCHDOG
     void enableOverlayElement();
     sf::Clock overlay_elem_clock_;
+#endif
 
     std::vector<std::wstring> blacklisted_devices_;
     std::vector<SmallHidInfo> avail_devices_;

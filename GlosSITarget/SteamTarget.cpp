@@ -74,6 +74,7 @@ Application will not function!");
         if (!overlay_.expired())
             overlay_.lock()->setEnabled(false);
         steam_overlay_present_ = true;
+        launcher_.launchWatchdog();
     }
     getXBCRebindingEnabled();
 
