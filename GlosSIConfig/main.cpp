@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    QGuiApplication::setWindowIcon(QIcon(":/GloSC_Icon_small.png"));
+    QGuiApplication::setWindowIcon(QIcon(":/GlosSI_Logo_512.png"));
 
 
 #ifdef _WIN32

@@ -30,12 +30,18 @@ limitations under the License.
 
 #include <regex>
 
+#include "UnhookUtil.h"
+
 AppLauncher::AppLauncher(
     std::vector<HWND>& process_hwnds,
-    std::function<void()> shutdown) : process_hwnds_(process_hwnds), shutdown_(std::move(shutdown))
+    std::function<void()> shutdown) : shutdown_(std::move(shutdown)), process_hwnds_(process_hwnds)
 {
 #ifdef _WIN32
+    spdlog::debug("Unpatching Valve CreateProcess Hooks");
     UnPatchValveHooks();
+    if (Settings::launch.launch) {
+        spdlog::debug("App launch requested");
+    }
 #endif
 };
 
@@ -106,6 +112,29 @@ void AppLauncher::close()
 #endif
 }
 
+void AppLauncher::launchWatchdog()
+{
+    // wchar_t buff[MAX_PATH];
+    // GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+    // const std::wstring glossipath(buff);
+
+    // GetWindowsDirectory(buff, MAX_PATH);
+    // const std::wstring winpath(buff);
+
+    // launchWin32App(
+    //     (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + L"GlosSIWatchdog.exe"),
+    //     L"",
+    //     true);
+
+    spdlog::debug("Launching GlosSIWatchdog");
+
+    char buff[MAX_PATH];
+    GetModuleFileNameA(GetModuleHandle(NULL), buff, MAX_PATH);
+    const std::string glossipath(buff);
+    // hack to start a TRULY detached process...
+    system(("start " + (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + "GlosSIWatchdog.exe")).data());
+}
+
 #ifdef _WIN32
 bool AppLauncher::IsProcessRunning(DWORD pid)
 {
@@ -125,7 +154,12 @@ void AppLauncher::getChildPids(DWORD parent_pid)
     if (Process32First(hp, &pe)) {
         do {
             if (pe.th32ParentProcessID == parent_pid) {
-                pids_.push_back(pe.th32ProcessID);
+                if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
+                    if (Settings::extendedLogging) {
+                        spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
+                    }
+                    pids_.push_back(pe.th32ProcessID);
+                }
             }
         } while (Process32Next(hp, &pe));
     }
@@ -167,66 +201,46 @@ void AppLauncher::getProcessHwnds()
 #ifdef _WIN32
 void AppLauncher::UnPatchValveHooks()
 {
-    // TODO: move and re-use reusable unhook util from HidHide.cpp
-    spdlog::debug("Unpatching Valve CreateProcess hook...");
     // need to load addresses that way.. Otherwise we may land before some jumps...
     auto kernel32dll = GetModuleHandle(L"kernel32.dll");
     if (kernel32dll) {
-        BYTE* address = reinterpret_cast<BYTE*>(GetProcAddress(kernel32dll, "CreateProcessW"));
-        if (address) {
-            DWORD dw_old_protect, dw_bkup;
-            const auto len = CREATE_PROC_ORIG_BYTES.size();
-            VirtualProtect(address, len, PAGE_EXECUTE_READWRITE, &dw_old_protect); //Change permissions of memory..
-            const auto opcode = *(address); 
-            if (opcode != 0xE9 && opcode != 0xE8 && opcode != 0xEB && opcode != 0xEA && opcode != 0xFF) {
-                spdlog::debug("\"CreateProcessW\" Doesn't appear to be hooked, skipping!");
-                VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
-            } else {
-                for (DWORD i = 0; i < len; i++) // unpatch Valve's hook
-                {
-                    *(address + i) = CREATE_PROC_ORIG_BYTES[i];
-                }
-                VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
-                spdlog::trace("Unpatched CreateProcessW");   
-            }
-        }
-        else {
-            spdlog::error("failed to unpatch CreateProcessW");
-        }
+        UnhookUtil::UnPatchHook("CreateProcessW", kernel32dll);
     }
     else {
         spdlog::error("kernel32.dll not found... sure...");
     }
 }
 
-void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& args)
+void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& args, bool watchdog)
 {
     const auto native_seps_path = std::regex_replace(path, std::wregex(L"(\\/|\\\\)"), L"\\");
-    //std::wstring launch_dir;
-    //std::wsmatch m;
-    //if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
-    //    spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
-    //} else {
-    //    launch_dir = m[0];
-    //}
+    // std::wstring launch_dir;
+    // std::wsmatch m;
+    // if (!std::regex_search(native_seps_path, m, std::wregex(L"(.*?\\\\)*"))) {
+    //     spdlog::warn("Couldn't detect launch application directory"); // Shouldn't ever happen...
+    // } else {
+    //     launch_dir = m[0];
+    // }
     std::wstring args_cpy(args);
     spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
                        args_cpy.data(),
                        nullptr,
                        nullptr,
-                       TRUE,
-                       0,
+                       watchdog ? FALSE : TRUE,
+                       watchdog ? DETACHED_PROCESS : 0,
                        nullptr,
-                       nullptr, //launch_dir.empty() ? nullptr : launch_dir.data(),
+                       nullptr, // launch_dir.empty() ? nullptr : launch_dir.data(),
                        &info,
                        &process_info)) {
-        //spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
-        spdlog::info(L"Started Program: \"{}\"", native_seps_path);
-        pids_.push_back(process_info.dwProcessId);
+        // spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
+        if (!watchdog) {
+            pids_.push_back(process_info.dwProcessId);
+        }
     }
     else {
-        //spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
+        // spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::error(L"Couldn't start program: \"{}\"", native_seps_path);
     }
 }
@@ -265,7 +279,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
                 pids_.clear();
             }
             else {
-                spdlog::info(L"Launched UWP Package \"{}\"", package_full_name);
+                spdlog::info(L"Launched UWP Package \"{}\"; PID: {}", package_full_name, pids_[0]);
             }
         }
         else {
@@ -308,6 +322,7 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
     if (execute_info.hProcess != nullptr) {
         if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
             pids_.push_back(pid);
+            spdlog::trace("Launched URL; PID: {}", pid);
             return;
         }
     }

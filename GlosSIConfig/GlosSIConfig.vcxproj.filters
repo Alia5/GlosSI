@@ -74,6 +74,12 @@
     <None Include="qml\CollapsiblePane.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\AdvancedTargetSettings.qml">
+      <Filter>qml</Filter>
+    </None>
+    <None Include="qml\GlobalConf.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
@@ -105,7 +111,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="$(SolutionDir)\GloSC_Icon.ico">
+    <Image Include="..\GlosSI_Icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

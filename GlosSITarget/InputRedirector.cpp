@@ -50,14 +50,13 @@ void InputRedirector::run()
 {
     run_ = vigem_connected_;
     controller_thread_ = std::thread(&InputRedirector::runLoop, this);
-    max_controller_count_ = Settings::controller.maxControllers;
-    use_real_vid_pid_ = Settings::devices.realDeviceIds;
 #ifdef _WIN32
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::Begin("Controller Emulation");
-        int countcopy = max_controller_count_;
+        int countcopy = Settings::controller.maxControllers;
         ImGui::Text("Max. controller count");
+        ImGui::SameLine();
         ImGui::InputInt("##Max. controller count", &countcopy, 1, 1);
         if (countcopy > XUSER_MAX_COUNT) {
             countcopy = XUSER_MAX_COUNT;
@@ -65,10 +64,27 @@ void InputRedirector::run()
         if (countcopy < 0) {
             countcopy = 0;
         }
-        max_controller_count_ = countcopy;
+        Settings::controller.maxControllers = countcopy;
+
+        if (ImGui::Checkbox("Emulate DS4 (instead of Xbox360 controller)", &Settings::controller.emulateDS4)) {
+            controller_settings_changed_ = true;
+        }
+
+        ImGui::Spacing();
+
+        if (Settings::launch.launch) {
+            ImGui::Checkbox("Allow desktop config", &Settings::controller.allowDesktopConfig);
+            ImGui::Text("Allows desktop config if the launched application is not focused");
+
+            ImGui::Spacing();
+        }
+
         bool enable_rumbe_copy = enable_rumble_;
         ImGui::Checkbox("Enable Rumble", &enable_rumbe_copy);
         enable_rumble_ = enable_rumbe_copy;
+
+        ImGui::Spacing();
+
         if (ImGui::CollapsingHeader("Advanced", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::Text("GlosSI uses different USB-IDs for it's emulated controllers");
             ImGui::Text("This can cause issues with some games");
@@ -76,12 +92,12 @@ void InputRedirector::run()
             ImGui::Text("to prevent having multiple mirrored controllers plugged in");
             ImGui::Spacing();
             ImGui::Text("If enabled, Device hiding won't work! Use \"Max. Controller count\"-setting.");
-            bool use_real_copy = use_real_vid_pid_;
+            bool use_real_copy = Settings::devices.realDeviceIds;
             ImGui::Checkbox("Use real USB-IDs", &use_real_copy);
-            if (use_real_vid_pid_ != use_real_copy) {
-                use_real_vid_pid_changed_ = true;
+            if (Settings::devices.realDeviceIds != use_real_copy) {
+                controller_settings_changed_ = true;
             }
-            use_real_vid_pid_ = use_real_copy;
+            Settings::devices.realDeviceIds = use_real_copy;
         }
         ImGui::End();
     });
@@ -108,19 +124,19 @@ void InputRedirector::runLoop()
     }
     while (run_) {
 #ifdef _WIN32
-        if (use_real_vid_pid_changed_) {
+        if (controller_settings_changed_) {
             // unplug all.
-            use_real_vid_pid_changed_ = false;
+            controller_settings_changed_ = false;
             for (int i = 0; i < XUSER_MAX_COUNT; i++) {
                 unplugVigemPad(i);
             }
         }
-        if (max_controller_count_ < XUSER_MAX_COUNT) {
-            for (int i = max_controller_count_; i < XUSER_MAX_COUNT; i++) {
+        if (Settings::controller.maxControllers < XUSER_MAX_COUNT) {
+            for (int i = Settings::controller.maxControllers; i < XUSER_MAX_COUNT; i++) {
                 unplugVigemPad(i);
             }
         }
-        for (int i = 0; i < XUSER_MAX_COUNT && i < max_controller_count_; i++) {
+        for (int i = 0; i < XUSER_MAX_COUNT && i < Settings::controller.maxControllers; i++) {
             XINPUT_STATE state{};
             if (XInputGetState(i, &state) == ERROR_SUCCESS) {
                 if (vt_pad_[i] != nullptr) {
@@ -160,16 +176,28 @@ void InputRedirector::runLoop()
                     // Otherwise, this application (GloSC/GlosSI) will pickup the emulated controller as well!
                     // This however is configurable withon GlosSI overlay;
                     // Multiple controllers can be worked around with by setting max count.
-                    if (!use_real_vid_pid_) {
-                        vigem_target_set_vid(vt_pad_[i], 0x28de); //VALVE_DIRECTINPUT_GAMEPAD_VID
-                        //vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
-                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
-                    } else {
-                        vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
-                        vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                    if (!Settings::devices.realDeviceIds) {
+                        vigem_target_set_vid(vt_pad_[i], 0x28de); // VALVE_DIRECTINPUT_GAMEPAD_VID
+                        // vigem_target_set_pid(vt_pad_[i], 0x11FF); //VALVE_DIRECTINPUT_GAMEPAD_PID
+                        if (Settings::controller.emulateDS4) {
+                            vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
+                        }
+                        else {
+                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                        }
+                    }
+                    else {
+                        if (Settings::controller.emulateDS4) {
+                            vigem_target_set_vid(vt_pad_[i], 0x054C); // Sony Corp.
+                            vigem_target_set_pid(vt_pad_[i], 0x05C4); // DS4 Controller
+                        }
+                        else {
+                            vigem_target_set_vid(vt_pad_[i], 0x045E); // MICROSOFT
+                            vigem_target_set_pid(vt_pad_[i], 0x028E); // XBOX 360 Controller
+                        }
                     }
                     // TODO: MAYBE!: In a future version, use something like OpenXInput
-                    //and filter out emulated controllers to support a greater amount of controllers simultaneously
+                    // and filter out emulated controllers to support a greater amount of controllers simultaneously
 
                     const int target_add_res = vigem_target_add(driver_, vt_pad_[i]);
                     if (target_add_res == VIGEM_ERROR_TARGET_UNINITIALIZED) {
@@ -182,10 +210,10 @@ void InputRedirector::runLoop()
                     }
                     if (target_add_res == VIGEM_ERROR_NONE) {
                         spdlog::info("Plugged in controller {}, {}; VID: {:x}; PID: {:x}",
-                            i, 
-                            vigem_target_get_index(vt_pad_[i]),
-                            vigem_target_get_vid(vt_pad_[i]),
-                            vigem_target_get_pid(vt_pad_[i]));
+                                     i,
+                                     vigem_target_get_index(vt_pad_[i]),
+                                     vigem_target_get_vid(vt_pad_[i]),
+                                     vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
                             const auto callback_register_res = vigem_target_ds4_register_notification(

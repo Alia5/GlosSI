@@ -18,25 +18,30 @@ limitations under the License.
 #include <QDir>
 #include <QGuiApplication>
 #include <QJsonDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include <WinReg/WinReg.hpp>
+
+#include <ranges>
 
 #ifdef _WIN32
 #include "UWPFetch.h"
 #include <Windows.h>
 #endif
 
+#include "../version.hpp"
+
 UIModel::UIModel() : QObject(nullptr)
 {
-    auto path = std::filesystem::temp_directory_path()
-                    .parent_path()
-                    .parent_path()
-                    .parent_path();
+    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
 
     path /= "Roaming";
     path /= "GlosSI";
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
+
+    qDebug() << "Version: " << getVersionString();
 
     config_path_ = path;
     config_dir_name_ = QString::fromStdWString((path /= "Targets").wstring());
@@ -46,15 +51,14 @@ UIModel::UIModel() : QObject(nullptr)
 
     parseShortcutVDF();
     readTargetConfigs();
+    updateCheck();
 }
 
 void UIModel::readTargetConfigs()
 {
     QDir dir(config_dir_name_);
     auto entries = dir.entryList(QDir::Files, QDir::SortFlag::Name);
-    entries.removeIf([](const auto& entry) {
-        return !entry.endsWith(".json");
-    });
+    entries.removeIf([](const auto& entry) { return !entry.endsWith(".json"); });
 
     std::for_each(entries.begin(), entries.end(), [this](const auto& name) {
         auto path = config_path_;
@@ -70,9 +74,8 @@ void UIModel::readTargetConfigs()
         const auto jsondoc = QJsonDocument::fromJson(data);
         auto filejson = jsondoc.object();
 
-        filejson["name"] = filejson.contains("name")
-                               ? filejson["name"].toString()
-            : QString(name).replace(QRegularExpression("\\.json"), "");
+        filejson["name"] = filejson.contains("name") ? filejson["name"].toString()
+                                                     : QString(name).replace(QRegularExpression("\\.json"), "");
 
         targets_.append(filejson.toVariantMap());
     });
@@ -80,10 +83,7 @@ void UIModel::readTargetConfigs()
     emit targetListChanged();
 }
 
-QVariantList UIModel::getTargetList() const
-{
-    return targets_;
-}
+QVariantList UIModel::getTargetList() const { return targets_; }
 
 void UIModel::addTarget(QVariant shortcut)
 {
@@ -99,7 +99,8 @@ void UIModel::updateTarget(int index, QVariant shortcut)
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
-    auto oldName = targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
+    auto oldName =
+        targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
     path /= (oldName).toStdString();
@@ -113,7 +114,8 @@ void UIModel::updateTarget(int index, QVariant shortcut)
 
 void UIModel::deleteTarget(int index)
 {
-    auto oldName = targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
+    auto oldName =
+        targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
     auto path = config_path_;
     path /= config_dir_name_.toStdString();
     path /= (oldName).toStdString();
@@ -147,11 +149,13 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
     VDFParser::Shortcut vdfshortcut;
     vdfshortcut.appname = name.toStdString();
     vdfshortcut.exe = ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\"").toStdString();
-    vdfshortcut.StartDir = (launch && !maybeLaunchPath.isEmpty()
-                                      ? (std::string("\"") + std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string() + "\"")
-                                      : ("\"" + appDir.absolutePath() + "\"").toStdString());
+    vdfshortcut.StartDir =
+        (launch && !maybeLaunchPath.isEmpty()
+             ? (std::string("\"") + std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string() + "\"")
+             : ("\"" + appDir.absolutePath() + "\"").toStdString());
     // ShortcutPath; default
-    vdfshortcut.LaunchOptions = (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdString();
+    vdfshortcut.LaunchOptions =
+        (QString(name).replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json").toStdString();
     // IsHidden; default
     // AllowDesktopConfig; default
     // AllowOverlay; default
@@ -164,11 +168,16 @@ bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool f
     if (maybeIcon.isEmpty()) {
         if (launch && !maybeLaunchPath.isEmpty())
             vdfshortcut.icon =
-                "\"" + (is_windows_ ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeLaunchPath.toStdString()) + "\"";
+                "\"" +
+                (is_windows_ ? QString(maybeLaunchPath).replace(QRegularExpression("\\/"), "\\").toStdString()
+                             : maybeLaunchPath.toStdString()) +
+                "\"";
     }
     else {
-        vdfshortcut.icon =
-            "\"" + (is_windows_ ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString() : maybeIcon.toStdString()) + "\"";
+        vdfshortcut.icon = "\"" +
+                           (is_windows_ ? QString(maybeIcon).replace(QRegularExpression("\\/"), "\\").toStdString()
+                                        : maybeIcon.toStdString()) +
+                           "\"";
     }
     // Add installed locally and GlosSI tag
     vdfshortcut.tags.push_back("Installed locally");
@@ -195,10 +204,11 @@ bool UIModel::addToSteam(const QString& name, const QString& shortcutspath, bool
 bool UIModel::removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd)
 {
     qDebug() << "trying to remove " << name << " from steam";
-    shortcuts_vdf_.erase(std::ranges::remove_if(shortcuts_vdf_, [&name](const auto& shortcut) {
-                    return shortcut.appname == name.toStdString();
-                }).begin(),
-                         shortcuts_vdf_.end());
+    shortcuts_vdf_.erase(
+        std::ranges::remove_if(shortcuts_vdf_,
+                               [&name](const auto& shortcut) { return shortcut.appname == name.toStdString(); })
+            .begin(),
+        shortcuts_vdf_.end());
     return writeShortcutsVDF(L"remove", name.toStdWString(), shortcutspath.toStdWString(), from_cmd);
 }
 
@@ -214,17 +224,21 @@ QVariantMap UIModel::manualProps(QVariant shortcut)
     res.insert("name", name);
     res.insert("config", name + ".json");
     res.insert("launch", ("\"" + appDir.absolutePath() + "/GlosSITarget.exe" + "\""));
-    res.insert("launchDir", (
-                                launch && !maybeLaunchPath.isEmpty()
-                                    ? (QString("\"") + QString::fromStdString(std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string()) + "\"")
-                                    : ("\"" + appDir.absolutePath() + "\"")));
+    res.insert(
+        "launchDir",
+        (launch && !maybeLaunchPath.isEmpty()
+             ? (QString("\"") +
+                QString::fromStdString(std::filesystem::path(maybeLaunchPath.toStdString()).parent_path().string()) +
+                "\"")
+             : ("\"" + appDir.absolutePath() + "\"")));
     return res;
 }
 
 void UIModel::enableSteamInputXboxSupport()
 {
     if (foundSteam()) {
-        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() +
+                                                  getSteamUserId() + user_config_file_.toStdWString();
         if (!std::filesystem::exists(config_path)) {
             qDebug() << "localconfig.vdf does not exist.";
         }
@@ -261,19 +275,130 @@ void UIModel::enableSteamInputXboxSupport()
     }
 }
 
-#ifdef _WIN32
-QVariantList UIModel::uwpApps()
+bool UIModel::restartSteam()
 {
-    return UWPFetch::UWPAppList();
+    const auto path = getSteamPath();
+    if (QProcess::execute("taskkill.exe", {"/im", steam_executable_name_, "/f"}) != 0) {
+        return false;
+    }
+    QProcess::startDetached(QString::fromStdWString(path) + "/" + steam_executable_name_);
+    return true;
 }
+
+void UIModel::updateCheck()
+{
+    auto manager = new QNetworkAccessManager();
+    QNetworkRequest request;
+    QNetworkReply* reply = NULL;
+
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setProtocol(QSsl::TlsV1_2);
+    request.setSslConfiguration(config);
+    request.setUrl(QUrl("https://glossi.1-3-3-7.dev/api/availFiles"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    reply = manager->get(request);
+    // connect(
+    //     manager, &QNetworkAccessManager::finished, this, [](QNetworkReply* rep) {
+    //         qDebug() << rep->readAll();
+    //     });
+    connect(manager, &QNetworkAccessManager::finished, this, &UIModel::onAvailFilesResponse);
+}
+
+QVariantMap UIModel::getDefaultConf() const
+{
+    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    path /= "default.json";
+
+    if (std::filesystem::exists(path)) {
+        QFile file(QString::fromStdWString(path));
+        if (file.open(QIODevice::ReadOnly)) {
+            const auto data = file.readAll();
+            file.close();
+            return QJsonDocument::fromJson(data).object().toVariantMap();
+        }
+    }
+
+    QJsonObject obj = {
+        {"icon", QJsonValue::Null},
+        {"name", QJsonValue::Null},
+        {"version", 1},
+        {"extendedLogging", false},
+        {"snapshotNotify", false},
+        {
+            "controller",
+            QJsonObject{
+                {"maxControllers", 1},
+                {"emulateDS4", false},
+            {"allowDesktopConfig", false}
+            }
+        },
+        {
+            "devices",
+            QJsonObject{
+                {"hideDevices", true},
+                {"realDeviceIds", false},
+            }
+        },
+        {
+            "launch",
+            QJsonObject{
+                {"closeOnExit", true},
+                {"launch", false},
+                {"launchAppArgs", QJsonValue::Null},
+                {"launchPath", QJsonValue::Null},
+                {"waitForChildProcs", true},
+            }
+        },
+        {
+            "window",
+            QJsonObject{
+                {"disableOverlay", false},
+                {"maxFps", QJsonValue::Null},
+                {"scale", QJsonValue::Null},
+                {"windowMode", false},
+            }
+        },
+    };
+
+    saveDefaultConf(obj.toVariantMap());
+    return getDefaultConf();
+    
+}
+
+void UIModel::saveDefaultConf(QVariantMap conf) const
+{
+    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    path /= "default.json";
+
+    QFile file(path);
+    if (!file.open(QIODevice::Text | QIODevice::ReadWrite)) {
+        qDebug() << "Couldn't open file for writing: " << path;
+        return;
+    }
+
+    file.write(QString(QJsonDocument::fromVariant(conf).toJson(QJsonDocument::Indented)).toStdString().data());
+    file.close();
+}
+
+#ifdef _WIN32
+QVariantList UIModel::uwpApps() { return UWPFetch::UWPAppList(); }
 #endif
 
-bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath, bool is_admin_try) const
+bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath,
+                                bool is_admin_try) const
 {
 #ifdef _WIN32
     const std::filesystem::path config_path = is_admin_try
                                                   ? shortcutspath
-                                                  : std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+                                                  : std::wstring(getSteamPath()) + user_data_path_.toStdWString() +
+                                                        getSteamUserId() + shortcutsfile_.toStdWString();
 
     qDebug() << "Steam config Path: " << config_path;
     qDebug() << "Trying to write config as admin: " << is_admin_try;
@@ -327,20 +452,71 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
 #endif
 }
 
-bool UIModel::getIsWindows() const
-{
-    return is_windows_;
-}
+bool UIModel::getIsWindows() const { return is_windows_; }
 
-bool UIModel::hasAcrylicEffect() const
-{
-    return has_acrylic_affect_;
-}
+bool UIModel::hasAcrylicEffect() const { return has_acrylic_affect_; }
 
 void UIModel::setAcrylicEffect(bool has_acrylic_affect)
 {
     has_acrylic_affect_ = has_acrylic_affect;
     emit acrylicChanged();
+}
+
+void UIModel::onAvailFilesResponse(QNetworkReply* reply)
+{
+
+    const QVariant status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+    qDebug() << "http status: " << status_code;
+    if (status_code.isValid() && status_code.toInt() == 200) {
+        const auto respStr = reply->readAll();
+        qDebug() << "AvailFiles response: " << respStr;
+
+        QJsonObject json = QJsonDocument::fromJson(respStr).object();
+
+        const auto defaultConf = getDefaultConf();
+        bool snapshotNotify =
+            defaultConf.contains("snapshotNotify")
+                ? defaultConf["snapshotNotify"].toJsonValue().toBool()
+                : false;
+
+        struct VersionInfo {
+            int major;
+            int minor;
+            int patch;
+            int revision;
+            int commits_since_last;
+        };
+
+        std::vector<std::pair<QString, VersionInfo>> new_versions;
+        for (const auto& info :
+             json.keys() | std::ranges::views::filter([this, &json, snapshotNotify](const auto& key) {
+                 return notify_on_snapshots_ ? true
+                                             : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
+             }) | std::ranges::views::transform([&json](const auto& key) -> std::pair<QString, VersionInfo> {
+                 const auto versionString = json[key].toObject().value("version").toString();
+                 const auto cleanVersion = versionString.split("-")[0];
+                 const auto versionSplits = cleanVersion.split(".");
+                 return {key,
+                         {versionSplits[0].toInt(), versionSplits[1].toInt(), versionSplits[2].toInt(),
+                          versionSplits[3].toInt(),
+                          versionString.count('-') == 2 ? versionString.split("-")[1].toInt() : 0}};
+             }) | std::views::filter([](const auto& info) {
+                 return info.second.major > version::VERSION_MAJOR || info.second.minor > version::VERSION_MINOR ||
+                        info.second.patch > version::VERSION_PATCH ||
+                        info.second.revision > version::VERSION_REVISION ||
+                        info.second.commits_since_last > (QString(version::VERSION_STR).count('-') == 2
+                                                              ? QString(version::VERSION_STR).split("-")[1].toInt()
+                                                              : 0);
+             }) | std::ranges::views::all) {
+            new_versions.push_back(info);
+        }
+        std::ranges::sort(new_versions, [](const auto& a, const auto& b) { return a.first > b.first; });
+        if (!new_versions.empty()) {
+            qDebug() << "New version available: " << new_versions[0].first;
+            new_version_name_ = new_versions[0].first;
+            emit newVersionAvailable();
+        }
+    }
 }
 
 void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
@@ -354,13 +530,13 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
         return;
     }
 
-    file.write(
-        QString(QJsonDocument(json).toJson(QJsonDocument::Indented))
-        .toStdString()
-        .data()
-    );
+    file.write(QString(QJsonDocument(json).toJson(QJsonDocument::Indented)).toStdString().data());
     file.close();
 }
+
+QString UIModel::getVersionString() const { return QString(version::VERSION_STR); }
+
+QString UIModel::getNewVersionName() const { return new_version_name_; }
 
 std::filesystem::path UIModel::getSteamPath() const
 {
@@ -379,7 +555,7 @@ std::filesystem::path UIModel::getSteamPath() const
         return "";
     }
 #else
-    return L""; // TODO LINUX
+        return L""; // TODO LINUX
 #endif
 }
 
@@ -398,11 +574,12 @@ std::wstring UIModel::getSteamUserId() const
             qDebug() << "Steam not open?";
         }
         return res;
-    } catch(...) {
+    }
+    catch (...) {
         return L"0";
     }
 #else
-    return L""; // TODO LINUX
+        return L""; // TODO LINUX
 #endif
 }
 
@@ -411,7 +588,8 @@ bool UIModel::foundSteam() const
     if (getSteamPath() == "" || getSteamUserId() == L"0") {
         return false;
     }
-    const std::filesystem::path user_config_dir = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId();
+    const std::filesystem::path user_config_dir =
+        std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId();
     if (!std::filesystem::exists(user_config_dir)) {
         return false;
     }
@@ -420,7 +598,8 @@ bool UIModel::foundSteam() const
 
 void UIModel::parseShortcutVDF()
 {
-    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + shortcutsfile_.toStdWString();
+    const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() +
+                                              getSteamUserId() + shortcutsfile_.toStdWString();
     if (!std::filesystem::exists(config_path)) {
         qDebug() << "Shortcuts file does not exist.";
         return;
@@ -438,7 +617,8 @@ bool UIModel::isSteamInputXboxSupportEnabled() const
 {
     // return true as default to not bug the user in error cases.
     if (foundSteam()) {
-        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + user_config_file_.toStdWString();
+        const std::filesystem::path config_path = std::wstring(getSteamPath()) + user_data_path_.toStdWString() +
+                                                  getSteamUserId() + user_config_file_.toStdWString();
         if (!std::filesystem::exists(config_path)) {
             qDebug() << "localconfig.vdf does not exist.";
             return true;

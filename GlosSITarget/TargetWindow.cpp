@@ -48,15 +48,55 @@ TargetWindow::TargetWindow(
       screenshot_keys_(std::move(screenshot_hotkey)),
       on_window_changed_(std::move(on_window_changed))
 {
-    createWindow(Settings::window.windowMode);
+    createWindow();
 
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        bool windowed_copy = windowed_;
-        ImGui::Begin("Window mode");
-        if (ImGui::Checkbox("Window mode", &windowed_copy)) {
+        ImGui::Begin("Window");
+        if (ImGui::Checkbox("Window mode", &Settings::window.windowMode)) {
             toggle_window_mode_after_frame_ = true;
         }
+        ImGui::Text("Max. FPS");
+        ImGui::SameLine();
+        int max_fps_copy = Settings::window.maxFps;
+        ImGui::InputInt("##max_fps", &max_fps_copy, 20, 20);
+        ImGui::Text("Values smaller than 15 set the limit to the screen refresh rate.");
+        if (max_fps_copy != Settings::window.maxFps) {
+            Settings::window.maxFps = max_fps_copy; 
+            if (Settings::window.maxFps > 240) {
+                Settings::window.maxFps = 240;
+            }
+            if (Settings::window.maxFps < 15 && Settings::window.maxFps > 0) {
+                Settings::window.maxFps = 0;
+                setFpsLimit(screen_refresh_rate_);
+            } else {
+                setFpsLimit(Settings::window.maxFps);
+            }
+        }
+
+        ImGui::Spacing();
+
+        ImGui::Text("Overlay scale");
+        ImGui::SameLine();
+        float scale_copy = Settings::window.scale;
+        ImGui::DragFloat("##UISCale", &scale_copy, 0.1f, 0.0f, 6.f);
+        ImGui::Text("Values smaller than 0.3 reset to 1");
+        if (scale_copy > Settings::window.scale + 0.01f || scale_copy < Settings::window.scale - 0.01f) {
+            Settings::window.scale = scale_copy;
+            if (Settings::window.scale < 0.3f) {
+                spdlog::trace("Scale to small! Scaling overlay to 1");
+                Settings::window.scale = 0.0f;
+                ImGuiIO& io = ImGui::GetIO();
+                io.FontGlobalScale = 1;
+                ImGui::SFML::UpdateFontTexture();
+            } else {
+                spdlog::trace("Scaling overlay: {}", Settings::window.scale);
+                ImGuiIO& io = ImGui::GetIO();
+                io.FontGlobalScale = Settings::window.scale;
+                ImGui::SFML::UpdateFontTexture();   
+            }
+        }
+
         ImGui::End();
     });
 
@@ -65,6 +105,7 @@ TargetWindow::TargetWindow(
 
 void TargetWindow::setFpsLimit(unsigned int fps_limit)
 {
+    spdlog::trace("Limiting FPS to {}", fps_limit);
     window_.setFramerateLimit(fps_limit);
 }
 
@@ -102,7 +143,7 @@ void TargetWindow::update()
     overlay_->update();
     window_.display();
     if (toggle_window_mode_after_frame_) {
-        createWindow(!windowed_);
+        createWindow();
     }
     // As SFML screws us out of most windows-events, just poll resolution every once in a while
     // If changed, recreate window.
@@ -110,7 +151,7 @@ void TargetWindow::update()
     // (WHY?!)
     if (check_resolution_clock_.getElapsedTime().asSeconds() > RES_CHECK_SECONDS) {
         if (sf::VideoMode::getDesktopMode().width != old_desktop_mode_.width) {
-            createWindow(windowed_);
+            createWindow();
         }
         check_resolution_clock_.restart();
     }
@@ -238,17 +279,16 @@ WORD TargetWindow::GetWindowDPI(HWND hWnd)
 }
 #endif
 
-void TargetWindow::createWindow(bool window_mode)
+void TargetWindow::createWindow()
 {
     toggle_window_mode_after_frame_ = false;
 
     auto desktop_mode = sf::VideoMode::getDesktopMode();
     spdlog::info("Detected resolution: {}x{}", desktop_mode.width, desktop_mode.height);
     old_desktop_mode_ = desktop_mode;
-    if (window_mode) {
+    if (Settings::window.windowMode) {
         spdlog::info("Creating Overlay window...");
         window_.create(sf::VideoMode(desktop_mode.width * 0.75, desktop_mode.height * 0.75, 32), "GlosSITarget");
-        windowed_ = true;
     }
     else {
 #ifdef _WIN32
@@ -258,7 +298,7 @@ void TargetWindow::createWindow(bool window_mode)
         // Due to some other issue, the (Steam) overlay might get blurred when doing this
         // as a workaround, start in full size, and scale down later...
         spdlog::info("Creating Overlay window (Borderless Fullscreen)...");
-        window_.create(sf::VideoMode(desktop_mode.width -1, desktop_mode.height -1, 32), "GlosSITarget", sf::Style::None);
+        window_.create(sf::VideoMode(desktop_mode.width, desktop_mode.height, 32), "GlosSITarget", sf::Style::None);
 
         // get size of all monitors combined
         const auto screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -270,10 +310,14 @@ void TargetWindow::createWindow(bool window_mode)
 #else
         window_.create(desktop_mode, "GlosSITarget", sf::Style::None);
 #endif
-        windowed_ = false;
     }
     window_.setActive(true);
     spdlog::debug("Window position: {}x{}", window_.getPosition().x, window_.getPosition().y);
+
+    if (!Settings::window.windowMode) {
+        spdlog::info("Resizing window to 1px smaller than fullscreen...");
+        window_.setSize(sf::Vector2u(desktop_mode.width - 1, desktop_mode.height - 1));
+    }
 
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
@@ -303,14 +347,15 @@ void TargetWindow::createWindow(bool window_mode)
     if (EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dev_mode) == 0) {
         setFpsLimit(60);
         spdlog::warn("Couldn't detect screen refresh rate; Limiting overlay to 60");
+        screen_refresh_rate_ = 60;
     }
     else {
         setFpsLimit(dev_mode.dmDisplayFrequency);
-        spdlog::debug("Limiting overlay to FPS to {}", dev_mode.dmDisplayFrequency);
+        screen_refresh_rate_ = dev_mode.dmDisplayFrequency;
     }
 
     overlay_ = std::make_shared<Overlay>(
-        window_, [this]() { close(); }, toggle_overlay_state_, windowed_);
+        window_, [this]() { close(); }, toggle_overlay_state_, Settings::window.windowMode);
 
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
@@ -321,8 +366,8 @@ void TargetWindow::createWindow(bool window_mode)
 #endif
 
     if (Settings::window.maxFps > 0) {
+        spdlog::debug("Config file fps limit seems sane...");
         setFpsLimit(Settings::window.maxFps);
-        spdlog::debug("Limiting overlay to FPS from config-file to {}", Settings::window.maxFps);
     }
     if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
         ImGuiIO& io = ImGui::GetIO();

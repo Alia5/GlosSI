@@ -28,7 +28,6 @@ limitations under the License.
 #include <Windows.h>
 #endif
 
-
 namespace Settings {
 
 inline struct Launch {
@@ -62,14 +61,13 @@ inline bool extendedLogging = false;
 
 inline std::filesystem::path settings_path_ = "";
 
-
 inline bool checkIsUwp(const std::wstring& launch_path)
 {
     if (launch_path.find(L"://") != std::wstring::npos) {
         return false;
     }
     std::wsmatch m;
-    if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,3}:"))) {
+    if (!std::regex_search(launch_path, m, std::wregex(L"^.{1,5}:"))) {
         return true;
     }
     return false;
@@ -78,7 +76,7 @@ inline bool checkIsUwp(const std::wstring& launch_path)
 #ifdef WIN32
 inline bool isWin10 = false;
 
- typedef LONG NTSTATUS, *PNTSTATUS;
+typedef LONG NTSTATUS, *PNTSTATUS;
 #define STATUS_SUCCESS (0x00000000)
 
 typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
@@ -106,40 +104,50 @@ inline void checkWinVer()
     isWin10 = VN.dwBuildNumber < 22000;
 
     if (isWin10) {
-        spdlog::info("Running on Windows 10");
-    } else {
-        spdlog::info("Running on Windows 11");
+        spdlog::info("Running on Windows 10; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
     }
-
+    else {
+        spdlog::info("Running on Windows 11; Winver: {}.{}.{}", VN.dwMajorVersion, VN.dwMinorVersion, VN.dwBuildNumber);
+    }
 }
 #endif
 
 inline void Parse(std::wstring arg1)
 {
-    if (!arg1.ends_with(L".json")) {
-        arg1 += L".json";
+    const auto config_specified = !std::views::filter(arg1, [](const auto& ch) {
+                                       return ch != ' ';
+                                   }).empty();
+    if (config_specified) {
+        if (!arg1.ends_with(L".json")) {
+            arg1 += L".json";
+        }
     }
-    std::filesystem::path path(arg1);
-    if (path.has_extension() && !std::filesystem::exists(path)) {
-        path = std::filesystem::temp_directory_path()
-                   .parent_path()
-                   .parent_path()
-                   .parent_path();
+    std::filesystem::path path = std::filesystem::temp_directory_path()
+                                     .parent_path()
+                                     .parent_path()
+                                     .parent_path();
 
-        path /= "Roaming";
-        path /= "GlosSI";
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (config_specified) {
         path /= "Targets";
         path /= arg1;
     }
+    else {
+        spdlog::info("No config file specified, using default");
+        path /= "default.json";
+    }
+
     std::ifstream json_file;
     json_file.open(path);
     if (!json_file.is_open()) {
         spdlog::error(L"Couldn't open settings file {}", path.wstring());
+        spdlog::debug(L"Using sane defaults...");
         return;
     }
     settings_path_ = path;
 
-        auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
+    auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
         try {
             if (object.is_null() || object.empty() || object.at(key).empty() || object.at(key).is_null()) {
                 return;
@@ -147,7 +155,9 @@ inline void Parse(std::wstring arg1)
             value = object[key];
         }
         catch (const nlohmann::json::exception& e) {
-            spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
+            e.id == 403
+                ? spdlog::trace("Err parsing \"{}\"; {}", key, e.what())
+                : spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
         }
         catch (const std::exception& e) {
             spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
@@ -165,37 +175,44 @@ inline void Parse(std::wstring arg1)
 
     const auto json = nlohmann::json::parse(json_file);
     int version;
-    safeParseValue(json, "version" ,version);
+    safeParseValue(json, "version", version);
     if (version != 1) { // TODO: versioning stuff
         spdlog::warn("Config version doesn't match application version.");
     }
 
     // TODO: make this as much generic as fits in about the same amount of code if one would parse every value separately.
+    try {
+        if (auto launchconf = json["launch"]; !launchconf.is_null() && !launchconf.empty() && launchconf.is_object()) {
+            safeParseValue(launchconf, "launch", launch.launch);
+            safeWStringParse(launchconf, "launchPath", launch.launchPath);
+            safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
+            safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
+            safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
+        }
 
-    if (auto launchconf = json["launch"]; launchconf.is_object()) {
-        safeParseValue(launchconf, "launch", launch.launch);
-        safeWStringParse(launchconf, "launchPath", launch.launchPath);
-        safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
-        safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
-        safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
+        if (auto devconf = json["devices"]; !devconf.is_null() && !devconf.empty() && devconf.is_object()) {
+            safeParseValue(devconf, "hideDevices", devices.hideDevices);
+            safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
+        }
+
+        if (auto winconf = json["window"]; !winconf.is_null() && !winconf.empty() && winconf.is_object()) {
+            safeParseValue(winconf, "windowMode", window.windowMode);
+            safeParseValue(winconf, "maxFps", window.maxFps);
+            safeParseValue(winconf, "scale", window.scale);
+            safeParseValue(winconf, "disableOverlay", window.disableOverlay);
+        }
+
+        if (auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object()) {
+            safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
+            safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
+            safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
+        }
     }
-
-    if (auto devconf = json["devices"]; devconf.is_object()) {
-        safeParseValue(devconf, "hideDevices", devices.hideDevices);
-        safeParseValue(devconf, "realDeviceIds", devices.realDeviceIds);
+    catch (const nlohmann::json::exception& e) {
+        spdlog::warn("Err parsing config: {}", e.what());
     }
-
-    if (auto winconf = json["window"]; winconf.is_object()) {
-        safeParseValue(winconf, "windowMode", window.windowMode);
-        safeParseValue(winconf, "maxFps", window.maxFps);
-        safeParseValue(winconf, "scale", window.scale);
-        safeParseValue(winconf, "disableOverlay", window.disableOverlay);
-    }
-
-    if (auto controllerConf = json["controller"]; controllerConf.is_object()) {
-        safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
-        safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
-        safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
+    catch (const std::exception& e) {
+        spdlog::warn("Err parsing config: {}", e.what());
     }
 
     safeParseValue(json, "extendedLogging", extendedLogging);

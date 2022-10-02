@@ -25,7 +25,9 @@ limitations under the License.
 #include <map>
 #include <string>
 #include <vector>
+#ifndef WATCHDOG
 #include <SFML/System/Clock.hpp>
+#endif
 
 class HidHide {
   private:
@@ -69,40 +71,16 @@ class HidHide {
   private:
     HANDLE hidhide_handle = nullptr;
 
-    // Valve Hooks various functions and hides Gaming devices like this.
-    // To be able to query them, unpatch the hook with the original bytes...
-    static inline const std::map<std::string, std::string> ORIGINAL_BYTES = {
-        {"SetupDiEnumDeviceInfo", "\x48\x89\x5C\x24\x08"},
-        {"SetupDiGetClassDevsW", "\x48\x89\x5C\x24\x08"},
-        {"HidD_GetPreparsedData", "\x48\x89\x5C\x24\x18"},
-        {"HidP_GetCaps", "\x4C\x8B\xD1\x48\x85\xC9"},
-        {"HidD_GetAttributes", "\x40\x53\x48\x83\xEC"},
-        {"HidD_GetProductString", "\x48\x83\xEC\x48\x48"},
-        {"HidP_GetUsages", "\x4C\x89\x4C\x24\x20"},
-        {"HidP_GetData", "\x4C\x89\x44\x24\x18"},
-        {"HidP_GetValueCaps", "\x48\x83\xEC\x48\x49"},
-        {"HidP_GetUsageValue", "\x40\x53\x55\x56\x48"},
-        {"HidP_GetButtonCaps", "\x48\x83\xEC\x48\x49"},
-    };
-
-    static inline const std::map<std::string, std::string> ORIGINAL_BYTES_WIN10 = {
-        {"SetupDiEnumDeviceInfo", "\x40\x53\x56\x57\x41\x54\x41\x55"},
-        {"SetupDiGetClassDevsW", "\x48\x8B\xC4\x48\x89\x58\x08"},
-    };
-
-    static inline const std::vector<uint8_t> JUMP_INSTR_OPCODES = {
-        0xE9,
-        0xE8,
-        0xEB,
-        0xEA,
-        0xFF
-    };
+    std::filesystem::path steam_path_;
+    bool device_hiding_setup_ = false;
 
     static void UnPatchValveHooks();
-    static void UnPatchHook(const std::string& name, HMODULE module);
 
+
+#ifndef WATCHDOG
     void enableOverlayElement();
     sf::Clock overlay_elem_clock_;
+#endif
 
     std::vector<std::wstring> blacklisted_devices_;
     std::vector<SmallHidInfo> avail_devices_;

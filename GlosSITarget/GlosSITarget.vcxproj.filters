@@ -114,6 +114,9 @@
     <ClCompile Include="..\deps\traypp\tray\src\components\toggle.cpp">
       <Filter>Source Files\tray</Filter>
     </ClCompile>
+    <ClCompile Include="UnhookUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SteamTarget.h">
@@ -173,15 +176,18 @@
     <ClInclude Include="ProcessPriority.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GlosSI_logo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UnhookUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-system-d-2.dll" />
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-window-d-2.dll" />
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-graphics-d-2.dll" />
     <None Include=".clang-format" />
-    <None Include="example_conf.json">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-graphics-2.dll" />
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-system-2.dll" />
     <None Include="..\deps\SFML\out\Release\lib\RelWithDebInfo\sfml-window-2.dll" />
@@ -192,7 +198,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="$(SolutionDir)\GloSC_Icon.ico">
+    <Image Include="..\GlosSI_Icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -57,9 +57,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <CustomBuildBeforeTargets>ResourceCompile</CustomBuildBeforeTargets>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -81,6 +83,7 @@
     </CustomBuildStep>
     <Link>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -99,6 +102,7 @@
     <Link>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
@@ -137,7 +141,9 @@
     <ClCompile Include="UIModel.cpp" />
     <None Include=".clang-format" />
     <None Include="GetAUMIDs.ps1" />
+    <None Include="qml\AdvancedTargetSettings.qml" />
     <None Include="qml\CollapsiblePane.qml" />
+    <None Include="qml\GlobalConf.qml" />
     <None Include="qml\SteamInputXboxDisabledDialog.qml" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
@@ -166,7 +172,7 @@
     <ResourceCompile Include="Resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="$(SolutionDir)\GloSC_Icon.ico" />
+    <Image Include="..\GlosSI_Icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

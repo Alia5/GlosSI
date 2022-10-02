@@ -13,11 +13,14 @@
         <file>qml/InfoDialog.qml</file>
         <file>steamscreener.png</file>
         <file>noise.png</file>
-        <file>GloSC_Icon_small.png</file>
         <file>svg/help_outline_white_24dp.svg</file>
         <file>qml/SteamNotFoundDialog.qml</file>
         <file>qml/SteamInputXboxDisabledDialog.qml</file>
         <file>qml/CollapsiblePane.qml</file>
         <file>svg/expand_more_white_24dp.svg</file>
+        <file>GlosSI_Logo_512.png</file>
+        <file>qml/AdvancedTargetSettings.qml</file>
+        <file>qml/GlobalConf.qml</file>
+        <file>svg/settings_fill_white_24dp.svg</file>
     </qresource>
 </RCC>

@@ -74,11 +74,12 @@ class TargetWindow {
     sf::Clock check_resolution_clock_;
     static constexpr int RES_CHECK_SECONDS = 1;
 
+    unsigned int screen_refresh_rate_ = 0;
+
 
     std::shared_ptr<Overlay> overlay_;
 
-    void createWindow(bool window_mode);
+    void createWindow();
 
-    bool windowed_ = false;
     bool toggle_window_mode_after_frame_ = false;
 };

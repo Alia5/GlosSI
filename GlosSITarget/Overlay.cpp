@@ -19,9 +19,13 @@ limitations under the License.
 #include <utility>
 #include <locale>
 #include <codecvt>
+#include <regex>
 
 #include "Roboto.h"
 #include "Settings.h"
+#include "GlosSI_logo.h"
+
+#include "../version.hpp"
 
 Overlay::Overlay(
     sf::RenderWindow& window,
@@ -39,7 +43,6 @@ Overlay::Overlay(
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
 
     io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
     auto fontconf = ImFontConfig{};
@@ -64,9 +67,17 @@ Overlay::Overlay(
     io.IniFilename = config_file_name_.data();
 #endif
 
+    if (!logo_texture_.loadFromMemory(GLOSSI_LOGO.data(), GLOSSI_LOGO.size())) {
+        spdlog::trace("Failed to load logo texture");
+    }
+    if (logo_texture_.getSize().x > 0) {
+        logo_sprite_.setTexture(logo_texture_);
+        logo_sprite_.setScale(0.5f, 0.5f);
+    }
+
     window.resetGLStates();
 
-    //Hack: Trick ImGui::SFML into thinking we already have focus (otherwise only notices after focus-lost)
+    // Hack: Trick ImGui::SFML into thinking we already have focus (otherwise only notices after focus-lost)
     const sf::Event ev(sf::Event::GainedFocus);
     ProcessEvent(ev);
 
@@ -155,31 +166,46 @@ void Overlay::update()
 {
     ImGui::SFML::Update(window_, update_clock_.restart());
 
+    if (!enabled_ && !force_enable_ && time_since_start_clock_.getElapsedTime().asSeconds() < SPLASH_DURATION_S_) {
+        const auto millis = time_since_start_clock_.getElapsedTime().asMilliseconds();
+        const auto fade_millis = 1000;
+        const auto remain_millis = SPLASH_DURATION_S_ * 1000 - millis;
+        if (remain_millis <= fade_millis) {
+            showSplash(static_cast<float>(remain_millis) / static_cast<float>(fade_millis) * 128.f);
+        } else {
+            showSplash(128);
+        }
+    }
+
     showLogs(0);
-    
 
     if (enabled_ || force_enable_) {
+
+        showSplash();
+
         // Create a DockSpace node where any window can be docked
         ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.6f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 100 }, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.25f, 100}, ImGuiCond_FirstUseEver);
         ImGui::Begin("GlosSI Settings");
+        ImGui::Text("Version: %s", version::VERSION_STR);
         if (Settings::settings_path_ != "") {
-            if (ImGui::Button("Save shortcut settings", {256, 32})) {
+            ImGui::SameLine();
+            if (ImGui::Button("Save shortcut settings", {256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
                 Settings::StoreSettings();
             }
         }
+        ImGui::Checkbox("Extended logging", &Settings::extendedLogging);
         ImGuiID dockspace_id = ImGui::GetID("GlosSI-DockSpace");
         ImGui::DockSpace(dockspace_id);
 
         window_.clear(sf::Color(0, 0, 0, 128)); // make window slightly dim screen with overlay
-		
 
         std::ranges::for_each(OVERLAY_ELEMS_, [this, &dockspace_id](const auto& elem) {
             elem.second(window_.hasFocus(), dockspace_id);
         });
 
         ImGui::End();
-        
+
         // ImGui::ShowDemoWindow();
 
         if (closeButton()) {
@@ -235,13 +261,11 @@ void Overlay::showLogs(ImGuiID dockspace_id)
         std::ranges::copy_if(LOG_MSGS_,
                              std::back_inserter(logs),
                              [&logs_contain_warn_or_worse](const auto& log) {
-
-                                 const auto res = (
-                                            log.time.time_since_epoch() + std::chrono::seconds(
-                                                                              LOG_RETENTION_TIME_) >
-                                            std::chrono::system_clock::now().time_since_epoch())
+                                 const auto res = (log.time.time_since_epoch() + std::chrono::seconds(
+                                                                                     LOG_RETENTION_TIME_) >
+                                                   std::chrono::system_clock::now().time_since_epoch())
 #ifdef NDEBUG
-                                        && (log.level > spdlog::level::debug)
+                                                  && (log.level > spdlog::level::debug)
 #endif
                                      ;
                                  if (res && log.level > spdlog::level::warn) {
@@ -250,7 +274,7 @@ void Overlay::showLogs(ImGuiID dockspace_id)
                                  return res;
                              });
     }
-    if (logs.empty() || ( !enabled_ && !force_enable_ && !logs_contain_warn_or_worse && time_since_start_clock_.getElapsedTime().asSeconds() > HIDE_NORMAL_LOGS_AFTER_S))
+    if (logs.empty() || (!enabled_ && !force_enable_ && !logs_contain_warn_or_worse && time_since_start_clock_.getElapsedTime().asSeconds() > HIDE_NORMAL_LOGS_AFTER_S))
         return;
     ImGui::SetNextWindowSizeConstraints({150, 150}, {1000, window_.getSize().y - 250.f});
     if (!enabled_) {
@@ -259,7 +283,7 @@ void Overlay::showLogs(ImGuiID dockspace_id)
                      ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
     }
     else {
-        //ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        // ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize({ImGui::GetMainViewport()->Size.x * 0.2f, ImGui::GetMainViewport()->Size.y * 0.7f}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowPos({ImGui::GetMainViewport()->Size.x * 0.05f, 100}, ImGuiCond_FirstUseEver);
         log_expanded_ = ImGui::Begin("Log");
@@ -297,8 +321,8 @@ bool Overlay::closeOverlayButton() const
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.f, 0.f, 0.0f));
     ImGui::Begin("##CloseOverlayButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
     ImGui::SetWindowPos({(window_.getSize().x - ImGui::GetWindowWidth()) / 2, 32});
-    ImGui::SetWindowSize({256, 32});
-    if (ImGui::Button("Return to Game", {256, 32})) {
+    ImGui::SetWindowSize({256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale});
+    if (ImGui::Button("Return to Game", {256 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
         trigger_state_change_();
         ImGui::End();
         ImGui::PopStyleColor();
@@ -318,9 +342,9 @@ bool Overlay::closeButton() const
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.6f, 0.f, 0.f, 0.9f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 0.16f, 0.16f, 1.00f));
     ImGui::Begin("##CloseButton", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-    ImGui::SetWindowSize({56 + 32, 32 + 32});
+    ImGui::SetWindowSize({(56 + 32) * ImGui::GetIO().FontGlobalScale, (32 + 32) * ImGui::GetIO().FontGlobalScale});
     ImGui::SetWindowPos({window_.getSize().x - ImGui::GetWindowWidth() + 32, -32});
-    if (ImGui::Button("X##Close", {56, 32})) {
+    if (ImGui::Button("X##Close", {56 * ImGui::GetIO().FontGlobalScale, 32 * ImGui::GetIO().FontGlobalScale})) {
         ImGui::End();
         ImGui::PopStyleColor();
         ImGui::PopStyleColor();
@@ -335,4 +359,21 @@ bool Overlay::closeButton() const
     ImGui::PopStyleColor();
     ImGui::PopStyleVar();
     return false;
+}
+
+void Overlay::showSplash(uint8_t alpha)
+{
+    if (logo_texture_.getSize().x > 0) {
+        ImGui::SetNextWindowPos(
+            {ImGui::GetMainViewport()->Size.x * 0.5f - static_cast<float>(logo_texture_.getSize().x) * 0.5f * logo_sprite_.getScale().x,
+             ImGui::GetMainViewport()->Size.y * 0.5f - static_cast<float>(logo_texture_.getSize().y) * 0.5f * logo_sprite_.getScale().y});
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.f, 0.f, 0.0f));
+        ImGui::Begin("##Splash", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar);
+        ImGui::Image(logo_sprite_, {255, 255, 255, alpha});
+        ImGui::End();
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+    }
 }

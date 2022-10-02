@@ -34,6 +34,8 @@ class AppLauncher {
     void update();
     void close();
 
+    void launchWatchdog();
+
   private:
     std::function<void()> shutdown_;
     sf::Clock process_check_clock_;
@@ -45,12 +47,9 @@ class AppLauncher {
     std::vector<HWND>& process_hwnds_;
 
     std::wstring launched_uwp_path_;
-
-    // Valve also hooks "CreateProcess"
-    // Unpatch that so that launched programs don't also get hooked...
-    static inline const std::string CREATE_PROC_ORIG_BYTES = "\x4C\x8B\xDC\x48\x83";
+    
     static void UnPatchValveHooks();
-    void launchWin32App(const std::wstring& path, const std::wstring& args = L"");
+    void launchWin32App(const std::wstring& path, const std::wstring& args = L"", bool watchdog = false);
     void launchUWPApp(LPCWSTR package_full_name, const std::wstring& args = L"");
     void launchURL(const std::wstring& url, const std::wstring& args = L"", const std::wstring& verb = L"open");
     STARTUPINFO info{sizeof(info)};
