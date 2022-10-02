@@ -132,7 +132,8 @@ void AppLauncher::launchWatchdog()
     GetModuleFileNameA(GetModuleHandle(NULL), buff, MAX_PATH);
     const std::string glossipath(buff);
     // hack to start a TRULY detached process...
-    system(("start " + (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + "GlosSIWatchdog.exe")).data());
+    const auto launchString = ("start /b cmd.exe /c \"" + (glossipath.substr(0, 1 + glossipath.find_last_of(L'\\')) + "GlosSIWatchdog.exe" + "\""));
+    system(launchString.data());
 }
 
 #ifdef _WIN32
