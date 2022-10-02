@@ -137,6 +137,8 @@ CollapsiblePane {
                                     qsTr("Hides real game controllers from the system\nThis may prevent doubled inputs")
                                     + "\n"
                                     + qsTr("You can change this setting and which devices are hidden in the GlosSI overlay")
+                                    + "\n"
+									+ qsTr("If ONLY using a SteamController or SteamDeck this settings is not required, but won't hurt")
                         
                                 helpInfoDialog.open()
                             }
