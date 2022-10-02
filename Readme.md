@@ -1,72 +1,63 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/l9hq9qglvn6q5wdg/branch/main?svg=true)](https://ci.appveyor.com/project/Alia5/glossi/branch/main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Github All Releases](https://img.shields.io/github/downloads/Alia5/GloSC/total.svg)]() [![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y)
+[![Build status](https://ci.appveyor.com/api/projects/status/l9hq9qglvn6q5wdg/branch/main?svg=true)](https://ci.appveyor.com/project/Alia5/glossi/branch/main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y) ![version](https://img.shields.io/github/v/tag/alia5/glossi?label=version) [![WebsiteAndDownloads](https://img.shields.io/website?label=Website%20%26%20downloads&url=https%3A%2F%2Fglossi.flatspot.pictures)](https://glossi.flatspot.pictures)
 
-TODO: Logo
-<!-- ![GloSC logo](https://github.com/Alia5/GloSC/blob/master/GloSC_Icon_small.png?raw=true "GloSC logo") -->
+<div style="display: flex; align-items: center">
+<img src="https://github.com/Alia5/GlosSI/blob/main/GlosSI_Logo_512.png?raw=true" width="256" height="256" alt="GlosSI Logo" />
+<h1> GlosSI - Global (systemwide) Steam Input</h1>
+</div>
 
-# ATTENTION: GloSC is currently being rewritten, and renamed to GlosSI ([Glo]bal ([s]ystemwide) [S]team [I]nput)
+GlosSI formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
 
-No ETA when it's done  
-No support until then.  
+The primary use case of GlosSI is to use SteamInput (required for SteamController / SteamDeck-buttons) with incompatible Games such as Windows-Store titles or Emulators.  
 
-**Looking for contributors!**  
-As the past has shown, I have way to less time on hand too maintain such a project.  
-Reach out via Discord/E-Mail (But get to the point right away, please, I get way too much spam)  
-
-See: [BUILDING.md](./docs/BUILDING.md),[CONTRIBUTING.md](./CONTRIBUTING.md)
-
-Snapshot builds can always be found [-> here <-](https://1-3-3-7.dev/u/glossisnapshot)
-
-# GlosSI
-
-GlosSI or [Glo]bal ([s]ystemwide) [S]team [I]nput, formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
-All complete with **per application bindings and working rumble emulation.**  
 GlosSI can, but isn't required to, launch any of your favorite games or applications and directly add them to Steam, be it Win32 or Windows Store (UWP)!  
 It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your Steam-Input needs  
-
-*Windows Store*, *Reshade / SweetFX*, *Origin*, *Uplay*, *Emulators* and *more* with **no hassle**™
 
 ---
 
 ## How does it work? / What does it do?
 
-GlosSI creates and adds a (or multiple) non-Steam shortcuts to Steam. When one of those is launched, a transparent, borderless window appears in which you can use the Steam-overlay. You also get access to touch- and radial-menus and other functionality normally only present in Games
+GlosSI provides a target application that can be added as a "Non-Steam Game" to Steam.  
+When launched, it redirects all configured controller inputs to a virtual system-level XBox360 controller.
 
-In addition to that, Gamecontroller-inputs are redirected to the whole operating system, so that they will work with any game or application  
-Real Gamecontrollers are hidden from other applications, so that they can't interfere with your game.
+Additionally, it provides the Steam Overlay in an (always on top) transparent window.
 
-This brings full Steam-Input functionality to the desktop and any other application Steam-Input might not have worked before
+As a result, this brings full Steam-Input functionality to the desktop and any other application Steam-Input might not have worked before.
 
 Games do not need to be launched using GlosSI.  
-If the "Start Application" option does not work, launch any GlosSI-Shortcut from Steam, followed by a game or application.
+However, to ease managing multiple GlosSI shortcuts, there is also a GlosSI-Config application included.  
+It allows one to create individual GlosSITarget configurations which can launch games for you, and easily add or remove them from Steam.
 
-## What this is not
+## What GlosSI is not
+
+<div style="background: #5f000090; padding: 1em 0 0.5em 1em; border-radius: 2em; box-shadow: 0 8px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12)!important;">
 
 - a replacement for Steams controller configuration tool.
-- a Steam remote play / steam game streaming solution. (That being said, it **can** work, but is not guaranteed to.)
-- Old versions (GloSC, Global [S]team[C]ontroller) where never designed to be used with anything other than said controller, GlosSI can be used with any controller.
+- a Steam remote play / steam game streaming solution. (That being said, it **can** work, but is not guaranteed to.)  
+  The experience when doing this is most likeley miserable; Thus there is **no support for this use case**.
+- Old versions (GloSC, Global [S]team[C]ontroller) were never designed to be used with anything other than said controller, GlosSI can be used with any controller.
+</div>
+
+## Help and Support
+
+If you're looking for a tutorial on how to use GlosSI check out the [usage section](https://glossi.flatspot.pictures/#usage) on the [GlosSI website](https://glossi.flatspot.pictures/).
 
 ---
 
-Join the GlosSI discord here: [https://discord.gg/T9b4D5y](https://discord.gg/T9b4D5y)
+**Get in touch on Discord!**  
+Lots of kind and helpful people can be found there, happy to have a quick chat or answer support-requests  
+[![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y)
 
----
-
-## GlosSI consists of
-
-- The "GlosSITarget" which does most of the magic - Showing the overlay to the user as well as talking to the ViGEm-driver for system wide Controller emulation
-- A config application ("GlosSIConfig") handling shortcut ("GlosSITarget") creation and their addition to Steam.
-
----
+## Other
 
 Like my stuff? Hit me up [on twitter](https://twitter.com/Flatspotpics) or consider donating to my [PayPal](https://www.paypal.me/Flatspotpics)
 
-GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January](https://twitter.com/flatspotpics/status/818697837055770624)
+GloSC got mentioned from Valve in the [Steam client beta change log on the 9. of January 2017](https://twitter.com/flatspotpics/status/818697837055770624)
 
 GloSC/GlosSI is not affiliated with Valve, Steam, or any of their partners.
 
 ---
 
-GlosSI is built using [Qt 6.2](https://www.qt.io/) and a fork of [SFML](http://www.sfml-dev.org/) for drawing the overlay
+GlosSI is built using [Qt 6.X](https://www.qt.io/) and a fork of [SFML](http://www.sfml-dev.org/) for drawing the overlay
 
 The system wide Xbox-Controller works via [ViGEm](https://vigem.org/projects/ViGEm/)
 Device Hiding via [HidHide](https://vigem.org/projects/HidHide/)
