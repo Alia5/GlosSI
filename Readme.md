@@ -38,7 +38,7 @@ It allows one to create individual GlosSITarget configurations which can launch 
 
 ## Help and Support
 
-If you're looking for a tutorial on how to use GlosSI check out the [usage section](https://glossi.flatspot.pictures/#usage) on the [GlosSI website](https://glossi.flatspot.pictures/).
+If you're looking for a tutorial on how to use GlosSI check out the [usage section](https://glossi.flatspot.pictures/#usage) on the [GlosSI website](https://glossi.flatspot.pictures/) or check the [usage.md document](./docs/Usage.md)
 
 ---
 
