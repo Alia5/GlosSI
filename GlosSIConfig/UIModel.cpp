@@ -501,12 +501,18 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
                           versionSplits[3].toInt(),
                           versionString.count('-') == 2 ? versionString.split("-")[1].toInt() : 0}};
              }) | std::views::filter([](const auto& info) {
-                 return info.second.major > version::VERSION_MAJOR || info.second.minor > version::VERSION_MINOR ||
-                        info.second.patch > version::VERSION_PATCH ||
-                        info.second.revision > version::VERSION_REVISION ||
-                        info.second.commits_since_last > (QString(version::VERSION_STR).count('-') == 2
+                 return info.second.major > version::VERSION_MAJOR ||
+                        (info.second.minor > version::VERSION_MINOR && info.second.major >= version::VERSION_MAJOR) ||
+                        (info.second.patch > version::VERSION_PATCH && info.second.major >= version::VERSION_MAJOR
+                         && info.second.minor >= version::VERSION_MINOR) ||
+                        (info.second.revision > version::VERSION_REVISION &&
+                         info.second.major >= version::VERSION_MAJOR && info.second.minor >= version::VERSION_MINOR && 
+                            info.second.patch >= version::VERSION_PATCH) ||
+                        (info.second.commits_since_last > (QString(version::VERSION_STR).count('-') == 2
                                                               ? QString(version::VERSION_STR).split("-")[1].toInt()
-                                                              : 0);
+                                                              : 0) &&
+                         info.second.major >= version::VERSION_MAJOR && info.second.minor >= version::VERSION_MINOR &&
+                         info.second.patch >= version::VERSION_PATCH && info.second.revision >= version::VERSION_REVISION );
              }) | std::ranges::views::all) {
             new_versions.push_back(info);
         }
