@@ -95,6 +95,9 @@ Window {
                 failedRestartingSteamDialog.open();
             }
         }
+        onConfirmedExtra: function () {
+		    window.close()
+        }
 		buttonText: qsTr("Yes")
         extraButton: true
 		extraButtonText: qsTr("No")

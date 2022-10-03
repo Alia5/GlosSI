@@ -127,4 +127,15 @@ Item {
             }
         }
     }
+
+	InfoDialog {
+        id: helpInfoDialog
+        titleText: qsTr("")
+        text: qsTr("")
+        extraButton: false
+        extraButtonText: qsTr("")
+        onConfirmedExtra: function(data) {
+        }
+    }
+
 }
