@@ -20,6 +20,7 @@ limitations under the License.
 #include <locale>
 #include <codecvt>
 #include <regex>
+#include <shlobj_core.h>
 
 #include "Roboto.h"
 #include "Settings.h"
@@ -51,10 +52,14 @@ Overlay::Overlay(
     ImGui::SFML::UpdateFontTexture();
 
 #ifdef _WIN32
-    auto config_path = std::filesystem::temp_directory_path()
-                           .parent_path()
-                           .parent_path()
-                           .parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path config_path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        config_path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        config_path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     config_path /= "Roaming";
     config_path /= "GlosSI";

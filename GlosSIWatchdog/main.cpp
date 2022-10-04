@@ -16,6 +16,7 @@ limitations under the License.
 
 #define NOMINMAX
 #include <Windows.h>
+#include <ShlObj.h>
 
 #include <filesystem>
 
@@ -34,10 +35,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-	auto configDirPath = std::filesystem::temp_directory_path()
-		.parent_path()
-		.parent_path()
-		.parent_path();
+	wchar_t* localAppDataFolder;
+	std::filesystem::path configDirPath;
+	if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+		configDirPath = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+	}
+	else {
+		configDirPath = std::filesystem::path(localAppDataFolder).parent_path();
+	}
 
 	configDirPath /= "Roaming";
 	configDirPath /= "GlosSI";
