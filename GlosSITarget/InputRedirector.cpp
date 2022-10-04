@@ -242,7 +242,7 @@ void InputRedirector::runLoop()
                 unplugVigemPad(i);
             }
         }
-        sf::sleep(sf::milliseconds(1));
+        sf::sleep(sf::milliseconds(4));
 
 #endif
     }
