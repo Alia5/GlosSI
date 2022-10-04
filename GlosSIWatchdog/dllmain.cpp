@@ -27,14 +27,9 @@ limitations under the License.
 #include "../version.hpp"
 #include "../GlosSITarget/HidHide.h"
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
 
+DWORD WINAPI watchdog(HMODULE hModule)
+{
 	wchar_t* localAppDataFolder;
 	std::filesystem::path configDirPath;
 	if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
@@ -69,14 +64,30 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	}
 	spdlog::debug("Found GlosSITarget window; Starting watch loop");
 
-    while (glossi_hwnd)
-    {
-    	glossi_hwnd = FindWindowA(nullptr, "GlosSITarget");
+	while (glossi_hwnd)
+	{
+		glossi_hwnd = FindWindowA(nullptr, "GlosSITarget");
 		Sleep(1337);
-    }
+	}
 	spdlog::info("GlosSITarget was closed. Cleaning up...");
 	HidHide hidhide;
 	hidhide.disableHidHide();
+	spdlog::info("Unloading Watchdog...");
+	FreeLibraryAndExitThread(hModule, 0);
+}
+
+BOOL APIENTRY DllMain(HMODULE hModule,
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
+)
+{
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
+	{
+		CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)watchdog, hModule, 0, nullptr));
+	}
+	else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+	}
+	return TRUE;
 
     return 0;
 }

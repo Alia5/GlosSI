@@ -5,6 +5,7 @@
 
 #include "DllInjector.h"
 #include "Overlay.h"
+#include "util.h"
 
 namespace UWPOverlayEnabler {
 
@@ -18,44 +19,13 @@ inline std::filesystem::path EnablerPath()
     return path.substr(0, 1 + path.find_last_of(L'\\')) + L"UWPOverlayEnablerDLL.dll";
 }
 
-inline DWORD ExplorerPid()
-{
-    PROCESSENTRY32 entry;
-    entry.dwSize = sizeof(PROCESSENTRY32);
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-    if (Process32First(snapshot, &entry) == TRUE) {
-        while (Process32Next(snapshot, &entry) == TRUE) {
-            if (std::wstring(entry.szExeFile).find(L"explorer.exe") != std::string::npos) {
-                return entry.th32ProcessID;
-            }
-        }
-    }
-    CloseHandle(snapshot);
-    return 0;
-}
 
 } // namespace internal
 
 inline void EnableUwpOverlay()
 {
     const auto enabler_path = internal::EnablerPath();
-    if (std::filesystem::exists(enabler_path)) {
-        const auto explorer_pid = internal::ExplorerPid();
-        if (explorer_pid != 0) {
-            if (DllInjector::TakeDebugPrivilege()) {
-                // No need to eject, as the dll is self-ejecting.
-                if (DllInjector::Inject(explorer_pid, enabler_path.wstring())) {
-                    spdlog::info("Successfully injected UWPOverlay enabler into explorer.exe");
-                }
-            }
-        }
-        else {
-            spdlog::error("explorer not found"); // needs loglevel WTF
-        }
-    }
-    else {
-        spdlog::error("UWPOverlayEnablerDLL not found");
-    }
+    DllInjector::injectDllInto(enabler_path, L"explorer.exe");
 }
 
 inline void AddUwpOverlayOvWidget()

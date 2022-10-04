@@ -74,8 +74,16 @@ Application will not function!");
         if (!overlay_.expired())
             overlay_.lock()->setEnabled(false);
         steam_overlay_present_ = true;
+
+#ifdef WIN32
+        wchar_t buff[MAX_PATH];
+        GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+        std::wstring watchDogPath(buff);
+        watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
+
+        DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
+#endif
     }
-        launcher_.launchWatchdog();
     getXBCRebindingEnabled();
 
     run_ = true;
@@ -214,7 +222,7 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 
     AttachThreadInput(current_thread, fg_thread, FALSE);
 
-    //try to forcefully set foreground window at least a few times
+    // try to forcefully set foreground window at least a few times
     sf::Clock clock;
     while (!SetForegroundWindow(hndl) && clock.getElapsedTime().asMilliseconds() < 20) {
         SetActiveWindow(hndl);
@@ -310,7 +318,7 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
     if (!std::filesystem::exists(config_path)) {
         spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
-        return {"KEY_F12"}; //default
+        return {"KEY_F12"}; // default
     }
     std::ifstream config_file(config_path);
     auto root = tyti::vdf::read(config_file);
@@ -318,7 +326,7 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     std::shared_ptr<tyti::vdf::basic_object<char>> children = root.childs["system"];
     if (!children || children->attribs.empty() || !children->attribs.contains("InGameOverlayScreenshotHotKey")) {
         spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; //default
+        return {"KEY_F12"}; // default
     }
     auto hotkeys = children->attribs.at("InGameOverlayScreenshotHotKey");
 
@@ -326,7 +334,7 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     std::smatch m;
     if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
         spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; //default
+        return {"KEY_F12"}; // default
     }
 
     std::vector<std::string> res;
@@ -338,7 +346,7 @@ std::vector<std::string> SteamTarget::getScreenshotHotkey()
     }
     if (res.empty()) {
         spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; //default
+        return {"KEY_F12"}; // default
     }
     spdlog::info("Detected screenshot hotkey(s): {}", std::accumulate(
                                                           res.begin() + 1, res.end(), res[0],

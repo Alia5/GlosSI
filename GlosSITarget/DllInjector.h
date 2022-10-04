@@ -4,6 +4,8 @@
 #include <tlhelp32.h>
 #include <spdlog/spdlog.h>
 
+#include "util.h"
+
 namespace DllInjector {
 
 inline bool TakeDebugPrivilege()
@@ -105,6 +107,27 @@ inline bool findModule(DWORD pid, std::wstring& lib_path, HMODULE& hMod)
     CloseHandle(snapshot);
     spdlog::error(L"Failed to find module \"{}\"", lib_path);
     return false;
+}
+
+inline void injectDllInto(std::filesystem::path dllPath, const std::wstring& processName)
+{
+    if (std::filesystem::exists(dllPath)) {
+        const auto explorer_pid = glossi_util::PidByName(processName);
+        if (explorer_pid != 0) {
+            if (DllInjector::TakeDebugPrivilege()) {
+                // No need to eject, as the dll is self-ejecting.
+                if (DllInjector::Inject(explorer_pid, dllPath.wstring())) {
+                    spdlog::info(L"Successfully injected {} into {}", dllPath.filename().wstring(), processName);
+                }
+            }
+        }
+        else {
+            spdlog::error(L"{} not found", processName); // needs loglevel WTF
+        }
+    }
+    else {
+        spdlog::error(L"{} not found", dllPath.wstring());
+    }
 }
 
 }; // namespace DllInjector

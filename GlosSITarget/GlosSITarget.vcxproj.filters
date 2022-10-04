@@ -182,6 +182,9 @@
     <ClInclude Include="UnhookUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\deps\SFML\out\Debug\lib\Debug\sfml-system-d-2.dll" />

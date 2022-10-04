@@ -217,6 +217,7 @@
     <ClInclude Include="steam_sf_keymap.h" />
     <ClInclude Include="TargetWindow.h" />
     <ClInclude Include="UnhookUtil.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="UWPOverlayEnabler.h" />
   </ItemGroup>
   <ItemGroup>

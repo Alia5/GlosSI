@@ -33,9 +33,7 @@ class AppLauncher {
     void launchApp(const std::wstring& path, const std::wstring& args = L"");
     void update();
     void close();
-
-    void launchWatchdog();
-
+    
   private:
     std::function<void()> shutdown_;
     sf::Clock process_check_clock_;
