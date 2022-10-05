@@ -17,6 +17,7 @@ limitations under the License.
 #define NOMINMAX
 #include <Windows.h>
 #include <DbgHelp.h>
+#include <ShlObj.h>
 #endif
 
 #include <spdlog/sinks/basic_file_sink.h>
@@ -67,10 +68,14 @@ LONG Win32FaultHandler(struct _EXCEPTION_POINTERS* ExInfo)
     MINIDUMP_EXCEPTION_INFORMATION M;
     HANDLE hDump_File;
 
-    auto path = std::filesystem::temp_directory_path()
-                    .parent_path()
-                    .parent_path()
-                    .parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     path /= "Roaming";
     path /= "GlosSI";
@@ -119,10 +124,14 @@ int main(int argc, char* argv[])
     const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace);
 #ifdef _WIN32
-    auto path = std::filesystem::temp_directory_path()
-                    .parent_path()
-                    .parent_path()
-                    .parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     path /= "Roaming";
     path /= "GlosSI";

@@ -28,13 +28,21 @@ limitations under the License.
 #ifdef _WIN32
 #include "UWPFetch.h"
 #include <Windows.h>
+#include <shlobj.h>
 #endif
 
 #include "../version.hpp"
 
 UIModel::UIModel() : QObject(nullptr)
 {
-    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     path /= "Roaming";
     path /= "GlosSI";
@@ -307,7 +315,14 @@ void UIModel::updateCheck()
 
 QVariantMap UIModel::getDefaultConf() const
 {
-    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     path /= "Roaming";
     path /= "GlosSI";
@@ -371,8 +386,14 @@ QVariantMap UIModel::getDefaultConf() const
 
 void UIModel::saveDefaultConf(QVariantMap conf) const
 {
-    auto path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
     path /= "Roaming";
     path /= "GlosSI";
     path /= "default.json";

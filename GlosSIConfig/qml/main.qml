@@ -117,8 +117,8 @@ Window {
 		titleText: qsTr("New version available!")
 		text: uiModel.newVersionName + "\n\n" + qsTr("Would you like to visit the download page now?")
 		onConfirmed: function (callback) {
+		    Qt.openUrlExternally(`https://glossi.flatspot.pictures/#downloads${ uiModel.newVersionName.includes('snapshot') ? '-snapshots' : '' }-${uiModel.newVersionName}`);
             callback();
-		    Qt.openUrlExternally(`https://glossi.flatspot.pictures/#downloads-${uiModel.newVersionName}`);
 		}
         buttonText: qsTr("Yes")
 		extraButton: true

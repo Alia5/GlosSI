@@ -26,6 +26,8 @@ limitations under the License.
 #ifdef WIN32
 #define NOMINMAX
 #include <Windows.h>
+#include <ShlObj.h>
+#include <KnownFolders.h>
 #endif
 
 namespace Settings {
@@ -122,10 +124,14 @@ inline void Parse(std::wstring arg1)
             arg1 += L".json";
         }
     }
-    std::filesystem::path path = std::filesystem::temp_directory_path()
-                                     .parent_path()
-                                     .parent_path()
-                                     .parent_path();
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
 
     path /= "Roaming";
     path /= "GlosSI";
