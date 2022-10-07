@@ -164,10 +164,11 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
         int numArgs;
         LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &numArgs);
-        std::wstring argsv = L"";
+        std::vector<std::wstring> argsv;
+        argsv.reserve(numArgs);
         if (numArgs > 1) {
             for (int i = 1; i < numArgs; i++)
-                argsv += i == 1 ? args[i] : std::wstring(L" ") + args[i];
+                argsv.emplace_back(args[i]);
         }
         Settings::Parse(argsv);
         Settings::checkWinVer();

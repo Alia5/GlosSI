@@ -59,6 +59,11 @@ inline struct Controller {
     bool emulateDS4 = false;
 } controller;
 
+inline struct Cli {
+    bool no_uwp_overlay = false;
+    bool disable_watchdog = false;
+} cli;
+
 inline bool extendedLogging = false;
 
 inline std::filesystem::path settings_path_ = "";
@@ -114,14 +119,29 @@ inline void checkWinVer()
 }
 #endif
 
-inline void Parse(std::wstring arg1)
+inline void Parse(const std::vector<std::wstring>& args)
 {
-    const auto config_specified = !std::views::filter(arg1, [](const auto& ch) {
-                                       return ch != ' ';
-                                   }).empty();
-    if (config_specified) {
-        if (!arg1.ends_with(L".json")) {
-            arg1 += L".json";
+    std::wstring configName;
+    for (const auto& arg : args) {
+        if (arg.empty()) {
+            continue;
+        }
+        if (arg[0] != L'-') {
+            configName = std::wstring(arg.begin(), arg.end());
+        }
+        if (arg[0] == L'-') {
+            if (arg == L"-disableuwpoverlay") {
+                cli.no_uwp_overlay = true;
+            }
+            if (arg == L"-disablewatchdog") {
+                cli.disable_watchdog = true;
+            }
+        }
+    }
+
+    if (!configName.empty()) {
+        if (!configName.ends_with(L".json")) {
+            configName += L".json";
         }
     }
     wchar_t* localAppDataFolder;
@@ -135,9 +155,9 @@ inline void Parse(std::wstring arg1)
 
     path /= "Roaming";
     path /= "GlosSI";
-    if (config_specified) {
+    if (!configName.empty()) {
         path /= "Targets";
-        path /= arg1;
+        path /= configName;
     }
     else {
         spdlog::info("No config file specified, using default");

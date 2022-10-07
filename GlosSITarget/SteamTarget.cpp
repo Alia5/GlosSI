@@ -48,14 +48,11 @@ SteamTarget::SteamTarget()
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32
-    //if (Settings::launch.isUWP) {
-    //    UWPOverlayEnabler::EnableUwpOverlay();
-    //}
-    //else {
-    //    UWPOverlayEnabler::AddUwpOverlayOvWidget();
-    //}
-    UWPOverlayEnabler::EnableUwpOverlay();
-
+    if (Settings::cli.no_uwp_overlay) {
+        UWPOverlayEnabler::AddUwpOverlayOvWidget();
+    } else {
+        UWPOverlayEnabler::EnableUwpOverlay();
+    }
 #endif
 }
 
@@ -78,12 +75,14 @@ Application will not function!");
         steam_overlay_present_ = true;
 
 #ifdef WIN32
-        wchar_t buff[MAX_PATH];
-        GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
-        std::wstring watchDogPath(buff);
-        watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
+        if (!Settings::cli.disable_watchdog) {
+            wchar_t buff[MAX_PATH];
+            GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+            std::wstring watchDogPath(buff);
+            watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
 
-        DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
+            DllInjector::injectDllInto(watchDogPath, L"explorer.exe");   
+        }
 #endif
     }
     getXBCRebindingEnabled();
