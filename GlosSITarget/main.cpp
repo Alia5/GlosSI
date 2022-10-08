@@ -162,6 +162,13 @@ int main(int argc, char* argv[])
     auto exit = 1;
     try {
 #ifdef _WIN32
+
+        auto existingwindow = FindWindowA(nullptr, "GlosSITarget");
+        if (existingwindow) {
+            spdlog::error("GlosSITarget is already running!");
+            return 1;
+        }
+
         int numArgs;
         LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &numArgs);
         std::vector<std::wstring> argsv;
