@@ -35,7 +35,7 @@ void HttpServer::run()
             spdlog::error("Couldn't start http-server");
             return;
         }
-        spdlog::debug("Started http-server on port");
+        spdlog::debug("Started http-server on port {}", static_cast<int>(port_));
     });
 }
 
