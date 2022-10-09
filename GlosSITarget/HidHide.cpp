@@ -24,11 +24,10 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 #include <vector>
 
+#include <initguid.h>
 // Device configuration related
 #include <cfgmgr32.h>
 
-#include <initguid.h>
-//
 #ifndef WATCHDOG
 #include "Overlay.h"
 #endif
@@ -38,8 +37,13 @@ limitations under the License.
 #include <devguid.h>
 #include <devpkey.h>
 #include <regex>
+#include <cguid.h>
+#include <atlbase.h>
+
 
 #include "UnhookUtil.h"
+
+#pragma comment(lib, "Setupapi.lib")
 
 // {D61CA365-5AF4-4486-998B-9DB4734C6CA3}add the XUSB class GUID as it is missing in the public interfaces
 DEFINE_GUID(GUID_DEVCLASS_XUSBCLASS, 0xD61CA365, 0x5AF4, 0x4486, 0x99, 0x8B, 0x9D, 0xB4, 0x73, 0x4C, 0x6C, 0xA3);

@@ -23,6 +23,8 @@ limitations under the License.
 #include <tlhelp32.h>
 #include <Propsys.h>
 #include <propkey.h>
+#include <shellapi.h>
+
 
 #pragma comment(lib, "Shell32.lib")
 #endif
@@ -67,6 +69,7 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 void AppLauncher::update()
 {
     if (process_check_clock_.getElapsedTime().asMilliseconds() > 250) {
+        pid_mutex_.lock();
 #ifdef _WIN32
         if (!pids_.empty() && pids_[0] > 0) {
             if (Settings::launch.waitForChildProcs) {
@@ -98,6 +101,7 @@ void AppLauncher::update()
         }
         getProcessHwnds();
 #endif
+        pid_mutex_.unlock();
         process_check_clock_.restart();
     }
 }
@@ -110,6 +114,16 @@ void AppLauncher::close()
         CloseHandle(process_info.hThread);
     }
 #endif
+}
+
+std::vector<DWORD> AppLauncher::launchedPids()
+{
+    pid_mutex_.lock();
+    std::vector<DWORD> res = pids_;
+    std::ranges::copy(pids_.begin(), pids_.end(),
+                      std::back_inserter(res));
+    pid_mutex_.unlock();
+    return res;
 }
 
 #ifdef _WIN32
@@ -213,7 +227,9 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
         // spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
         if (!watchdog) {
+            pid_mutex_.lock();
             pids_.push_back(process_info.dwProcessId);
+            pid_mutex_.unlock();
         }
     }
     else {
@@ -243,7 +259,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             if (!SUCCEEDED(result)) {
                 spdlog::warn("CoAllowSetForegroundWindow failed. Code: {}", result);
             }
-
+            pid_mutex_.lock();
             pids_.push_back(0);
             // Launch the app
             result = sp_app_activation_manager->ActivateApplication(
@@ -258,6 +274,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             else {
                 spdlog::info(L"Launched UWP Package \"{}\"; PID: {}", package_full_name, pids_[0]);
             }
+            pid_mutex_.unlock();
         }
         else {
             spdlog::error("CoCreateInstance failed: Code {}", result);
@@ -298,8 +315,10 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
 
     if (execute_info.hProcess != nullptr) {
         if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
+            pid_mutex_.lock();
             pids_.push_back(pid);
             spdlog::trace("Launched URL; PID: {}", pid);
+            pid_mutex_.unlock();
             return;
         }
     }

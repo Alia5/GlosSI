@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 
 #include "SteamOverlayDetector.h"
 
@@ -27,6 +28,8 @@ limitations under the License.
 
 #include "AppLauncher.h"
 #include "Overlay.h"
+#include "HttpServer.h"
+
 
 #include <filesystem>
 
@@ -81,6 +84,7 @@ class SteamTarget {
     std::weak_ptr<Overlay> overlay_;
     SteamOverlayDetector detector_;
     AppLauncher launcher_;
+    HttpServer server_;
     WindowHandle last_foreground_window_ = nullptr;
     static inline WindowHandle target_window_handle_ = nullptr;
 
