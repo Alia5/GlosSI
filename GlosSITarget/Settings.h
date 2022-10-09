@@ -126,20 +126,19 @@ inline void Parse(const std::vector<std::wstring>& args)
         if (arg.empty()) {
             continue;
         }
-        if (arg[0] != L'-') {
-            configName = std::wstring(arg.begin(), arg.end());
+        if (arg == L"-disableuwpoverlay") {
+            cli.no_uwp_overlay = true;
+        } else if (arg == L"-disablewatchdog") {
+            cli.disable_watchdog = true;
+        } else {
+            configName += L" " + std::wstring(arg.begin(), arg.end());
         }
-        if (arg[0] == L'-') {
-            if (arg == L"-disableuwpoverlay") {
-                cli.no_uwp_overlay = true;
-            }
-            if (arg == L"-disablewatchdog") {
-                cli.disable_watchdog = true;
-            }
-        }
+        
     }
-
     if (!configName.empty()) {
+        if (configName[0] == L' ') {
+            configName.erase(configName.begin());
+        }
         if (!configName.ends_with(L".json")) {
             configName += L".json";
         }
