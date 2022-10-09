@@ -119,7 +119,8 @@ void AppLauncher::close()
 std::vector<DWORD> AppLauncher::launchedPids()
 {
     pid_mutex_.lock();
-    std::vector<DWORD> res = pids_;
+    std::vector<DWORD> res;
+    res.reserve(pids_.size());
     std::ranges::copy(pids_.begin(), pids_.end(),
                       std::back_inserter(res));
     pid_mutex_.unlock();
