@@ -122,7 +122,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
             whitelist.push_back(path);
         }
     }
-    if (Settings::extendedLogging) {
+    if (Settings::common.extendedLogging) {
         std::ranges::for_each(whitelist, [](const auto& exe) {
             spdlog::trace(L"Whitelisted executable: {}", exe);
         });
@@ -130,7 +130,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
     setAppWhiteList(whitelist);
 
     avail_devices_ = GetHidDeviceList();
-    if (Settings::extendedLogging) {
+    if (Settings::common.extendedLogging) {
         std::ranges::for_each(avail_devices_, [](const auto& dev) {
             spdlog::trace(L"AvailDevice device: {}", dev.name);
         });
@@ -157,7 +157,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         setBlacklistDevices(blacklisted_devices_);
         setActive(true);
         spdlog::info("Hid Gaming Devices; Enabling Overlay element...");
-        if (Settings::extendedLogging) {
+        if (Settings::common.extendedLogging) {
             std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
                 spdlog::trace(L"Blacklisted device: {}", dev);
             });
@@ -205,14 +205,14 @@ void HidHide::enableOverlayElement()
                     // UnPatchValveHooks();
                     openCtrlDevice();
                     bool hidehide_state_store = hidhide_active_;
-                    if (Settings::extendedLogging) {
+                    if (Settings::common.extendedLogging) {
                         spdlog::debug("Refreshing HID devices");
                     }
                     if (hidhide_active_) {
                         setActive(false);
                     }
                     avail_devices_ = GetHidDeviceList();
-                    if (Settings::extendedLogging) {
+                    if (Settings::common.extendedLogging) {
                         std::ranges::for_each(avail_devices_, [](const auto& dev) {
                             spdlog::trace(L"AvailDevice device: {}", dev.name);
                         });
@@ -248,7 +248,7 @@ void HidHide::enableOverlayElement()
                                                        blacklisted_devices_.end());
                         }
                         setBlacklistDevices(blacklisted_devices_);
-                        if (Settings::extendedLogging) {
+                        if (Settings::common.extendedLogging) {
                             std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
                                 spdlog::trace(L"Blacklisted device: {}", dev);
                             });
@@ -355,7 +355,7 @@ void HidHide::setActive(bool active)
         return;
     }
     hidhide_active_ = active;
-    if (Settings::extendedLogging) {
+    if (Settings::common.extendedLogging) {
         spdlog::debug("HidHide State set to {}", active);
     }
 }

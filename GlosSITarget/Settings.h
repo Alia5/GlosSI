@@ -59,12 +59,12 @@ inline struct Controller {
     bool emulateDS4 = false;
 } controller;
 
-inline struct Cli {
+inline struct Common {
     bool no_uwp_overlay = false;
     bool disable_watchdog = false;
-} cli;
 
-inline bool extendedLogging = false;
+    bool extendedLogging = false;
+} common;
 
 inline std::filesystem::path settings_path_ = "";
 

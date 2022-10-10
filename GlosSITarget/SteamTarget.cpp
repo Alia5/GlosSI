@@ -50,7 +50,7 @@ SteamTarget::SteamTarget()
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32
-    if (Settings::cli.no_uwp_overlay) {
+    if (Settings::common.no_uwp_overlay) {
         UWPOverlayEnabler::AddUwpOverlayOvWidget();
     }
     else {
@@ -78,7 +78,7 @@ Application will not function!");
         steam_overlay_present_ = true;
 
 #ifdef WIN32
-        if (!Settings::cli.disable_watchdog) {
+        if (!Settings::common.disable_watchdog) {
             wchar_t buff[MAX_PATH];
             GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
             std::wstring watchDogPath(buff);

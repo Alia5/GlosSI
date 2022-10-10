@@ -47,7 +47,7 @@ void SteamOverlayDetector::update()
     if (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
         // filter out some messages as not all get altered by steam...
 
-        if (Settings::extendedLogging && msg.message != 512 && msg.message != 5374) {
+        if (Settings::common.extendedLogging && msg.message != 512 && msg.message != 5374) {
             spdlog::trace("PeekMessage: Window msg: {}", msg.message);
         }
 

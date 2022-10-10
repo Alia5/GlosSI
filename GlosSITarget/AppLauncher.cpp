@@ -147,7 +147,7 @@ void AppLauncher::getChildPids(DWORD parent_pid)
         do {
             if (pe.th32ParentProcessID == parent_pid) {
                 if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
-                    if (Settings::extendedLogging) {
+                    if (Settings::common.extendedLogging) {
                         spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
                     }
                     pids_.push_back(pe.th32ProcessID);

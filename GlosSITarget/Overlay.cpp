@@ -199,7 +199,7 @@ void Overlay::update()
                 Settings::StoreSettings();
             }
         }
-        ImGui::Checkbox("Extended logging", &Settings::extendedLogging);
+        ImGui::Checkbox("Extended logging", &Settings::common.extendedLogging);
         ImGuiID dockspace_id = ImGui::GetID("GlosSI-DockSpace");
         ImGui::DockSpace(dockspace_id);
 
