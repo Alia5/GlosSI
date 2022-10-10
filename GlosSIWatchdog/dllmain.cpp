@@ -85,7 +85,12 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	auto http_res = http_client.Get("/settings");
 	if (http_res.error() == httplib::Error::Success && http_res->status == 200)
 	{
-		Settings::Parse(nlohmann::json::parse(http_res->body));
+		const auto json = nlohmann::json::parse(http_res->body);
+		spdlog::debug("Received settings from GlosSITarget: {}", json.dump());
+		Settings::Parse(json);
+	} else
+	{
+		spdlog::error("Couldn't get settings from GlosSITarget.");
 	}
 
 
