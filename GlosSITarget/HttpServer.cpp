@@ -19,15 +19,21 @@ limitations under the License.
 #include <nlohmann/json.hpp>
 
 #include "AppLauncher.h"
+#include "Settings.h"
 
 HttpServer::HttpServer(AppLauncher& app_launcher) : app_launcher_(app_launcher)
-{}
+{
+}
 
 void HttpServer::run()
 {
     server_.Get("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
         const nlohmann::json j = app_launcher_.launchedPids();
         res.set_content(j.dump(), "text/json");
+    });
+
+    server_.Get("/settings", [this](const httplib::Request& req, httplib::Response& res) {
+        res.set_content(Settings::toJson().dump(), "text/json");
     });
 
     server_thread_ = std::thread([this]() {
