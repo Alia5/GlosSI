@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\deps\spdlog\include;..\deps\json\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\deps\spdlog\include;..\deps\json\include;..\deps\cpp-httplib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\deps\spdlog\include;..\deps\json\include;$(IncludePath)</IncludePath>

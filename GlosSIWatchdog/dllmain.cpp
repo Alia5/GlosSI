@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <httplib.h>
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
 #include <ShlObj.h>
@@ -24,9 +26,20 @@ limitations under the License.
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+#include <nlohmann/json.hpp>
+
 #include "../version.hpp"
 #include "../GlosSITarget/HidHide.h"
 
+bool IsProcessRunning(DWORD pid)
+{
+	const HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+	if (process == nullptr)
+		return false;
+	const DWORD ret = WaitForSingleObject(process, 0);
+	CloseHandle(process);
+	return ret == WAIT_TIMEOUT;
+}
 
 DWORD WINAPI watchdog(HMODULE hModule)
 {
@@ -65,14 +78,52 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	}
 	spdlog::debug("Found GlosSITarget window; Starting watch loop");
 
+	httplib::Client http_client("http://localhost:8756");
+	http_client.set_connection_timeout(1);
+	auto http_res = http_client.Get("/launched-pids");
+	std::vector<DWORD> pids = http_res.error() == httplib::Error::Success && http_res->status == 200 ? nlohmann::json::parse(http_res->body).get<std::vector<DWORD>>() : std::vector<DWORD>();
 	while (glossi_hwnd)
 	{
+		http_client.set_connection_timeout(120);
+		http_res = http_client.Get("/launched-pids");
+		if (http_res.error() == httplib::Error::Success && http_res->status == 200)
+		{
+			pids = nlohmann::json::parse(http_res->body).get<std::vector<DWORD>>();
+		} else {
+			spdlog::error("Couldn't fetch launched PIDs: {}", (int)http_res.error());
+		}
+
 		glossi_hwnd = FindWindowA(nullptr, "GlosSITarget");
-		Sleep(1337);
+
+		Sleep(333);
 	}
-	spdlog::info("GlosSITarget was closed. Cleaning up...");
+	spdlog::info("GlosSITarget was closed. Resetting HidHide state...");
 	HidHide hidhide;
 	hidhide.disableHidHide();
+	// TODO: read settings; check if watchdog should close launched procs
+
+	spdlog::info("Closing launched processes");
+
+
+	for (const auto pid : pids)
+	{
+		if (IsProcessRunning(pid))
+		{
+			if (const auto proc = OpenProcess(PROCESS_TERMINATE, FALSE, pid))
+			{
+				spdlog::debug("Terminating process: {}", pid);
+				const auto terminate_res = TerminateProcess(proc, 0);
+				if (!terminate_res)
+				{
+					spdlog::error("Failed to terminate process: {}", pid);
+				}
+				CloseHandle(proc);
+			}
+		}
+	}
+
+	// \
+	
 	spdlog::info("Unloading Watchdog...");
 	FreeLibraryAndExitThread(hModule, 0);
 }
