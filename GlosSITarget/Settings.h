@@ -119,59 +119,9 @@ inline void checkWinVer()
 }
 #endif
 
-inline void Parse(const std::vector<std::wstring>& args)
+
+inline void Parse(const nlohmann::basic_json<>& json)
 {
-    std::wstring configName;
-    for (const auto& arg : args) {
-        if (arg.empty()) {
-            continue;
-        }
-        if (arg == L"-disableuwpoverlay") {
-            cli.no_uwp_overlay = true;
-        } else if (arg == L"-disablewatchdog") {
-            cli.disable_watchdog = true;
-        } else {
-            configName += L" " + std::wstring(arg.begin(), arg.end());
-        }
-        
-    }
-    if (!configName.empty()) {
-        if (configName[0] == L' ') {
-            configName.erase(configName.begin());
-        }
-        if (!configName.ends_with(L".json")) {
-            configName += L".json";
-        }
-    }
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!configName.empty()) {
-        path /= "Targets";
-        path /= configName;
-    }
-    else {
-        spdlog::info("No config file specified, using default");
-        path /= "default.json";
-    }
-
-    std::ifstream json_file;
-    json_file.open(path);
-    if (!json_file.is_open()) {
-        spdlog::error(L"Couldn't open settings file {}", path.wstring());
-        spdlog::debug(L"Using sane defaults...");
-        return;
-    }
-    settings_path_ = path;
-
     auto safeParseValue = [](const auto& object, const auto& key, auto& value) {
         try {
             if (object.is_null() || object.empty() || object.at(key).empty() || object.at(key).is_null()) {
@@ -198,7 +148,6 @@ inline void Parse(const std::vector<std::wstring>& args)
         }
     };
 
-    const auto json = nlohmann::json::parse(json_file);
     int version;
     safeParseValue(json, "version", version);
     if (version != 1) { // TODO: versioning stuff
@@ -241,17 +190,75 @@ inline void Parse(const std::vector<std::wstring>& args)
     }
 
     safeParseValue(json, "extendedLogging", extendedLogging);
-
-    json_file.close();
-
-    spdlog::debug("Read config file \"{}\"; config: {}", path.string(), json.dump());
+    
 
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
     }
 }
 
-inline void StoreSettings()
+inline void Parse(const std::vector<std::wstring>& args)
+{
+    std::wstring configName;
+    for (const auto& arg : args) {
+        if (arg.empty()) {
+            continue;
+        }
+        if (arg == L"-disableuwpoverlay") {
+            cli.no_uwp_overlay = true;
+        }
+        else if (arg == L"-disablewatchdog") {
+            cli.disable_watchdog = true;
+        }
+        else {
+            configName += L" " + std::wstring(arg.begin(), arg.end());
+        }
+    }
+    if (!configName.empty()) {
+        if (configName[0] == L' ') {
+            configName.erase(configName.begin());
+        }
+        if (!configName.ends_with(L".json")) {
+            configName += L".json";
+        }
+    }
+    wchar_t* localAppDataFolder;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        path = std::filesystem::path(localAppDataFolder).parent_path();
+    }
+
+    path /= "Roaming";
+    path /= "GlosSI";
+    if (!configName.empty()) {
+        path /= "Targets";
+        path /= configName;
+    }
+    else {
+        spdlog::info("No config file specified, using default");
+        path /= "default.json";
+    }
+
+    std::ifstream json_file;
+    json_file.open(path);
+    if (!json_file.is_open()) {
+        spdlog::error(L"Couldn't open settings file {}", path.wstring());
+        spdlog::debug(L"Using sane defaults...");
+        return;
+    }
+    settings_path_ = path;
+    const auto& json = nlohmann::json::parse(json_file);
+    Parse(json);
+    
+    spdlog::debug("Read config file \"{}\"; config: {}", path.string(), json.dump());
+    json_file.close();
+}
+
+
+inline nlohmann::json toJson()
 {
     nlohmann::json json;
     json["version"] = 1;
@@ -271,6 +278,12 @@ inline void StoreSettings()
     json["controller"]["emulateDS4"] = controller.emulateDS4;
 
     json["extendedLogging"] = extendedLogging;
+    return json;
+}
+
+inline void StoreSettings()
+{
+    const auto& json = toJson();
 
     std::ofstream json_file;
     json_file.open(settings_path_);
