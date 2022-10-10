@@ -62,7 +62,7 @@ CollapsiblePane {
                         spacing: 2
                         CheckBox {
                             id: closeOnExit
-                            text: qsTr("Close when launched app quits")
+                            text: qsTr("Close GlosSI when launched app quits and vice versa")
                             checked: shortcutInfo.launch.closeOnExit
                             onCheckedChanged: function() {
                                 shortcutInfo.launch.closeOnExit = checked
@@ -82,7 +82,7 @@ CollapsiblePane {
                         }
                         CheckBox {
                             id: waitForChildren
-                            text: qsTr("Wait for child processes")
+                            text: qsTr("Include child processes")
                             checked: shortcutInfo.launch.waitForChildProcs
                             onCheckedChanged: function(){
                                 shortcutInfo.launch.waitForChildProcs = checked
