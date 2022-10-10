@@ -62,8 +62,10 @@ inline struct Controller {
 inline struct Common {
     bool no_uwp_overlay = false;
     bool disable_watchdog = false;
-
     bool extendedLogging = false;
+    std::wstring name;
+    std::wstring icon;
+    int version;
 } common;
 
 inline std::filesystem::path settings_path_ = "";
@@ -118,7 +120,6 @@ inline void checkWinVer()
     }
 }
 #endif
-
 
 inline void Parse(const nlohmann::basic_json<>& json)
 {
@@ -189,8 +190,10 @@ inline void Parse(const nlohmann::basic_json<>& json)
         spdlog::warn("Err parsing config: {}", e.what());
     }
 
-    safeParseValue(json, "extendedLogging", extendedLogging);
-    
+    safeParseValue(json, "extendedLogging", common.extendedLogging);
+    safeWStringParse(json, "name", common.name);
+    safeWStringParse(json, "icon", common.icon);
+    safeParseValue(json, "version", common.version);
 
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
@@ -205,10 +208,10 @@ inline void Parse(const std::vector<std::wstring>& args)
             continue;
         }
         if (arg == L"-disableuwpoverlay") {
-            cli.no_uwp_overlay = true;
+            common.no_uwp_overlay = true;
         }
         else if (arg == L"-disablewatchdog") {
-            cli.disable_watchdog = true;
+            common.disable_watchdog = true;
         }
         else {
             configName += L" " + std::wstring(arg.begin(), arg.end());
@@ -252,11 +255,10 @@ inline void Parse(const std::vector<std::wstring>& args)
     settings_path_ = path;
     const auto& json = nlohmann::json::parse(json_file);
     Parse(json);
-    
+
     spdlog::debug("Read config file \"{}\"; config: {}", path.string(), json.dump());
     json_file.close();
 }
-
 
 inline nlohmann::json toJson()
 {
@@ -277,7 +279,10 @@ inline nlohmann::json toJson()
     json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
     json["controller"]["emulateDS4"] = controller.emulateDS4;
 
-    json["extendedLogging"] = extendedLogging;
+    json["extendedLogging"] = common.extendedLogging;
+    json["name"] = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(common.name);
+    json["icon"] = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(common.icon);
+    json["version"] = common.version;
     return json;
 }
 
