@@ -60,6 +60,7 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	if (!glossi_hwnd)
 	{
 		spdlog::error("Couldn't find GlosSITarget window. Exiting...");
+		FreeLibraryAndExitThread(hModule, 1);
 		return 1;
 	}
 	spdlog::debug("Found GlosSITarget window; Starting watch loop");
