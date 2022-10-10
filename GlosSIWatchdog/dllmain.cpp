@@ -42,6 +42,27 @@ bool IsProcessRunning(DWORD pid)
 	return ret == WAIT_TIMEOUT;
 }
 
+void fetchSettings(httplib::Client& http_client, int retried_count = 0) {
+	http_client.set_connection_timeout(1 + (retried_count > 0 ? 2 : 0));
+
+	auto http_res = http_client.Get("/settings");
+	if (http_res.error() == httplib::Error::Success && http_res->status == 200)
+	{
+		const auto json = nlohmann::json::parse(http_res->body);
+		spdlog::debug("Received settings from GlosSITarget: {}", json.dump());
+		Settings::Parse(json);
+	}
+	else
+	{
+		spdlog::error("Couldn't get settings from GlosSITarget. Error: {}", (int)http_res.error());
+		if (retried_count < 2)
+		{
+			spdlog::info("Retrying... {}", retried_count);
+			fetchSettings(http_client, retried_count + 1);
+		}
+	}
+}
+
 DWORD WINAPI watchdog(HMODULE hModule)
 {
 	wchar_t* localAppDataFolder;
@@ -80,25 +101,14 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	spdlog::debug("Found GlosSITarget window; Starting watch loop");
 
 	httplib::Client http_client("http://localhost:8756");
-	http_client.set_connection_timeout(1);
 
-	auto http_res = http_client.Get("/settings");
-	if (http_res.error() == httplib::Error::Success && http_res->status == 200)
-	{
-		const auto json = nlohmann::json::parse(http_res->body);
-		spdlog::debug("Received settings from GlosSITarget: {}", json.dump());
-		Settings::Parse(json);
-	} else
-	{
-		spdlog::error("Couldn't get settings from GlosSITarget.");
-	}
-
+	fetchSettings(http_client);
 
 	std::vector<DWORD> pids;
 	while (glossi_hwnd)
 	{
 		http_client.set_connection_timeout(120);
-		http_res = http_client.Get("/launched-pids");
+		const auto http_res = http_client.Get("/launched-pids");
 		if (http_res.error() == httplib::Error::Success && http_res->status == 200)
 		{
 			const auto json = nlohmann::json::parse(http_res->body);
@@ -107,7 +117,8 @@ DWORD WINAPI watchdog(HMODULE hModule)
 				spdlog::trace("Received pids: {}", json.dump());
 			}
 			pids = json.get<std::vector<DWORD>>();
-		} else {
+		}
+		else {
 			spdlog::error("Couldn't fetch launched PIDs: {}", (int)http_res.error());
 		}
 
@@ -141,7 +152,8 @@ DWORD WINAPI watchdog(HMODULE hModule)
 					}
 					CloseHandle(proc);
 				}
-			} else
+			}
+			else
 			{
 				if (Settings::common.extendedLogging)
 				{
@@ -168,5 +180,5 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	}
 	return TRUE;
 
-    return 0;
+	return 0;
 }
