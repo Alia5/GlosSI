@@ -32,6 +32,36 @@ void HttpServer::run()
         res.set_content(j.dump(), "text/json");
     });
 
+    server_.Post("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
+        try {
+            const nlohmann::json postbody = nlohmann::json::parse(req.body);
+            app_launcher_.addPids(postbody.get<std::vector<DWORD>>());   
+        } catch (std::exception& e) {
+            res.status = 401;
+            res.set_content(nlohmann::json{
+                                {"code", 401},
+                                {"name", "Bad Request"},
+                                {"message", e.what()},
+                            }
+                                .dump(),
+                            "text/json");
+            return;
+        }
+        catch (...) {
+            res.status = 500;
+            res.set_content(nlohmann::json{
+                                {"code", 500},
+                                {"name", "Internal Server Error"},
+                                {"message", "Unknown Error"},
+                            }
+                                .dump(),
+                            "text/json");
+            return;
+        }
+        const nlohmann::json j = app_launcher_.launchedPids();
+        res.set_content(j.dump(), "text/json");
+    });
+
     server_.Get("/settings", [this](const httplib::Request& req, httplib::Response& res) {
         res.set_content(Settings::toJson().dump(), "text/json");
     });

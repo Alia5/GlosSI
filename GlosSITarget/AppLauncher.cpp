@@ -176,6 +176,20 @@ std::vector<DWORD> AppLauncher::launchedPids()
     return res;
 }
 
+void AppLauncher::addPids(const std::vector<DWORD>& pids)
+{
+    pid_mutex_.lock();
+    for (const auto pid : pids) {
+        if (pid > 0 && std::ranges::find(pids_, pid) == pids_.end()) {
+            if (Settings::common.extendedLogging) {
+                spdlog::debug("Added PID {} via API", pid);
+            }
+            pids_.push_back(pid);
+        }
+    }
+    pid_mutex_.unlock();
+}
+
 #ifdef _WIN32
 bool AppLauncher::IsProcessRunning(DWORD pid)
 {

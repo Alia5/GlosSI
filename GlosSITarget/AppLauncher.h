@@ -38,6 +38,7 @@ class AppLauncher {
     void close();
 
     std::vector<DWORD> launchedPids();
+    void addPids(const std::vector<DWORD>& pids);
     
   private:
     std::function<void()> shutdown_;
