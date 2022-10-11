@@ -97,7 +97,7 @@ void AppLauncher::update()
                 getChildPids(pids_[0]);
             }
             if (!IsProcessRunning(pids_[0])) {
-                spdlog::info("Launched App with PID \"{}\" died", pids_[0]);
+                spdlog::info(L"Launched App \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pids_[0]), pids_[0]);
                 if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs && Settings::launch.launch) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
@@ -112,7 +112,7 @@ void AppLauncher::update()
                 }
                 const auto running = IsProcessRunning(pid);
                 if (!running)
-                    spdlog::trace("Child process with PID \"{}\" died", pid);
+                    spdlog::trace(L"Child process \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pid), pid);
                 return !running;
             });
             if (Settings::launch.closeOnExit && pids_.empty() && Settings::launch.launch) {
@@ -169,7 +169,7 @@ void AppLauncher::getChildPids(DWORD parent_pid)
             if (pe.th32ParentProcessID == parent_pid) {
                 if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
                     if (Settings::common.extendedLogging) {
-                        spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
+                        spdlog::info(L"Found new child process \"{}\" with PID \"{}\"", glossi_util::GetProcName(pe.th32ProcessID), pe.th32ProcessID);
                     }
                     pids_.push_back(pe.th32ProcessID);
                     getChildPids(pe.th32ProcessID);
