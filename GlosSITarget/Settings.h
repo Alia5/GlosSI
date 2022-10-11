@@ -63,6 +63,7 @@ inline struct Common {
     bool no_uwp_overlay = false;
     bool disable_watchdog = false;
     bool extendedLogging = false;
+    bool ignoreEGS = true;
     std::wstring name;
     std::wstring icon;
     int version;
@@ -194,6 +195,7 @@ inline void Parse(const nlohmann::basic_json<>& json)
     safeWStringParse(json, "name", common.name);
     safeWStringParse(json, "icon", common.icon);
     safeParseValue(json, "version", common.version);
+    safeParseValue(json, "ignoreEGS", common.ignoreEGS);
 
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
@@ -212,6 +214,9 @@ inline void Parse(const std::vector<std::wstring>& args)
         }
         else if (arg == L"-disablewatchdog") {
             common.disable_watchdog = true;
+        }
+        else if (arg == L"-ignoreegs") {
+            common.ignoreEGS = true;
         }
         else {
             configName += L" " + std::wstring(arg.begin(), arg.end());

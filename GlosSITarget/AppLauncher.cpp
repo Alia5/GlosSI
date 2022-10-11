@@ -25,7 +25,6 @@ limitations under the License.
 #include <propkey.h>
 #include <shellapi.h>
 
-
 #pragma comment(lib, "Shell32.lib")
 #endif
 #include "Settings.h"
@@ -76,10 +75,9 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
                     glossi_util::KillProcess(pid);
                 }
             });
-            ImGui::EndChild();   
+            ImGui::EndChild();
         }
         ImGui::End();
-
     });
 #endif
 }
@@ -118,21 +116,22 @@ void AppLauncher::update()
             });
 
             auto filtered_pids = pids_ | std::ranges::views::filter([](DWORD pid) {
-                                           return std::ranges::find(EGS_LAUNCHER_PROCNAMES_, glossi_util::GetProcName(pid)) == EGS_LAUNCHER_PROCNAMES_.end();
-                                       });
-            if (was_egs_launch_  && !filtered_pids.empty()) {
+                                     return std::ranges::find(EGS_LAUNCHER_PROCNAMES_, glossi_util::GetProcName(pid)) == EGS_LAUNCHER_PROCNAMES_.end();
+                                 });
+            if (was_egs_launch_ && !filtered_pids.empty()) {
                 egs_has_launched_game_ = true;
             }
             if (Settings::launch.closeOnExit && Settings::launch.launch) {
-                if (was_egs_launch_) {
+                if (was_egs_launch_ && Settings::common.ignoreEGS) {
                     if (egs_has_launched_game_ && filtered_pids.empty()) {
                         spdlog::info("Configured to close on all children exit. Shutting down after game launched via EGS quit...");
-                        shutdown_();   
+                        shutdown_();
                     }
-                } else {
+                }
+                else {
                     if (pids_.empty()) {
                         spdlog::info("Configured to close on all children exit. Shutting down...");
-                        shutdown_();       
+                        shutdown_();
                     }
                 }
             }
@@ -159,8 +158,20 @@ std::vector<DWORD> AppLauncher::launchedPids()
     pid_mutex_.lock();
     std::vector<DWORD> res;
     res.reserve(pids_.size());
-    std::ranges::copy(pids_.begin(), pids_.end(),
-                      std::back_inserter(res));
+    if (Settings::common.ignoreEGS) {
+        for (const auto& pid : pids_ | std::ranges::views::filter(
+                                           [](DWORD pid) {
+                                               return std::ranges::find(
+                                                          EGS_LAUNCHER_PROCNAMES_,
+                                                          glossi_util::GetProcName(pid)) == EGS_LAUNCHER_PROCNAMES_.end();
+                                           })) {
+            res.push_back(pid);
+        }
+    }
+    else {
+        std::ranges::copy(pids_.begin(), pids_.end(),
+                          std::back_inserter(res));
+    }
     pid_mutex_.unlock();
     return res;
 }
