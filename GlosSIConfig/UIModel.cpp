@@ -343,6 +343,7 @@ QVariantMap UIModel::getDefaultConf() const
         {"version", 1},
         {"extendedLogging", false},
         {"snapshotNotify", false},
+        {"ignoreEGS", true},
         {
             "controller",
             QJsonObject{

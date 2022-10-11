@@ -74,7 +74,7 @@ CollapsiblePane {
                             }
                         }
                         Label {
-                            text: qsTr("Recommended to disable for launcher-games")
+                            text: qsTr("(Might cause issues with launcher-games)")
                             wrapMode: Text.WordWrap
                             width: parent.width
                             leftPadding: 32
@@ -86,6 +86,16 @@ CollapsiblePane {
                             checked: shortcutInfo.launch.waitForChildProcs
                             onCheckedChanged: function(){
                                 shortcutInfo.launch.waitForChildProcs = checked
+                            }
+                        }
+                        CheckBox {
+						    height: subTitle != "" || (shortcutInfo.launch.launchPath || "").includes("epicgames.launcher") ? 32 : 0
+						    visible: subTitle != "" || (shortcutInfo.launch.launchPath || "").includes("epicgames.launcher")
+                            id: ignoreEGS
+                            text: qsTr("Ignore EpicGamesLauncher process")
+                            checked: shortcutInfo.ignoreEGS
+                            onCheckedChanged: function(){
+                                shortcutInfo.ignoreEGS = checked
                             }
                         }
                     }

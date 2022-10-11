@@ -190,7 +190,10 @@ Item {
                                 placeholderText: qsTr("...")
                                 enabled: launchApp.checked
                                 text: shortcutInfo.launch.launchPath || ""
-                                onTextChanged: shortcutInfo.launch.launchPath = text
+                                onTextChanged: function() {
+                                    shortcutInfo.launch.launchPath = text
+									shortcutInfo = shortcutInfo
+								}
                             }
                         }
                         Button {
