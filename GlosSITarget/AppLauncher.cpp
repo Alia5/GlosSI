@@ -172,6 +172,7 @@ void AppLauncher::getChildPids(DWORD parent_pid)
                         spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
                     }
                     pids_.push_back(pe.th32ProcessID);
+                    getChildPids(pe.th32ProcessID);
                 }
             }
         } while (Process32Next(hp, &pe));
