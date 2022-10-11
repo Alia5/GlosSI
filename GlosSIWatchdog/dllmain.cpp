@@ -31,6 +31,7 @@ limitations under the License.
 #include "../version.hpp"
 #include "../GlosSITarget/Settings.h"
 #include "../GlosSITarget/HidHide.h"
+#include "../GlosSITarget/util.h"
 
 bool IsProcessRunning(DWORD pid)
 {
@@ -142,16 +143,7 @@ DWORD WINAPI watchdog(HMODULE hModule)
 			}
 			if (IsProcessRunning(pid))
 			{
-				if (const auto proc = OpenProcess(PROCESS_TERMINATE, FALSE, pid))
-				{
-					spdlog::debug("Terminating process: {}", pid);
-					const auto terminate_res = TerminateProcess(proc, 0);
-					if (!terminate_res)
-					{
-						spdlog::error("Failed to terminate process: {}", pid);
-					}
-					CloseHandle(proc);
-				}
+				glossi_util::KillProcess(pid);
 			}
 			else
 			{

@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #pragma once
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#include <tlhelp32.h>
 
 namespace glossi_util {
 
@@ -33,5 +37,40 @@ inline DWORD PidByName(const std::wstring& name)
     return 0;
 }
 
+inline std::wstring GetProcName(DWORD pid)
+{
+    PROCESSENTRY32 processInfo;
+    processInfo.dwSize = sizeof(processInfo);
+    const HANDLE processesSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+    if (processesSnapshot == INVALID_HANDLE_VALUE) {
+        spdlog::trace("util::GetProcName: can't get a process snapshot");
+        return L"";
+    }
+
+    for (BOOL bok = Process32First(processesSnapshot, &processInfo);
+         bok;
+         bok = Process32Next(processesSnapshot, &processInfo)) {
+        if (pid == processInfo.th32ProcessID) {
+            CloseHandle(processesSnapshot);
+            return processInfo.szExeFile;
+        }
+    }
+    CloseHandle(processesSnapshot);
+    return L"";
+}
+
+inline bool KillProcess(DWORD pid)
+{
+    auto res = true;
+    if (const auto proc = OpenProcess(PROCESS_TERMINATE, FALSE, pid)) {
+        spdlog::debug("Terminating process: {}", pid);
+        res = TerminateProcess(proc, 0);
+        if (!res) {
+            spdlog::error("Failed to terminate process: {}", pid);
+        }
+        CloseHandle(proc);
+    }
+    return res;
+}
 
 } // namespace glossi_util
