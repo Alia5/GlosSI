@@ -22,6 +22,7 @@ limitations under the License.
 #endif
 #include <functional>
 #include <mutex>
+#include <array>
 #include <string>
 #include <unordered_set>
 #include <SFML/System/Clock.hpp>
@@ -49,8 +50,14 @@ class AppLauncher {
     void getProcessHwnds();
     std::vector<HWND>& process_hwnds_;
 
+    static inline const std::array<std::wstring_view, 2> EGS_LAUNCHER_PROCNAMES_{
+        L"EpicGamesLauncher.exe",
+        L"EpicWebHelper.exe",
+    };
+
 
     bool was_egs_launch_ = false;
+    bool egs_has_launched_game_ = false;
     bool findEgsPid();
 
 

@@ -106,6 +106,7 @@ void AppLauncher::update()
             }
         }
         if (Settings::launch.waitForChildProcs) {
+
             std::erase_if(pids_, [](auto pid) {
                 if (pid == 0) {
                     return true;
@@ -115,9 +116,25 @@ void AppLauncher::update()
                     spdlog::trace(L"Child process \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pid), pid);
                 return !running;
             });
-            if (Settings::launch.closeOnExit && pids_.empty() && Settings::launch.launch) {
-                spdlog::info("Configured to close on all children exit. Shutting down...");
-                shutdown_();
+
+            auto filtered_pids = pids_ | std::ranges::views::filter([](DWORD pid) {
+                                           return std::ranges::find(EGS_LAUNCHER_PROCNAMES_, glossi_util::GetProcName(pid)) == EGS_LAUNCHER_PROCNAMES_.end();
+                                       });
+            if (was_egs_launch_  && !filtered_pids.empty()) {
+                egs_has_launched_game_ = true;
+            }
+            if (Settings::launch.closeOnExit && Settings::launch.launch) {
+                if (was_egs_launch_) {
+                    if (egs_has_launched_game_ && filtered_pids.empty()) {
+                        spdlog::info("Configured to close on all children exit. Shutting down after game launched via EGS quit...");
+                        shutdown_();   
+                    }
+                } else {
+                    if (pids_.empty()) {
+                        spdlog::info("Configured to close on all children exit. Shutting down...");
+                        shutdown_();       
+                    }
+                }
             }
         }
         getProcessHwnds();
@@ -346,6 +363,9 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
     }
     CoUninitialize();
 
+    if (url.find(L"epicgames.launcher") != std::wstring::npos) {
+        was_egs_launch_ = true;
+    }
     if (execute_info.hProcess != nullptr) {
         if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
             pid_mutex_.lock();
@@ -356,8 +376,7 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
         }
     }
 
-    if (url.find(L"epicgames.launcher") != std::wstring::npos) {
-        was_egs_launch_ = true;
+    if (was_egs_launch_) {
         spdlog::debug("Epic Games launch; Couldn't find egs launcher PID");
         pid_mutex_.lock();
 
