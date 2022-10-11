@@ -32,6 +32,7 @@ limitations under the License.
 
 #include <regex>
 
+#include "Overlay.h"
 #include "UnhookUtil.h"
 #include "util.h"
 
@@ -64,6 +65,22 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
         spdlog::info("LaunchApp is Win32, launching...");
         launchWin32App(path, args);
     }
+    Overlay::AddOverlayElem([this](bool has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Launched Processes")) {
+            ImGui::BeginChild("Inner##LaunchedProcs", {0.f, ImGui::GetItemRectSize().y - 64}, true);
+            std::ranges::for_each(pids_, [](DWORD pid) {
+                ImGui::Text("%s | %d", std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(glossi_util::GetProcName(pid)).c_str(), pid);
+                ImGui::SameLine();
+                if (ImGui::Button((" Kill ##" + std::to_string(pid)).c_str())) {
+                    glossi_util::KillProcess(pid);
+                }
+            });
+            ImGui::EndChild();   
+        }
+        ImGui::End();
+
+    });
 #endif
 }
 
