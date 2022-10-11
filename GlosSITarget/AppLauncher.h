@@ -49,6 +49,11 @@ class AppLauncher {
     void getProcessHwnds();
     std::vector<HWND>& process_hwnds_;
 
+
+    bool was_egs_launch_ = false;
+    bool findEgsPid();
+
+
     std::wstring launched_uwp_path_;
     
     static void UnPatchValveHooks();

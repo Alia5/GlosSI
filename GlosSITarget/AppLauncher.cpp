@@ -33,6 +33,7 @@ limitations under the License.
 #include <regex>
 
 #include "UnhookUtil.h"
+#include "util.h"
 
 AppLauncher::AppLauncher(
     std::vector<HWND>& process_hwnds,
@@ -71,6 +72,9 @@ void AppLauncher::update()
     if (process_check_clock_.getElapsedTime().asMilliseconds() > 250) {
         pid_mutex_.lock();
 #ifdef _WIN32
+        if (was_egs_launch_ && pids_.empty()) {
+            findEgsPid();
+        }
         if (!pids_.empty() && pids_[0] > 0) {
             if (Settings::launch.waitForChildProcs) {
                 getChildPids(pids_[0]);
@@ -191,6 +195,16 @@ void AppLauncher::getProcessHwnds()
 #endif
 
 #ifdef _WIN32
+bool AppLauncher::findEgsPid()
+{
+    if (const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe")) {
+        spdlog::debug("Found EGS-Launcher running");
+        pids_.push_back(pid);
+        return true;
+    }
+    return false;
+}
+
 void AppLauncher::UnPatchValveHooks()
 {
     // need to load addresses that way.. Otherwise we may land before some jumps...
@@ -322,6 +336,19 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
             pid_mutex_.unlock();
             return;
         }
+    }
+
+    if (url.find(L"epicgames.launcher") != std::wstring::npos) {
+        was_egs_launch_ = true;
+        spdlog::debug("Epic Games launch; Couldn't find egs launcher PID");
+        pid_mutex_.lock();
+
+        const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe");
+        if (!findEgsPid()) {
+            spdlog::debug("Did not find EGS-Launcher not running, retrying later...");
+        }
+        pid_mutex_.unlock();
+        return;
     }
     spdlog::warn("Couldn't get PID of launched URL process");
 }
