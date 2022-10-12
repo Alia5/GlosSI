@@ -1,7 +1,8 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/l9hq9qglvn6q5wdg/branch/main?svg=true)](https://ci.appveyor.com/project/Alia5/glossi/branch/main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Discord](https://img.shields.io/discord/368823110817808384.svg)](https://discord.gg/T9b4D5y) ![version](https://img.shields.io/github/v/tag/alia5/glossi?label=version) [![WebsiteAndDownloads](https://img.shields.io/website?label=Website%20%26%20downloads&url=https%3A%2F%2Fglossi.flatspot.pictures)](https://glossi.flatspot.pictures)
 
 <div style="display: flex; align-items: center">
-<img align="center" src="https://github.com/Alia5/GlosSI/blob/main/GlosSI_Logo_512.png?raw=true" width="256" height="256" alt="GlosSI Logo" /><h1>GlosSI - Global (systemwide) Steam Input</h1>
+<h1 align="center"><img align="center" src="https://github.com/Alia5/GlosSI/blob/main/GlosSI_Logo_512.png?raw=true" width="256" height="256" alt="GlosSI Logo" />
+  GlosSI&nbsp;-&nbsp;Global&nbsp;(systemwide)&nbsp;Steam&nbsp;Input</h1>
 </div>
 
 GlosSI formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
