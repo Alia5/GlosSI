@@ -31,8 +31,9 @@ CollapsiblePane {
 
     content: 
     Column {
-        spacing: 16
-
+        spacing: 16		
+		id: contentColumn
+		height: subTitleLabel.height + 16 + advancedLaunchPane.height + 16 + deviceWindowRow.height + 16 + commonPane.height
 		Label {
             id: subTitleLabel
 			width: parent.width
@@ -42,6 +43,7 @@ CollapsiblePane {
         }
 
         RPane {
+            id: advancedLaunchPane
             width: parent.width
             radius: 4
             Material.elevation: 32
@@ -98,6 +100,16 @@ CollapsiblePane {
                                 shortcutInfo.ignoreEGS = checked
                             }
                         }
+                        CheckBox {
+						    height: subTitle != "" || (shortcutInfo.launch.launchPath || "").includes("epicgames.launcher") ? 32 : 0
+						    visible: subTitle != "" || (shortcutInfo.launch.launchPath || "").includes("epicgames.launcher")
+                            id: killEGS
+                            text: qsTr("Kill EpicGamesLauncher process on exit")
+                            checked: shortcutInfo.killEGS
+                            onCheckedChanged: function(){
+                                shortcutInfo.killEGS = checked
+                            }
+                        }
                     }
                     Column {
                         spacing: 2
@@ -122,6 +134,7 @@ CollapsiblePane {
         Row {
             spacing: 16
             width: parent.width
+			id: deviceWindowRow
 
             RPane {
                 width: parent.width / 2 - 8
@@ -467,6 +480,7 @@ CollapsiblePane {
             radius: 4
             Material.elevation: 32
             bgOpacity: 0.97
+			id: commonPane
             Column {
                 spacing: 4
                 Row {
