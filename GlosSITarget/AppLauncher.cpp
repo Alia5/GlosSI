@@ -122,7 +122,7 @@ void AppLauncher::update()
                 egs_has_launched_game_ = true;
             }
             if (Settings::launch.closeOnExit && Settings::launch.launch) {
-                if (was_egs_launch_ && Settings::common.ignoreEGS) {
+                if (was_egs_launch_ && (Settings::common.ignoreEGS || Settings::common.killEGS)) {
                     if (egs_has_launched_game_ && filtered_pids.empty()) {
                         spdlog::info("Configured to close on all children exit. Shutting down after game launched via EGS quit...");
                         shutdown_();
@@ -158,7 +158,7 @@ std::vector<DWORD> AppLauncher::launchedPids()
     pid_mutex_.lock();
     std::vector<DWORD> res;
     res.reserve(pids_.size());
-    if (Settings::common.ignoreEGS) {
+    if (!Settings::common.killEGS && Settings::common.ignoreEGS) {
         for (const auto& pid : pids_ | std::ranges::views::filter(
                                            [](DWORD pid) {
                                                return std::ranges::find(
