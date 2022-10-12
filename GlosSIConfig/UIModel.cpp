@@ -328,61 +328,64 @@ QVariantMap UIModel::getDefaultConf() const
     path /= "GlosSI";
     path /= "default.json";
 
-    if (std::filesystem::exists(path)) {
-        QFile file(QString::fromStdWString(path));
-        if (file.open(QIODevice::ReadOnly)) {
-            const auto data = file.readAll();
-            file.close();
-            return QJsonDocument::fromJson(data).object().toVariantMap();
-        }
-    }
-
-    QJsonObject obj = {
+    QJsonObject defaults = {
         {"icon", QJsonValue::Null},
         {"name", QJsonValue::Null},
         {"version", 1},
         {"extendedLogging", false},
         {"snapshotNotify", false},
         {"ignoreEGS", true},
-        {
-            "controller",
-            QJsonObject{
-                {"maxControllers", 1},
-                {"emulateDS4", false},
-            {"allowDesktopConfig", false}
-            }
-        },
-        {
-            "devices",
-            QJsonObject{
-                {"hideDevices", true},
-                {"realDeviceIds", false},
-            }
-        },
-        {
-            "launch",
-            QJsonObject{
-                {"closeOnExit", true},
-                {"launch", false},
-                {"launchAppArgs", QJsonValue::Null},
-                {"launchPath", QJsonValue::Null},
-                {"waitForChildProcs", true},
-            }
-        },
-        {
-            "window",
-            QJsonObject{
-                {"disableOverlay", false},
-                {"maxFps", QJsonValue::Null},
-                {"scale", QJsonValue::Null},
-                {"windowMode", false},
-            }
-        },
+        {"killEGS", false},
+        {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
+        {"devices",
+         QJsonObject{
+             {"hideDevices", true},
+             {"realDeviceIds", false},
+         }},
+        {"launch",
+         QJsonObject{
+             {"closeOnExit", true},
+             {"launch", false},
+             {"launchAppArgs", QJsonValue::Null},
+             {"launchPath", QJsonValue::Null},
+             {"waitForChildProcs", true},
+         }},
+        {"window",
+         QJsonObject{
+             {"disableOverlay", false},
+             {"maxFps", QJsonValue::Null},
+             {"scale", QJsonValue::Null},
+             {"windowMode", false},
+         }},
     };
 
-    saveDefaultConf(obj.toVariantMap());
+    if (std::filesystem::exists(path)) {
+        QFile file(QString::fromStdWString(path));
+        if (file.open(QIODevice::ReadOnly)) {
+            const auto data = file.readAll();
+            file.close();
+            auto json = QJsonDocument::fromJson(data).object();
+
+            const auto applyDefaults = [](QJsonObject obj, const QJsonObject& defaults,
+                                          auto applyDefaultsFn) -> QJsonObject {
+                for (const auto& key : defaults.keys()) {
+                    qDebug() << key << ": " << obj[key];
+                    if ((obj[key].isUndefined() || obj[key].isNull()) && !defaults[key].isNull()) {
+                        obj[key] = defaults.value(key);
+                    }
+                    if (obj.value(key).isObject()) {
+                        obj[key] = applyDefaultsFn(obj[key].toObject(), defaults.value(key).toObject(), applyDefaultsFn);
+                    }
+                }
+                return obj;
+            };
+            json = applyDefaults(json, defaults, applyDefaults);
+            return json.toVariantMap();
+        }
+    }
+
+    saveDefaultConf(defaults.toVariantMap());
     return getDefaultConf();
-    
 }
 
 void UIModel::saveDefaultConf(QVariantMap conf) const
@@ -497,9 +500,7 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 
         const auto defaultConf = getDefaultConf();
         bool snapshotNotify =
-            defaultConf.contains("snapshotNotify")
-                ? defaultConf["snapshotNotify"].toJsonValue().toBool()
-                : false;
+            defaultConf.contains("snapshotNotify") ? defaultConf["snapshotNotify"].toJsonValue().toBool() : false;
 
         struct VersionInfo {
             int major;
@@ -512,8 +513,9 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
         std::vector<std::pair<QString, VersionInfo>> new_versions;
         for (const auto& info :
              json.keys() | std::ranges::views::filter([this, &json, snapshotNotify](const auto& key) {
-                 return notify_on_snapshots_ ? true
-                                             : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
+                 return notify_on_snapshots_
+                            ? true
+                            : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
              }) | std::ranges::views::transform([&json](const auto& key) -> std::pair<QString, VersionInfo> {
                  const auto versionString = json[key].toObject().value("version").toString();
                  const auto cleanVersion = versionString.split("-")[0];
