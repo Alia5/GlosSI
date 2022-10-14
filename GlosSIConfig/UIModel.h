@@ -29,6 +29,7 @@ class UIModel : public QObject {
     Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
     Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
+    Q_PROPERTY(QVariantList egsList READ egsGamesList CONSTANT)
     Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
     Q_PROPERTY(bool steamInputXboxSupportEnabled READ isSteamInputXboxSupportEnabled CONSTANT)
 
@@ -60,6 +61,7 @@ class UIModel : public QObject {
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
+    Q_INVOKABLE QVariantList egsGamesList() const;
 
     [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
                                          const std::wstring& shortcutspath, bool is_admin_try = false) const;
@@ -91,6 +93,9 @@ class UIModel : public QObject {
     QString user_config_file_ = "/config/localconfig.vdf";
     QString user_data_path_ = "/userdata/";
     QString steam_executable_name_ = "steam.exe";
+
+    const std::wstring_view egs_games_json_path_ =
+        L"Epic/UnrealEngineLauncher/LauncherInstalled.dat";
 
     QVariantList targets_;
 

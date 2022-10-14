@@ -416,6 +416,31 @@ void UIModel::saveDefaultConf(QVariantMap conf) const
 QVariantList UIModel::uwpApps() { return UWPFetch::UWPAppList(); }
 #endif
 
+QVariantList UIModel::egsGamesList() const
+{
+    wchar_t* program_data_path_str;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_ProgramData, KF_FLAG_CREATE, NULL, &program_data_path_str) != S_OK) {
+        qDebug() << "Couldn't get ProgramDataPath";
+        return {{"InstallLocation", "Error"}};
+    }
+    path = std::filesystem::path(program_data_path_str);
+    path /= egs_games_json_path_;
+
+    QFile file(path);
+    if (file.open(QIODevice::ReadOnly)) {
+        const auto data = file.readAll();
+        file.close();
+        auto json = QJsonDocument::fromJson(data).object();
+        if (json["InstallationList"].isArray()) {
+            return json["InstallationList"].toVariant().toList();
+        }
+        qDebug() << "InstallationList does not exist!";
+    }
+    qDebug() << "Couldn't read EGS LauncherInstalled.dat " << path;
+    return {{"InstallLocation", "Error"}};
+}
+
 bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath,
                                 bool is_admin_try) const
 {

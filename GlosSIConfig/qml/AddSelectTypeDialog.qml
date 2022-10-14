@@ -89,12 +89,21 @@ Dialog {
 				}
 			}
 			Button {
-			visible: uiModel.isWindows
+				visible: uiModel.isWindows
 				text: qsTr("UWP App")
 				highlighted: true
 				onClicked: function(){
 					close()
 					confirmed("uwp")
+				}
+			}
+			Button {
+				visible: uiModel.isWindows
+				text: qsTr("EGS Game")
+				highlighted: true
+				onClicked: function(){
+					close()
+					confirmed("egs")
 				}
 			}
 		}

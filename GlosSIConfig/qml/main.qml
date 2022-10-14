@@ -387,6 +387,9 @@ Window {
                 if (param == "uwp") {
                     props.uwpSelectDialog.open();
                 }
+                if (param == "egs") {
+                    props.egsSelectDialog.open();
+                }
             }
         }
     }

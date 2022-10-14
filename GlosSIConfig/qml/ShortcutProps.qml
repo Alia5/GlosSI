@@ -26,6 +26,7 @@ Item {
 
     property alias fileDialog: fileDialog
     property alias uwpSelectDialog: uwpSelectDialog
+    property alias egsSelectDialog: egsSelectDialog
     signal cancel()
     signal done(var shortcut)
 
@@ -306,6 +307,21 @@ Item {
                 shortcutInfo.icon = modelData.IconPath
             }
             pathInput.text = modelData.AppUMId
+            launchApp.checked = true
+        }
+    }
+    EGSSelectDialog {
+        id: egsSelectDialog
+        onConfirmed: function(modelData) {
+            if (nameInput.text == "") {
+                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop()
+            }
+            pathInput.text = "com.epicgames.launcher://apps/"
+                + modelData.NamespaceId
+                + "%3A"
+                + modelData.ItemId
+                + "%3A"
+                + modelData.ArtifactId + "?action=launch&silent=true"
             launchApp.checked = true
         }
     }
