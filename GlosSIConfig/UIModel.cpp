@@ -102,22 +102,37 @@ void UIModel::addTarget(QVariant shortcut)
     emit targetListChanged();
 }
 
-void UIModel::updateTarget(int index, QVariant shortcut)
+bool UIModel::updateTarget(int index, QVariant shortcut)
 {
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
+    auto oldSteamName = targets_[index].toMap()["name"].toString();
     auto oldName =
         targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
-    auto path = config_path_;
-    path /= config_dir_name_.toStdString();
-    path /= (oldName).toStdString();
-    std::filesystem::remove(path);
+    auto oldPath = config_path_;
+    oldPath /= config_dir_name_.toStdString();
+    oldPath /= (oldName).toStdString();
+    std::filesystem::remove(oldPath);
 
     writeTarget(json, map["name"].toString());
 
     targets_.replace(index, QJsonDocument(json).toVariant());
     emit targetListChanged();
+
+    auto path = config_path_;
+    path /= config_dir_name_.toStdString();
+    path /= (map["name"].toString()).toStdString();
+
+    if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
+        if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
+            qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
+            return false;
+        }
+        return true;
+    }
+    qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
+    return false;
 }
 
 void UIModel::deleteTarget(int index)

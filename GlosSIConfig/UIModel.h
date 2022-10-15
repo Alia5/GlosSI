@@ -42,7 +42,7 @@ class UIModel : public QObject {
     Q_INVOKABLE void readTargetConfigs();
     Q_INVOKABLE QVariantList getTargetList() const;
     Q_INVOKABLE void addTarget(QVariant shortcut);
-    Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
+    Q_INVOKABLE bool updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
     Q_INVOKABLE bool isInSteam(QVariant shortcut);
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
