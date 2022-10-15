@@ -23,6 +23,8 @@ Pane {
     property int radius: 0
     property color color: control.Material.backgroundColor
     property real bgOpacity: 1
+	property string bgImgSource: null
+	property real bgImgOpacity: -1
     background: Rectangle {
         color: parent.color
         opacity: parent.bgOpacity
@@ -31,15 +33,19 @@ Pane {
         layer.enabled: control.enabled && control.Material.elevation > 0
         layer.effect: ElevationEffect {
             elevation: control.Material.elevation
+			clip: true
         }
+        clip: true
         Image {
+            id: bgImage
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            source: "qrc:/noise.png"
-            fillMode: Image.Tile
-            opacity: 0.035
+            source: bgImgSource ? bgImgSource : "qrc:/noise.png"
+            fillMode: bgImgSource ? Image.PreserveAspectCrop : Image.Tile
+            opacity: bgImgOpacity < 0 ? 0.035 : bgImgOpacity
+            clip: true
         }
     }
 }

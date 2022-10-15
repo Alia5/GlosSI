@@ -171,6 +171,7 @@ Item {
 							flat: true
 							contentItem: Image {
                                 id: maybeIcon
+                                fillMode: Image.PreserveAspectFit
                                 source: shortcutInfo.icon
                                     ? shortcutInfo.icon.endsWith(".exe")
                                         ? "image://exe/" + shortcutInfo.icon

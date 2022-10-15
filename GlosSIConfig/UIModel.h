@@ -45,8 +45,8 @@ class UIModel : public QObject {
     Q_INVOKABLE void addTarget(QVariant shortcut);
     Q_INVOKABLE bool updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
-    Q_INVOKABLE bool isInSteam(QVariant shortcut);
-    Q_INVOKABLE uint32_t getAppId(QVariant shortcut);
+    Q_INVOKABLE bool isInSteam(QVariant shortcut) const;
+    Q_INVOKABLE uint32_t getAppId(QVariant shortcut) const;
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
@@ -64,6 +64,8 @@ class UIModel : public QObject {
     Q_INVOKABLE QVariantList uwpApps();
 #endif
     Q_INVOKABLE QVariantList egsGamesList() const;
+
+    Q_INVOKABLE QString getGridImagePath(QVariant shortcut) const;
 
     [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
                                          const std::wstring& shortcutspath, bool is_admin_try = false) const;

@@ -16,11 +16,11 @@ limitations under the License.
 #include "UIModel.h"
 
 #include <QDir>
+#include <QFont>
 #include <QGuiApplication>
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QFont>
 
 #include <WinReg/WinReg.hpp>
 
@@ -153,7 +153,7 @@ void UIModel::deleteTarget(int index)
     emit targetListChanged();
 }
 
-bool UIModel::isInSteam(QVariant shortcut)
+bool UIModel::isInSteam(QVariant shortcut) const
 {
     const auto map = shortcut.toMap();
     for (auto& steam_shortcut : shortcuts_vdf_) {
@@ -167,7 +167,7 @@ bool UIModel::isInSteam(QVariant shortcut)
     return false;
 }
 
-uint32_t UIModel::getAppId(QVariant shortcut)
+uint32_t UIModel::getAppId(QVariant shortcut) const
 {
     if (!isInSteam(shortcut)) {
         return 0;
@@ -411,7 +411,8 @@ QVariantMap UIModel::getDefaultConf() const
                         obj[key] = defaults.value(key);
                     }
                     if (obj.value(key).isObject()) {
-                        obj[key] = applyDefaultsFn(obj[key].toObject(), defaults.value(key).toObject(), applyDefaultsFn);
+                        obj[key] =
+                            applyDefaultsFn(obj[key].toObject(), defaults.value(key).toObject(), applyDefaultsFn);
                     }
                 }
                 return obj;
@@ -476,6 +477,33 @@ QVariantList UIModel::egsGamesList() const
     }
     qDebug() << "Couldn't read EGS LauncherInstalled.dat " << path;
     return {{"InstallLocation", "Error"}};
+}
+
+
+QString UIModel::getGridImagePath(QVariant shortcut) const
+{
+    if (!foundSteam()) {
+        return "";
+    }
+    const auto& app_id = getAppId(shortcut);
+    if (app_id == 0) {
+        return "";
+    }
+
+    const std::filesystem::path grid_dir =
+        std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + L"/config/grid";
+    if (!std::filesystem::exists(grid_dir)) {
+        return "";
+    }
+    const std::vector<std::string> extensions = {".png", ".jpg"};
+    for (const auto& entry : std::filesystem::directory_iterator(grid_dir)) {
+        if (entry.is_regular_file()
+            && std::ranges::find(extensions, entry.path().extension().string()) != extensions.end()
+            && entry.path().filename().string().find(std::to_string(app_id)) != std::string::npos) {
+            return QString::fromStdString(entry.path().string());
+        }
+    }
+    return "";
 }
 
 bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath,

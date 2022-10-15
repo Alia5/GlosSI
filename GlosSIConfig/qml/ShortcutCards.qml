@@ -76,6 +76,8 @@ GridView {
         Material.elevation: 4
         clip: true
         property bool isInSteam: uiModel.isInSteam(modelData);
+        bgImgSource: isInSteam ? "file:///" + uiModel.getGridImagePath(modelData) : null
+		bgImgOpacity: isInSteam ? 0.12 : -1
 
         Image {
             anchors.top: parent.top
@@ -88,6 +90,7 @@ GridView {
                 : 'qrc:/svg/add_photo_alternate_white_24dp.svg'
             width: 48
             height: 48
+            fillMode: Image.PreserveAspectFit
         }
 
         Label {
