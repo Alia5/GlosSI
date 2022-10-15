@@ -167,6 +167,22 @@ bool UIModel::isInSteam(QVariant shortcut)
     return false;
 }
 
+uint32_t UIModel::getAppId(QVariant shortcut)
+{
+    if (!isInSteam(shortcut)) {
+        return 0;
+    }
+    const auto map = shortcut.toMap();
+    for (auto& steam_shortcut : shortcuts_vdf_) {
+        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
+            if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
+                return steam_shortcut.appid;
+            }
+        }
+    }
+    return 0;
+}
+
 bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd)
 {
     QDir appDir = QGuiApplication::applicationDirPath();
@@ -520,6 +536,15 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
     return write_res;
 #else
     return VDFParser::Parser::writeShortcuts(config_path, shortcuts_vdf_);
+#endif
+}
+
+bool UIModel::getIsDebug() const
+{
+#ifdef _DEBUG
+    return true;
+#else
+    return false;
 #endif
 }
 

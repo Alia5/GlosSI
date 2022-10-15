@@ -130,34 +130,14 @@ GridView {
                 }
             }
             Row {
-                visible: false // TODO: dunno about this...
+                visible: uiModel.isDebug 
                 spacing: 4
                 Label {
-                    text: qsTr("Is in")
+                    text: qsTr("AppID: ")
                     font.bold: true
                 }
-                Image {
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "qrc:/svg/steam.svg"
-                    width: 16
-                    height: 16
-                    smooth: true
-                    mipmap: true
-                    ColorOverlay {
-                        anchors.fill: parent
-                        source: parent
-                        color: "white"
-                    }
-                }
-                Item {
-                    width: 4
-                    height: 1
-                }
                 Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: delegateRoot.isInSteam ? qsTr("Yes") : qsTr("No")
-                    width: 292 - typeLabel.width - 72
-                    elide: Text.ElideRight
+                    text: uiModel.getAppId(modelData)
                 }
             }
         }

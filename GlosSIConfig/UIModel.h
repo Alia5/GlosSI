@@ -25,6 +25,7 @@ class QNetworkReply;
 class UIModel : public QObject {
     Q_OBJECT
 
+    Q_PROPERTY(bool isDebug READ getIsDebug CONSTANT)
     Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
     Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
@@ -45,6 +46,7 @@ class UIModel : public QObject {
     Q_INVOKABLE bool updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
     Q_INVOKABLE bool isInSteam(QVariant shortcut);
+    Q_INVOKABLE uint32_t getAppId(QVariant shortcut);
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
@@ -66,6 +68,7 @@ class UIModel : public QObject {
     [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
                                          const std::wstring& shortcutspath, bool is_admin_try = false) const;
 
+    bool getIsDebug() const;
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
     void setAcrylicEffect(bool has_acrylic_affect);
