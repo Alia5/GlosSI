@@ -331,10 +331,11 @@ Item {
                 pathInput.text = fileDialog.selectedFile.toString().replace("file:///", "")
                 if (nameInput.text == "") {
                     nameInput.text = pathInput.text.replace(/.*(\\|\/)/,"").replace(/\.[0-z]*$/, "")
-                    shortcutInfo.icon = nameInput.text
                 }
+				shortcutInfo.icon = pathInput.text
                 launchApp.checked = true
             }
+		    shortcutInfo = shortcutInfo;
         }
         onRejected: {
            
