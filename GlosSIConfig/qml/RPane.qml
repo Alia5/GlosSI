@@ -33,9 +33,7 @@ Pane {
         layer.enabled: control.enabled && control.Material.elevation > 0
         layer.effect: ElevationEffect {
             elevation: control.Material.elevation
-			clip: true
         }
-        clip: true
         Image {
             id: bgImage
             anchors.top: parent.top
@@ -45,7 +43,6 @@ Pane {
             source: bgImgSource ? bgImgSource : "qrc:/noise.png"
             fillMode: bgImgSource ? Image.PreserveAspectCrop : Image.Tile
             opacity: bgImgOpacity < 0 ? 0.035 : bgImgOpacity
-            clip: true
         }
     }
 }

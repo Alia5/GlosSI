@@ -62,6 +62,32 @@ Item {
                     : 'qrc:/svg/add_photo_alternate_white_24dp.svg';
         }
     }
+	
+	Image {
+        id: bgImage
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        fillMode: Image.PreserveAspectCrop
+        source: "file:///" + uiModel.getGridImagePath(shortcutInfo)
+        autoTransform: true
+        opacity: 0
+    }
+	
+	LinearGradient {
+        id: mask
+        anchors.fill: bgImage
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#afFFFFFF"}
+            GradientStop { position: 0.7; color: "transparent" }
+            GradientStop { position: 1; color: "transparent" }
+        }
+    }
+    OpacityMask {
+        source: bgImage
+        maskSource: mask
+		anchors.fill: bgImage
+    }
 
     Flickable {
         id: flickable
