@@ -20,6 +20,7 @@ limitations under the License.
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QFont>
 
 #include <WinReg/WinReg.hpp>
 
@@ -60,6 +61,11 @@ UIModel::UIModel() : QObject(nullptr)
     parseShortcutVDF();
     readTargetConfigs();
     updateCheck();
+
+    auto font = QGuiApplication::font();
+    font.setPointSize(11);
+    font.setFamily("Roboto");
+    QGuiApplication::setFont(font);
 }
 
 void UIModel::readTargetConfigs()

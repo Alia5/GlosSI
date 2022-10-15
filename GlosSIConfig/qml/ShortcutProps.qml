@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Controls 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls.Material 6.2
-import QtQuick.Dialogs 6.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 
 Item {
@@ -54,7 +55,6 @@ Item {
             advancedTargetSettings.shortcutInfo = shortcutInfo;
         }
         if (maybeIcon) {
-		    console.log("meh");
 		    maybeIcon.source = shortcutInfo.icon
                     ? shortcutInfo.icon.endsWith(".exe")
                         ? "image://exe/" + shortcutInfo.icon
@@ -221,6 +221,13 @@ Item {
                             visible: uiModel.isWindows
                             onClicked: uwpSelectDialog.open();
                         }
+                        Button {
+                            Layout.preferredWidth: 64
+                            Layout.alignment: Qt.AlignBottom
+                            text: qsTr("EGS")
+                            visible: uiModel.isWindows
+                            onClicked: egsSelectDialog.open();
+                        }
                         Item {
                             height: 1
                             Layout.preferredWidth: 12
@@ -255,7 +262,6 @@ Item {
 
 			AdvancedTargetSettings {
                 id: advancedTargetSettings
-                shortcutInfo: shortcutInfo
             }
 
             Item {
