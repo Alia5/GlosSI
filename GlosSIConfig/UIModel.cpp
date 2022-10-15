@@ -33,6 +33,7 @@ limitations under the License.
 #endif
 
 #include "../version.hpp"
+#include "steamgrid_api_keys.h"
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -479,6 +480,17 @@ QVariantList UIModel::egsGamesList() const
     return {{"InstallLocation", "Error"}};
 }
 
+void UIModel::loadSteamGridImages()
+{
+    std::filesystem::path path = QCoreApplication::applicationDirPath().toStdWString();
+    path /= "steamgrid.exe";
+
+    steamgrid_proc_.setProgram(path.string().c_str());
+    steamgrid_proc_.setArguments({"-nonsteamonly", "--onlymissingartwork", "--steamgriddb", steamgridb_key});
+    connect(&steamgrid_proc_, &QProcess::readyReadStandardOutput, this, &UIModel::onSteamGridReadReady);
+        steamgrid_proc_.start();
+    steamgrid_proc_.write("\n");
+}
 
 QString UIModel::getGridImagePath(QVariant shortcut) const
 {
@@ -497,9 +509,9 @@ QString UIModel::getGridImagePath(QVariant shortcut) const
     }
     const std::vector<std::string> extensions = {".png", ".jpg"};
     for (const auto& entry : std::filesystem::directory_iterator(grid_dir)) {
-        if (entry.is_regular_file()
-            && std::ranges::find(extensions, entry.path().extension().string()) != extensions.end()
-            && entry.path().filename().string().find(std::to_string(app_id)) != std::string::npos) {
+        if (entry.is_regular_file() &&
+            std::ranges::find(extensions, entry.path().extension().string()) != extensions.end() &&
+            entry.path().filename().string().find(std::to_string(app_id)) != std::string::npos) {
             return QString::fromStdString(entry.path().string());
         }
     }
@@ -586,6 +598,8 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     emit acrylicChanged();
 }
 
+QStringList UIModel::getSteamgridOutput() const { return steamgrid_output_; }
+
 void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 {
 
@@ -656,6 +670,12 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
             emit newVersionAvailable();
         }
     }
+}
+
+void UIModel::onSteamGridReadReady()
+{
+    steamgrid_output_.push_back(QString::fromLocal8Bit(steamgrid_proc_.readAllStandardOutput()));
+    emit steamgridOutputChanged();
 }
 
 void UIModel::writeTarget(const QJsonObject& json, const QString& name) const

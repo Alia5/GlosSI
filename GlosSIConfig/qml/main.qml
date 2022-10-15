@@ -48,6 +48,12 @@ Window {
     }
 
     property bool steamShortcutsChanged: false
+	
+	onSteamShortcutsChanged: function() {
+        shouldShowLoadGridImagesButton = uiModel.targetList.some((shortcut) => uiModel.isInSteam(shortcut))
+    }
+	
+	property bool shouldShowLoadGridImagesButton: false
 
     Component.onCompleted: function() {
         if (!uiModel.foundSteam) {
@@ -57,6 +63,7 @@ Window {
         if (!uiModel.steamInputXboxSupportEnabled) {
             steamXboxDisabledDialog.open();
         }
+        shouldShowLoadGridImagesButton = uiModel.targetList.some((shortcut) => uiModel.isInSteam(shortcut))
     }
 
     Image {
@@ -370,47 +377,64 @@ Window {
                     windowContent.editedIndex = index;
                 }
             }
-			Column {
+			Row {
                 spacing: 8
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 24
-				RoundButton {
-                    id: optionsBtn
-                    width: 64
-                    height: 64
-                    text: ""
-                    contentItem: Item {
-                        Image {
-                            anchors.centerIn: parent
-                            source: "qrc:/svg/settings_fill_white_24dp.svg"
-                            width: 24
-                            height: 24
+                Column {
+                    spacing: 8
+				    RoundButton {
+                        id: optionsBtn
+						anchors.right: parent.right
+                        width: 64
+                        height: 64
+                        text: ""
+                        contentItem: Item {
+                            Image {
+                                anchors.centerIn: parent
+                                source: "qrc:/svg/settings_fill_white_24dp.svg"
+                                width: 24
+                                height: 24
+                            }
+					    }
+                        highlighted: true
+                        onClicked: function() {
+                            globalConf.opacity = 1;
+                            homeContent.opacity = 0;
                         }
-					}
-                    highlighted: true
-                    onClicked: function() {
-                        globalConf.opacity = 1;
-                        homeContent.opacity = 0;
+                    }
+                    RoundButton {
+                        id: addBtn
+                        anchors.right: parent.right
+                        width: 64
+                        height: 64
+                        text: "+"
+                        contentItem: Label {
+                            anchors.centerIn: parent
+                            text: addBtn.text
+                            font.pixelSize: 32
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                        }
+                        highlighted: true
+                        onClicked: selectTypeDialog.open()
+                    }
+					Button {
+			            visible: shouldShowLoadGridImagesButton || steamShortcutsChanged
+                        id: loadGridImagesBtn
+                        text: qsTr("🖼️ Load steam grid images")
+                        highlighted: true
+                        onClicked: function() {
+                            steamGridDialog.open()
+                        }
                     }
                 }
-                RoundButton {
-                    id: addBtn
-                    width: 64
-                    height: 64
-                    text: "+"
-                    contentItem: Label {
-                        anchors.centerIn: parent
-                        text: addBtn.text
-                        font.pixelSize: 32
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                    }
-                    highlighted: true
-                    onClicked: selectTypeDialog.open()
-                }
+            
             }
+            
+            
         }
 
         Item {
@@ -532,5 +556,10 @@ Window {
                 }
             }
         }
+
+		SteamGridDialog {
+            id: steamGridDialog
+        }
+
     }
 }

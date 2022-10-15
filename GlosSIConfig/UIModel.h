@@ -17,6 +17,7 @@ limitations under the License.
 #include <QJsonObject>
 #include <QObject>
 #include <QVariant>
+#include <QProcess>
 #include <filesystem>
 #include <shortcuts_vdf.hpp>
 
@@ -36,6 +37,8 @@ class UIModel : public QObject {
 
     Q_PROPERTY(QString versionString READ getVersionString CONSTANT)
     Q_PROPERTY(QString newVersionName READ getNewVersionName NOTIFY newVersionAvailable)
+
+    Q_PROPERTY(QStringList steamgridOutput READ getSteamgridOutput NOTIFY steamgridOutputChanged)
 
   public:
     UIModel();
@@ -65,6 +68,7 @@ class UIModel : public QObject {
 #endif
     Q_INVOKABLE QVariantList egsGamesList() const;
 
+    Q_INVOKABLE void loadSteamGridImages();
     Q_INVOKABLE QString getGridImagePath(QVariant shortcut) const;
 
     [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
@@ -75,13 +79,17 @@ class UIModel : public QObject {
     [[nodiscard]] bool hasAcrylicEffect() const;
     void setAcrylicEffect(bool has_acrylic_affect);
 
+    QStringList getSteamgridOutput() const;
+
   signals:
     void acrylicChanged();
     void targetListChanged();
     void newVersionAvailable();
+    void steamgridOutputChanged();
 
   public slots:
     void onAvailFilesResponse(QNetworkReply* reply);
+    void onSteamGridReadReady();
 
   private:
 #ifdef _WIN32
@@ -106,6 +114,9 @@ class UIModel : public QObject {
 
     QString new_version_name_;
     bool notify_on_snapshots_ = false;
+
+    QProcess steamgrid_proc_;
+    QStringList steamgrid_output_;
 
     std::vector<VDFParser::Shortcut> shortcuts_vdf_;
 

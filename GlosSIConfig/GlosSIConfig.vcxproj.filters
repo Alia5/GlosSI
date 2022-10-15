@@ -83,6 +83,9 @@
     <None Include="qml\EGSSelectDialog.qml">
       <Filter>qml</Filter>
     </None>
+    <None Include="qml\SteamGridDialog.qml">
+      <Filter>qml</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="UIModel.h">
@@ -100,6 +103,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExeImageProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="steamgrid_api_keys.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
