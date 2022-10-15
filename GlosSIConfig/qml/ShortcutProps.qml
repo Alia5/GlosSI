@@ -53,6 +53,14 @@ Item {
 		if (advancedTargetSettings) { // advanced settings (collapsible container)
             advancedTargetSettings.shortcutInfo = shortcutInfo;
         }
+        if (maybeIcon) {
+		    console.log("meh");
+		    maybeIcon.source = shortcutInfo.icon
+                    ? shortcutInfo.icon.endsWith(".exe")
+                        ? "image://exe/" + shortcutInfo.icon
+                        : "file:///" + shortcutInfo.icon
+                    : 'qrc:/svg/add_photo_alternate_white_24dp.svg';
+        }
     }
 
     Flickable {
@@ -153,24 +161,27 @@ Item {
                         spacing: 4
                         anchors.left: parent.left
 						anchors.right: parent.right
-						anchors.leftMargin: 32
-						anchors.rightMargin: 32
-                        Image {
-                            id: maybeIcon
-                            source: shortcutInfo.icon
-                                ? shortcutInfo.icon.endsWith(".exe")
-                                    ? "image://exe/" + shortcutInfo.icon
-                                    : "file:///" + shortcutInfo.icon
-                                : ''
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 48
-                            visible: shortcutInfo.icon
+						anchors.leftMargin: 8
+						anchors.rightMargin: 16
+						Button {
+						    id: iconButton
+                            Layout.preferredWidth: 56
+                            Layout.preferredHeight: 64
                             Layout.alignment: Qt.AlignVCenter
+							flat: true
+							contentItem: Image {
+                                id: maybeIcon
+                                source: shortcutInfo.icon
+                                    ? shortcutInfo.icon.endsWith(".exe")
+                                        ? "image://exe/" + shortcutInfo.icon
+                                        : "file:///" + shortcutInfo.icon
+                                    : 'qrc:/svg/add_photo_alternate_white_24dp.svg'
+                            }
+							onClicked: iconFileDialog.open()
                         }
                         Item {
                             Layout.preferredWidth: 8
                             Layout.preferredHeight: 8
-                            visible: shortcutInfo.icon
                         }
                         Item {
                             Layout.preferredWidth: parent.width / 2
@@ -290,6 +301,21 @@ Item {
                     shortcutInfo.icon = nameInput.text
                 }
                 launchApp.checked = true
+            }
+        }
+        onRejected: {
+           
+        }
+    }
+	
+    FileDialog {
+        id: iconFileDialog
+        title: qsTr("Please choose an icon")
+        nameFilters: uiModel.isWindows ? ["Image/Executable (*.exe *.png *.ico *.jpg)"] : ["Image (*.png *.ico *.jpg)"]
+        onAccepted: {
+            if (iconFileDialog.selectedFile != null) {
+                shortcutInfo.icon = iconFileDialog.selectedFile.toString().replace("file:///", "")
+				shortcutInfo = shortcutInfo;
             }
         }
         onRejected: {

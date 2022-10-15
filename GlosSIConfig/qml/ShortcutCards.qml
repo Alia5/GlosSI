@@ -215,10 +215,9 @@ GridView {
                 ? modelData.icon.endsWith(".exe")
                     ? "image://exe/" + modelData.icon
                     : "file:///" + modelData.icon
-                : null
+                : 'qrc:/svg/add_photo_alternate_white_24dp.svg'
             width: 48
             height: 48
-            visible: !!modelData.icon
         }
 
         Label {
