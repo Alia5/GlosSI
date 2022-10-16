@@ -475,13 +475,15 @@ Window {
                     if (windowContent.editedIndex < 0) {
                         uiModel.addTarget(shortcut)
                     } else {
-                        if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
-						    if (steamShortcutsChanged == false) {
-                                steamChangedDialog.open();
-                            }
-                        } else {
-						    manualInfo = uiModel.manualProps(shortcut);
-                            writeErrorDialog.open();
+					    if (uiModel.isInSteam(shortcut)) {
+                            if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
+						        if (steamShortcutsChanged == false) {
+                                    steamChangedDialog.open();
+                                }
+                            } else {
+						        manualInfo = uiModel.manualProps(shortcut);
+                                writeErrorDialog.open();
+                            }                    
                         }
                     }
                 }
