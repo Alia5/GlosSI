@@ -287,10 +287,16 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     // } else {
     //     launch_dir = m[0];
     // }
-    std::wstring args_cpy(args);
+    std::wstring args_cpy(
+        args.empty()
+        ? L""
+            : ((native_seps_path.find(L" ") != std::wstring::npos
+                    ? L"\"" + native_seps_path + L"\""
+                    : native_seps_path) + L" " + args)
+    );
     spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
-                       args_cpy.data(),
+                       args_cpy.empty() ? nullptr : args_cpy.data(),
                        nullptr,
                        nullptr,
                        watchdog ? FALSE : TRUE,
