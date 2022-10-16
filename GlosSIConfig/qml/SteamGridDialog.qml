@@ -149,7 +149,10 @@ Dialog {
 			anchors.bottomMargin: 2
 			anchors.rightMargin: 2
 			text: qsTr("Ok")
-			onClicked: gridDialog.close()
+			onClicked: function() {
+				gridDialog.close();
+				confirmed(undefined);
+			}
 		}
 
 	}

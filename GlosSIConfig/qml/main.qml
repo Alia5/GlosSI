@@ -561,6 +561,10 @@ Window {
 
 		SteamGridDialog {
             id: steamGridDialog
+            onConfirmed: function() {
+                shortcutgrid.model = [];
+                shortcutgrid.model = uiModel.targetList;
+            }
         }
 
     }
