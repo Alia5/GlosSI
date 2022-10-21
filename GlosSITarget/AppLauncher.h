@@ -51,15 +51,9 @@ class AppLauncher {
     void getProcessHwnds();
     std::vector<HWND>& process_hwnds_;
 
-    static inline const std::array<std::wstring_view, 2> EGS_LAUNCHER_PROCNAMES_{
-        L"EpicGamesLauncher.exe",
-        L"EpicWebHelper.exe",
-    };
-
-
-    bool was_egs_launch_ = false;
-    bool egs_has_launched_game_ = false;
-    bool findEgsPid();
+    bool has_extra_launchers_ = false;
+    bool launcher_has_launched_game_ = false;
+    bool findLauncherPids();
 
 
     std::wstring launched_uwp_path_;

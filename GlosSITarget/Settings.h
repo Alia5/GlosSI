@@ -39,6 +39,9 @@ inline struct Launch {
     bool closeOnExit = true;
     bool waitForChildProcs = true;
     bool isUWP = false;
+    bool ignoreLauncher = true;
+    bool killLauncher = false;
+    std::vector<std::wstring> launcherProcesses{};
 } launch;
 
 inline struct Devices {
@@ -63,8 +66,6 @@ inline struct Common {
     bool no_uwp_overlay = false;
     bool disable_watchdog = false;
     bool extendedLogging = false;
-    bool ignoreEGS = true;
-    bool killEGS = false;
     std::wstring name;
     std::wstring icon;
     int version;
@@ -165,6 +166,17 @@ inline void Parse(const nlohmann::basic_json<>& json)
             safeWStringParse(launchconf, "launchAppArgs", launch.launchAppArgs);
             safeParseValue(launchconf, "closeOnExit", launch.closeOnExit);
             safeParseValue(launchconf, "waitForChildProcs", launch.waitForChildProcs);
+            safeParseValue(launchconf, "killLauncher", launch.killLauncher);
+            safeParseValue(launchconf, "ignoreLauncher", launch.ignoreLauncher);
+
+            if (auto launcherProcs = launchconf["launcherProcesses"];
+                !launcherProcs.is_null() && !launcherProcs.empty() && launcherProcs.is_array()) {
+                launch.launcherProcesses.clear();
+                launch.launcherProcesses.reserve(launcherProcs.size());
+                for (auto& proc : launcherProcs) {
+                    launch.launcherProcesses.push_back(std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(proc));
+                }
+            }
         }
 
         if (auto devconf = json["devices"]; !devconf.is_null() && !devconf.empty() && devconf.is_object()) {
@@ -184,6 +196,10 @@ inline void Parse(const nlohmann::basic_json<>& json)
             safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
             safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
         }
+        safeParseValue(json, "extendedLogging", common.extendedLogging);
+        safeWStringParse(json, "name", common.name);
+        safeWStringParse(json, "icon", common.icon);
+        safeParseValue(json, "version", common.version);
     }
     catch (const nlohmann::json::exception& e) {
         spdlog::warn("Err parsing config: {}", e.what());
@@ -191,14 +207,6 @@ inline void Parse(const nlohmann::basic_json<>& json)
     catch (const std::exception& e) {
         spdlog::warn("Err parsing config: {}", e.what());
     }
-
-    safeParseValue(json, "extendedLogging", common.extendedLogging);
-    safeWStringParse(json, "name", common.name);
-    safeWStringParse(json, "icon", common.icon);
-    safeParseValue(json, "version", common.version);
-    safeParseValue(json, "ignoreEGS", common.ignoreEGS);
-    safeParseValue(json, "killEGS", common.killEGS);
-
     if (launch.launch) {
         launch.isUWP = checkIsUwp(launch.launchPath);
     }
@@ -217,8 +225,8 @@ inline void Parse(const std::vector<std::wstring>& args)
         else if (arg == L"-disablewatchdog") {
             common.disable_watchdog = true;
         }
-        else if (arg == L"-ignoreegs") {
-            common.ignoreEGS = true;
+        else if (arg == L"-ignorelauncher") {
+            launch.ignoreLauncher = true;
         }
         else {
             configName += L" " + std::wstring(arg.begin(), arg.end());

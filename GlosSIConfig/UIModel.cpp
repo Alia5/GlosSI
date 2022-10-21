@@ -19,6 +19,7 @@ limitations under the License.
 #include <QFont>
 #include <QGuiApplication>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
@@ -32,6 +33,8 @@ limitations under the License.
 #include <shlobj.h>
 #endif
 
+#include "ExeImageProvider.h"
+#include "ExeImageProvider.h"
 #include "../version.hpp"
 #include "steamgrid_api_keys.h"
 
@@ -365,15 +368,13 @@ QVariantMap UIModel::getDefaultConf() const
     path /= "Roaming";
     path /= "GlosSI";
     path /= "default.json";
-
+    
     QJsonObject defaults = {
         {"icon", QJsonValue::Null},
         {"name", QJsonValue::Null},
         {"version", 1},
         {"extendedLogging", false},
         {"snapshotNotify", false},
-        {"ignoreEGS", true},
-        {"killEGS", false},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -387,6 +388,9 @@ QVariantMap UIModel::getDefaultConf() const
              {"launchAppArgs", QJsonValue::Null},
              {"launchPath", QJsonValue::Null},
              {"waitForChildProcs", true},
+             {"launcherProcesses", QJsonArray{}},
+             {"ignoreLauncher", true},
+             {"killLauncher", false},
          }},
         {"window",
          QJsonObject{
