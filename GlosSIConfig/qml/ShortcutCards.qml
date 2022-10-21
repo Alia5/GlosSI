@@ -13,11 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls 6.2
-import QtQuick.Controls.Material 6.2
-import QtQuick.Dialogs 6.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
 import Qt5Compat.GraphicalEffects
 
 GridView {
@@ -39,8 +39,6 @@ GridView {
     width: displayedItems * cellWidth
     model: uiModel.targetList;
     GridView.delayRemove: true
-
-    property var manualInfo: null
 
     // TODO: animations only properly work with abstractListModel... grrr...
     addDisplaced: Transition {
@@ -67,134 +65,6 @@ GridView {
         NumberAnimation { properties: "x,y"; duration: 300; easing.type: Easing.InQuad }
     }
 
-     Dialog {
-        id: manualAddDialog
-        anchors.centerIn: parent
-        visible: false
-	    modal: true
-	    dim: true
-	    parent: Overlay.overlay
-	    Overlay.modal: Rectangle {
-		    color: Qt.rgba(0,0,0,0.4)
-		    opacity: backdropOpacity
-		    Behavior on opacity {
-			    NumberAnimation {
-				    duration: 300
-			    }
-		    }
-	    }
-	    property real backdropOpacity: 1.0
-        enter: Transition {
-		    NumberAnimation{target: madcontent; property: "y"; from: parent.height; to: 16; duration: 300; easing.type: Easing.OutQuad }
-		    NumberAnimation{target: madbackground; property: "y"; from: parent.height; to: 0; duration: 300; easing.type: Easing.OutQuad }
-		    NumberAnimation{target: manualAddDialog; property: "backdropOpacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuad }
-	    }
-
-	    exit: Transition {
-		    NumberAnimation{target: madcontent; property: "y"; from: 16; to: parent.height; duration: 300; easing.type: Easing.InQuad }
-		    NumberAnimation{target: madbackground; property: "y"; from: 0; to: parent.height; duration: 300; easing.type: Easing.InQuad }
-		    NumberAnimation{target: manualAddDialog; property: "backdropOpacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuad }
-	    }
-
-	    background: RPane {
-		    id: madbackground
-		    radius: 4
-		    Material.elevation: 64
-            bgOpacity: 0.97
-	    }
-	    contentItem: Item {
-            id: madcontent
-            implicitWidth: steamscreener.width
-		    implicitHeight: madtext.height + 16 + steamscreener.height + 16 + madrow.height
-
-            Label {
-                id: madtext
-                text: qsTr("Add \"GlosSITarget\" as game to Steam and change it's properties (in Steam) to this:")
-            }
-
-            Image {
-                    anchors.top: madtext.bottom
-                    anchors.left: madtext.left
-                    anchors.topMargin: 16
-                    id: steamscreener
-                    source: "qrc:/steamscreener.png"
-            }
-
-            FluentTextInput {
-                id: madnameinput
-                text: manualInfo ? manualInfo.name : ""
-                anchors.top: steamscreener.top
-                anchors.left: steamscreener.left
-                anchors.topMargin: 72
-                anchors.leftMargin: 92
-                readOnly: true
-                background: Item {}
-                width: 550
-            }
-
-            FluentTextInput {
-                id: glossiPathInput
-                text: manualInfo ? manualInfo.launch : ""
-                anchors.top: steamscreener.top
-                anchors.left: steamscreener.left
-                anchors.topMargin: 192
-                anchors.leftMargin: 24
-                readOnly: true
-                background: Item {}
-                width: 550
-            }
-
-            FluentTextInput {
-                id: startDirInput
-                text: manualInfo ? manualInfo.launchDir : ""
-                anchors.top: steamscreener.top
-                anchors.left: steamscreener.left
-                anchors.topMargin: 266
-                anchors.leftMargin: 24
-                readOnly: true
-                background: Item {}
-                width: 550
-            }
-
-             FluentTextInput {
-                id: launchOptsInput
-                text: manualInfo ? manualInfo.config : ""
-                anchors.top: steamscreener.top
-                anchors.left: steamscreener.left
-                anchors.topMargin: 432
-                anchors.leftMargin: 24
-                readOnly: true
-                background: Item {}
-                width: 550
-            }
-
-        	Row {
-			    id: madrow
-			    anchors.top: steamscreener.bottom
-			    anchors.topMargin: 16
-			    spacing: 16
-
-			    Button {
-				    text: qsTr("OK")
-				    onClicked: function(){
-					    manualAddDialog.close()
-				    }
-			    }
-			    anchors.right: parent.right
-		    }
-        }
-    }
-
-    InfoDialog {
-        id: writeErrorDialog
-        titleText: qsTr("Error")
-        text: qsTr("Error writing shortcuts.vdf...\nPlease make sure Steam is running")
-        extraButton: true
-        extraButtonText: qsTr("Manual instructions")
-        onConfirmedExtra: function(data) {
-           manualAddDialog.open();
-        }
-    }
 
     delegate: RPane {
         id: delegateRoot
@@ -206,6 +76,8 @@ GridView {
         Material.elevation: 4
         clip: true
         property bool isInSteam: uiModel.isInSteam(modelData);
+        bgImgSource: isInSteam ? "file:///" + uiModel.getGridImagePath(modelData) : null
+		bgImgOpacity: isInSteam ? 0.12 : -1
 
         Image {
             anchors.top: parent.top
@@ -215,10 +87,10 @@ GridView {
                 ? modelData.icon.endsWith(".exe")
                     ? "image://exe/" + modelData.icon
                     : "file:///" + modelData.icon
-                : null
+                : 'qrc:/svg/add_photo_alternate_white_24dp.svg'
             width: 48
             height: 48
-            visible: !!modelData.icon
+            fillMode: Image.PreserveAspectFit
         }
 
         Label {
@@ -261,34 +133,14 @@ GridView {
                 }
             }
             Row {
-                visible: false // TODO: dunno about this...
+                visible: uiModel.isDebug 
                 spacing: 4
                 Label {
-                    text: qsTr("Is in")
+                    text: qsTr("AppID: ")
                     font.bold: true
                 }
-                Image {
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "qrc:/svg/steam.svg"
-                    width: 16
-                    height: 16
-                    smooth: true
-                    mipmap: true
-                    ColorOverlay {
-                        anchors.fill: parent
-                        source: parent
-                        color: "white"
-                    }
-                }
-                Item {
-                    width: 4
-                    height: 1
-                }
                 Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: delegateRoot.isInSteam ? qsTr("Yes") : qsTr("No")
-                    width: 292 - typeLabel.width - 72
-                    elide: Text.ElideRight
+                    text: uiModel.getAppId(modelData)
                 }
             }
         }

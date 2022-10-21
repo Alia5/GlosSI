@@ -15,6 +15,9 @@ limitations under the License.
 */
 import QtQuick 6.2
 import QtQuick.Controls 6.2
+import QtQuick.Controls.Material 6.2
+import QtQuick.Dialogs 6.2
+
 Dialog {
 	id: dlg
 	anchors.centerIn: parent

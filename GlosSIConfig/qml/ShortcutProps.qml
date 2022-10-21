@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Controls 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls.Material 6.2
-import QtQuick.Dialogs 6.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 
 Item {
@@ -26,6 +27,7 @@ Item {
 
     property alias fileDialog: fileDialog
     property alias uwpSelectDialog: uwpSelectDialog
+    property alias egsSelectDialog: egsSelectDialog
     signal cancel()
     signal done(var shortcut)
 
@@ -52,6 +54,39 @@ Item {
 		if (advancedTargetSettings) { // advanced settings (collapsible container)
             advancedTargetSettings.shortcutInfo = shortcutInfo;
         }
+        if (maybeIcon) {
+		    maybeIcon.source = shortcutInfo.icon
+                    ? shortcutInfo.icon.endsWith(".exe")
+                        ? "image://exe/" + shortcutInfo.icon
+                        : "file:///" + shortcutInfo.icon
+                    : 'qrc:/svg/add_photo_alternate_white_24dp.svg';
+        }
+    }
+	
+	Image {
+        id: bgImage
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        fillMode: Image.PreserveAspectCrop
+        source: "file:///" + uiModel.getGridImagePath(shortcutInfo)
+        autoTransform: true
+        opacity: 0
+    }
+	
+	LinearGradient {
+        id: mask
+        anchors.fill: bgImage
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#afFFFFFF"}
+            GradientStop { position: 0.7; color: "transparent" }
+            GradientStop { position: 1; color: "transparent" }
+        }
+    }
+    OpacityMask {
+        source: bgImage
+        maskSource: mask
+		anchors.fill: bgImage
     }
 
     Flickable {
@@ -152,24 +187,28 @@ Item {
                         spacing: 4
                         anchors.left: parent.left
 						anchors.right: parent.right
-						anchors.leftMargin: 32
-						anchors.rightMargin: 32
-                        Image {
-                            id: maybeIcon
-                            source: shortcutInfo.icon
-                                ? shortcutInfo.icon.endsWith(".exe")
-                                    ? "image://exe/" + shortcutInfo.icon
-                                    : "file:///" + shortcutInfo.icon
-                                : ''
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 48
-                            visible: shortcutInfo.icon
+						anchors.leftMargin: 8
+						anchors.rightMargin: 16
+						Button {
+						    id: iconButton
+                            Layout.preferredWidth: 56
+                            Layout.preferredHeight: 64
                             Layout.alignment: Qt.AlignVCenter
+							flat: true
+							contentItem: Image {
+                                id: maybeIcon
+                                fillMode: Image.PreserveAspectFit
+                                source: shortcutInfo.icon
+                                    ? shortcutInfo.icon.endsWith(".exe")
+                                        ? "image://exe/" + shortcutInfo.icon
+                                        : "file:///" + shortcutInfo.icon
+                                    : 'qrc:/svg/add_photo_alternate_white_24dp.svg'
+                            }
+							onClicked: iconFileDialog.open()
                         }
                         Item {
                             Layout.preferredWidth: 8
                             Layout.preferredHeight: 8
-                            visible: shortcutInfo.icon
                         }
                         Item {
                             Layout.preferredWidth: parent.width / 2
@@ -190,7 +229,10 @@ Item {
                                 placeholderText: qsTr("...")
                                 enabled: launchApp.checked
                                 text: shortcutInfo.launch.launchPath || ""
-                                onTextChanged: shortcutInfo.launch.launchPath = text
+                                onTextChanged: function() {
+                                    shortcutInfo.launch.launchPath = text
+									shortcutInfo = shortcutInfo
+								}
                             }
                         }
                         Button {
@@ -205,6 +247,13 @@ Item {
                             text: qsTr("UWP")
                             visible: uiModel.isWindows
                             onClicked: uwpSelectDialog.open();
+                        }
+                        Button {
+                            Layout.preferredWidth: 64
+                            Layout.alignment: Qt.AlignBottom
+                            text: qsTr("EGS")
+                            visible: uiModel.isWindows
+                            onClicked: egsSelectDialog.open();
                         }
                         Item {
                             height: 1
@@ -240,7 +289,6 @@ Item {
 
 			AdvancedTargetSettings {
                 id: advancedTargetSettings
-                shortcutInfo: shortcutInfo
             }
 
             Item {
@@ -283,9 +331,25 @@ Item {
                 pathInput.text = fileDialog.selectedFile.toString().replace("file:///", "")
                 if (nameInput.text == "") {
                     nameInput.text = pathInput.text.replace(/.*(\\|\/)/,"").replace(/\.[0-z]*$/, "")
-                    shortcutInfo.icon = nameInput.text
                 }
+				shortcutInfo.icon = pathInput.text
                 launchApp.checked = true
+            }
+		    shortcutInfo = shortcutInfo;
+        }
+        onRejected: {
+           
+        }
+    }
+	
+    FileDialog {
+        id: iconFileDialog
+        title: qsTr("Please choose an icon")
+        nameFilters: uiModel.isWindows ? ["Image/Executable (*.exe *.png *.ico *.jpg)"] : ["Image (*.png *.ico *.jpg)"]
+        onAccepted: {
+            if (iconFileDialog.selectedFile != null) {
+                shortcutInfo.icon = iconFileDialog.selectedFile.toString().replace("file:///", "")
+				shortcutInfo = shortcutInfo;
             }
         }
         onRejected: {
@@ -303,6 +367,21 @@ Item {
                 shortcutInfo.icon = modelData.IconPath
             }
             pathInput.text = modelData.AppUMId
+            launchApp.checked = true
+        }
+    }
+    EGSSelectDialog {
+        id: egsSelectDialog
+        onConfirmed: function(modelData) {
+            if (nameInput.text == "") {
+                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop()
+            }
+            pathInput.text = "com.epicgames.launcher://apps/"
+                + modelData.NamespaceId
+                + "%3A"
+                + modelData.ItemId
+                + "%3A"
+                + modelData.ArtifactId + "?action=launch&silent=true"
             launchApp.checked = true
         }
     }

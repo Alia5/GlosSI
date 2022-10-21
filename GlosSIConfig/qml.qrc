@@ -22,5 +22,8 @@
         <file>qml/AdvancedTargetSettings.qml</file>
         <file>qml/GlobalConf.qml</file>
         <file>svg/settings_fill_white_24dp.svg</file>
+        <file>qml/EGSSelectDialog.qml</file>
+        <file>svg/add_photo_alternate_white_24dp.svg</file>
+        <file>qml/SteamGridDialog.qml</file>
     </qresource>
 </RCC>

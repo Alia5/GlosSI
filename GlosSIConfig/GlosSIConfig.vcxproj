@@ -143,7 +143,9 @@
     <None Include="GetAUMIDs.ps1" />
     <None Include="qml\AdvancedTargetSettings.qml" />
     <None Include="qml\CollapsiblePane.qml" />
+    <None Include="qml\EGSSelectDialog.qml" />
     <None Include="qml\GlobalConf.qml" />
+    <None Include="qml\SteamGridDialog.qml" />
     <None Include="qml\SteamInputXboxDisabledDialog.qml" />
     <None Include="qml\AddSelectTypeDialog.qml" />
     <None Include="qml\FluentTextInput.qml" />
@@ -162,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="ExeImageProvider.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="steamgrid_api_keys.h" />
     <ClInclude Include="UWPFetch.h" />
     <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>

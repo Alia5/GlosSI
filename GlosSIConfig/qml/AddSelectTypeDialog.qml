@@ -15,6 +15,9 @@ limitations under the License.
 */
 import QtQuick 6.2
 import QtQuick.Controls 6.2
+import QtQuick.Controls.Material 6.2
+import QtQuick.Dialogs 6.2
+
 Dialog {
 	id: dlg
 	anchors.centerIn: parent
@@ -89,12 +92,21 @@ Dialog {
 				}
 			}
 			Button {
-			visible: uiModel.isWindows
+				visible: uiModel.isWindows
 				text: qsTr("UWP App")
 				highlighted: true
 				onClicked: function(){
 					close()
 					confirmed("uwp")
+				}
+			}
+			Button {
+				visible: uiModel.isWindows
+				text: qsTr("EGS Game")
+				highlighted: true
+				onClicked: function(){
+					close()
+					confirmed("egs")
 				}
 			}
 		}

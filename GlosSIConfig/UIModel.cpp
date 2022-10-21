@@ -16,8 +16,10 @@ limitations under the License.
 #include "UIModel.h"
 
 #include <QDir>
+#include <QFont>
 #include <QGuiApplication>
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
@@ -31,7 +33,10 @@ limitations under the License.
 #include <shlobj.h>
 #endif
 
+#include "ExeImageProvider.h"
+#include "ExeImageProvider.h"
 #include "../version.hpp"
+#include "steamgrid_api_keys.h"
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -60,6 +65,11 @@ UIModel::UIModel() : QObject(nullptr)
     parseShortcutVDF();
     readTargetConfigs();
     updateCheck();
+
+    auto font = QGuiApplication::font();
+    font.setPointSize(11);
+    font.setFamily("Roboto");
+    QGuiApplication::setFont(font);
 }
 
 void UIModel::readTargetConfigs()
@@ -102,22 +112,37 @@ void UIModel::addTarget(QVariant shortcut)
     emit targetListChanged();
 }
 
-void UIModel::updateTarget(int index, QVariant shortcut)
+bool UIModel::updateTarget(int index, QVariant shortcut)
 {
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
+    auto oldSteamName = targets_[index].toMap()["name"].toString();
     auto oldName =
         targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
-    auto path = config_path_;
-    path /= config_dir_name_.toStdString();
-    path /= (oldName).toStdString();
-    std::filesystem::remove(path);
+    auto oldPath = config_path_;
+    oldPath /= config_dir_name_.toStdString();
+    oldPath /= (oldName).toStdString();
+    std::filesystem::remove(oldPath);
 
     writeTarget(json, map["name"].toString());
 
     targets_.replace(index, QJsonDocument(json).toVariant());
     emit targetListChanged();
+
+    auto path = config_path_;
+    path /= config_dir_name_.toStdString();
+    path /= (map["name"].toString()).toStdString();
+
+    if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
+        if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
+            qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
+            return false;
+        }
+        return true;
+    }
+    qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
+    return false;
 }
 
 void UIModel::deleteTarget(int index)
@@ -132,7 +157,7 @@ void UIModel::deleteTarget(int index)
     emit targetListChanged();
 }
 
-bool UIModel::isInSteam(QVariant shortcut)
+bool UIModel::isInSteam(QVariant shortcut) const
 {
     const auto map = shortcut.toMap();
     for (auto& steam_shortcut : shortcuts_vdf_) {
@@ -144,6 +169,22 @@ bool UIModel::isInSteam(QVariant shortcut)
     }
 
     return false;
+}
+
+uint32_t UIModel::getAppId(QVariant shortcut) const
+{
+    if (!isInSteam(shortcut)) {
+        return 0;
+    }
+    const auto map = shortcut.toMap();
+    for (auto& steam_shortcut : shortcuts_vdf_) {
+        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
+            if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
+                return steam_shortcut.appid;
+            }
+        }
+    }
+    return 0;
 }
 
 bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd)
@@ -327,61 +368,67 @@ QVariantMap UIModel::getDefaultConf() const
     path /= "Roaming";
     path /= "GlosSI";
     path /= "default.json";
+    
+    QJsonObject defaults = {
+        {"icon", QJsonValue::Null},
+        {"name", QJsonValue::Null},
+        {"version", 1},
+        {"extendedLogging", false},
+        {"snapshotNotify", false},
+        {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
+        {"devices",
+         QJsonObject{
+             {"hideDevices", true},
+             {"realDeviceIds", false},
+         }},
+        {"launch",
+         QJsonObject{
+             {"closeOnExit", true},
+             {"launch", false},
+             {"launchAppArgs", QJsonValue::Null},
+             {"launchPath", QJsonValue::Null},
+             {"waitForChildProcs", true},
+             {"launcherProcesses", QJsonArray{}},
+             {"ignoreLauncher", true},
+             {"killLauncher", false},
+         }},
+        {"window",
+         QJsonObject{
+             {"disableOverlay", false},
+             {"maxFps", QJsonValue::Null},
+             {"scale", QJsonValue::Null},
+             {"windowMode", false},
+         }},
+    };
 
     if (std::filesystem::exists(path)) {
         QFile file(QString::fromStdWString(path));
         if (file.open(QIODevice::ReadOnly)) {
             const auto data = file.readAll();
             file.close();
-            return QJsonDocument::fromJson(data).object().toVariantMap();
+            auto json = QJsonDocument::fromJson(data).object();
+
+            const auto applyDefaults = [](QJsonObject obj, const QJsonObject& defaults,
+                                          auto applyDefaultsFn) -> QJsonObject {
+                for (const auto& key : defaults.keys()) {
+                    qDebug() << key << ": " << obj[key];
+                    if ((obj[key].isUndefined() || obj[key].isNull()) && !defaults[key].isNull()) {
+                        obj[key] = defaults.value(key);
+                    }
+                    if (obj.value(key).isObject()) {
+                        obj[key] =
+                            applyDefaultsFn(obj[key].toObject(), defaults.value(key).toObject(), applyDefaultsFn);
+                    }
+                }
+                return obj;
+            };
+            json = applyDefaults(json, defaults, applyDefaults);
+            return json.toVariantMap();
         }
     }
 
-    QJsonObject obj = {
-        {"icon", QJsonValue::Null},
-        {"name", QJsonValue::Null},
-        {"version", 1},
-        {"extendedLogging", false},
-        {"snapshotNotify", false},
-        {
-            "controller",
-            QJsonObject{
-                {"maxControllers", 1},
-                {"emulateDS4", false},
-            {"allowDesktopConfig", false}
-            }
-        },
-        {
-            "devices",
-            QJsonObject{
-                {"hideDevices", true},
-                {"realDeviceIds", false},
-            }
-        },
-        {
-            "launch",
-            QJsonObject{
-                {"closeOnExit", true},
-                {"launch", false},
-                {"launchAppArgs", QJsonValue::Null},
-                {"launchPath", QJsonValue::Null},
-                {"waitForChildProcs", true},
-            }
-        },
-        {
-            "window",
-            QJsonObject{
-                {"disableOverlay", false},
-                {"maxFps", QJsonValue::Null},
-                {"scale", QJsonValue::Null},
-                {"windowMode", false},
-            }
-        },
-    };
-
-    saveDefaultConf(obj.toVariantMap());
+    saveDefaultConf(defaults.toVariantMap());
     return getDefaultConf();
-    
 }
 
 void UIModel::saveDefaultConf(QVariantMap conf) const
@@ -411,6 +458,69 @@ void UIModel::saveDefaultConf(QVariantMap conf) const
 #ifdef _WIN32
 QVariantList UIModel::uwpApps() { return UWPFetch::UWPAppList(); }
 #endif
+
+QVariantList UIModel::egsGamesList() const
+{
+    wchar_t* program_data_path_str;
+    std::filesystem::path path;
+    if (SHGetKnownFolderPath(FOLDERID_ProgramData, KF_FLAG_CREATE, NULL, &program_data_path_str) != S_OK) {
+        qDebug() << "Couldn't get ProgramDataPath";
+        return {{"InstallLocation", "Error"}};
+    }
+    path = std::filesystem::path(program_data_path_str);
+    path /= egs_games_json_path_;
+
+    QFile file(path);
+    if (file.open(QIODevice::ReadOnly)) {
+        const auto data = file.readAll();
+        file.close();
+        auto json = QJsonDocument::fromJson(data).object();
+        if (json["InstallationList"].isArray()) {
+            return json["InstallationList"].toVariant().toList();
+        }
+        qDebug() << "InstallationList does not exist!";
+    }
+    qDebug() << "Couldn't read EGS LauncherInstalled.dat " << path;
+    return {{"InstallLocation", "Error"}};
+}
+
+void UIModel::loadSteamGridImages()
+{
+    std::filesystem::path path = QCoreApplication::applicationDirPath().toStdWString();
+    path /= "steamgrid.exe";
+
+    steamgrid_proc_.setProgram(path.string().c_str());
+    steamgrid_proc_.setArguments({"-nonsteamonly", "--onlymissingartwork", "--steamgriddb", steamgridb_key});
+    connect(&steamgrid_proc_, &QProcess::readyReadStandardOutput, this, &UIModel::onSteamGridReadReady);
+        steamgrid_proc_.start();
+    steamgrid_proc_.write("\n");
+}
+
+QString UIModel::getGridImagePath(QVariant shortcut) const
+{
+    if (!foundSteam()) {
+        return "";
+    }
+    const auto& app_id = getAppId(shortcut);
+    if (app_id == 0) {
+        return "";
+    }
+
+    const std::filesystem::path grid_dir =
+        std::wstring(getSteamPath()) + user_data_path_.toStdWString() + getSteamUserId() + L"/config/grid";
+    if (!std::filesystem::exists(grid_dir)) {
+        return "";
+    }
+    const std::vector<std::string> extensions = {".png", ".jpg"};
+    for (const auto& entry : std::filesystem::directory_iterator(grid_dir)) {
+        if (entry.is_regular_file() &&
+            std::ranges::find(extensions, entry.path().extension().string()) != extensions.end() &&
+            entry.path().filename().string().find(std::to_string(app_id)) != std::string::npos) {
+            return QString::fromStdString(entry.path().string());
+        }
+    }
+    return "";
+}
 
 bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& name, const std::wstring& shortcutspath,
                                 bool is_admin_try) const
@@ -473,6 +583,15 @@ bool UIModel::writeShortcutsVDF(const std::wstring& mode, const std::wstring& na
 #endif
 }
 
+bool UIModel::getIsDebug() const
+{
+#ifdef _DEBUG
+    return true;
+#else
+    return false;
+#endif
+}
+
 bool UIModel::getIsWindows() const { return is_windows_; }
 
 bool UIModel::hasAcrylicEffect() const { return has_acrylic_affect_; }
@@ -482,6 +601,8 @@ void UIModel::setAcrylicEffect(bool has_acrylic_affect)
     has_acrylic_affect_ = has_acrylic_affect;
     emit acrylicChanged();
 }
+
+QStringList UIModel::getSteamgridOutput() const { return steamgrid_output_; }
 
 void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 {
@@ -496,9 +617,7 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 
         const auto defaultConf = getDefaultConf();
         bool snapshotNotify =
-            defaultConf.contains("snapshotNotify")
-                ? defaultConf["snapshotNotify"].toJsonValue().toBool()
-                : false;
+            defaultConf.contains("snapshotNotify") ? defaultConf["snapshotNotify"].toJsonValue().toBool() : false;
 
         struct VersionInfo {
             int major;
@@ -511,8 +630,9 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
         std::vector<std::pair<QString, VersionInfo>> new_versions;
         for (const auto& info :
              json.keys() | std::ranges::views::filter([this, &json, snapshotNotify](const auto& key) {
-                 return notify_on_snapshots_ ? true
-                                             : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
+                 return notify_on_snapshots_
+                            ? true
+                            : json[key].toObject().value("type") == (snapshotNotify ? "snapshot" : "release");
              }) | std::ranges::views::transform([&json](const auto& key) -> std::pair<QString, VersionInfo> {
                  const auto versionString = json[key].toObject().value("version").toString();
                  const auto cleanVersion = versionString.split("-")[0];
@@ -554,6 +674,12 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
             emit newVersionAvailable();
         }
     }
+}
+
+void UIModel::onSteamGridReadReady()
+{
+    steamgrid_output_.push_back(QString::fromLocal8Bit(steamgrid_proc_.readAllStandardOutput()));
+    emit steamgridOutputChanged();
 }
 
 void UIModel::writeTarget(const QJsonObject& json, const QString& name) const

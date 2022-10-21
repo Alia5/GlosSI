@@ -13,9 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls.Material 6.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 Window {
     id: window
@@ -26,6 +29,7 @@ Window {
     Material.accent: Material.color(Material.Blue, Material.Shade900)
 
     property bool itemSelected: false;
+    property var manualInfo: null
 
     title: qsTr("GlosSI - Config")
 
@@ -44,6 +48,12 @@ Window {
     }
 
     property bool steamShortcutsChanged: false
+	
+	onSteamShortcutsChanged: function() {
+        shouldShowLoadGridImagesButton = uiModel.targetList.some((shortcut) => uiModel.isInSteam(shortcut))
+    }
+	
+	property bool shouldShowLoadGridImagesButton: false
 
     Component.onCompleted: function() {
         if (!uiModel.foundSteam) {
@@ -53,6 +63,7 @@ Window {
         if (!uiModel.steamInputXboxSupportEnabled) {
             steamXboxDisabledDialog.open();
         }
+        shouldShowLoadGridImagesButton = uiModel.targetList.some((shortcut) => uiModel.isInSteam(shortcut))
     }
 
     Image {
@@ -124,6 +135,135 @@ Window {
 		extraButton: true
 		extraButtonText: qsTr("Remind me later")
 		visible: !!uiModel.newVersionName
+    }
+	
+	Dialog {
+        id: manualAddDialog
+        anchors.centerIn: parent
+        visible: false
+	    modal: true
+	    dim: true
+	    parent: Overlay.overlay
+	    Overlay.modal: Rectangle {
+		    color: Qt.rgba(0,0,0,0.4)
+		    opacity: backdropOpacity
+		    Behavior on opacity {
+			    NumberAnimation {
+				    duration: 300
+			    }
+		    }
+	    }
+	    property real backdropOpacity: 1.0
+        enter: Transition {
+		    NumberAnimation{target: madcontent; property: "y"; from: parent.height; to: 16; duration: 300; easing.type: Easing.OutQuad }
+		    NumberAnimation{target: madbackground; property: "y"; from: parent.height; to: 0; duration: 300; easing.type: Easing.OutQuad }
+		    NumberAnimation{target: manualAddDialog; property: "backdropOpacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuad }
+	    }
+
+	    exit: Transition {
+		    NumberAnimation{target: madcontent; property: "y"; from: 16; to: parent.height; duration: 300; easing.type: Easing.InQuad }
+		    NumberAnimation{target: madbackground; property: "y"; from: 0; to: parent.height; duration: 300; easing.type: Easing.InQuad }
+		    NumberAnimation{target: manualAddDialog; property: "backdropOpacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuad }
+	    }
+
+	    background: RPane {
+		    id: madbackground
+		    radius: 4
+		    Material.elevation: 64
+            bgOpacity: 0.97
+	    }
+	    contentItem: Item {
+            id: madcontent
+            implicitWidth: steamscreener.width
+		    implicitHeight: madtext.height + 16 + steamscreener.height + 16 + madrow.height
+
+            Label {
+                id: madtext
+                text: qsTr("Add \"GlosSITarget\" as game to Steam and change it's properties (in Steam) to this:")
+            }
+
+            Image {
+                    anchors.top: madtext.bottom
+                    anchors.left: madtext.left
+                    anchors.topMargin: 16
+                    id: steamscreener
+                    source: "qrc:/steamscreener.png"
+            }
+
+            FluentTextInput {
+                id: madnameinput
+                text: manualInfo ? manualInfo.name : ""
+                anchors.top: steamscreener.top
+                anchors.left: steamscreener.left
+                anchors.topMargin: 72
+                anchors.leftMargin: 92
+                readOnly: true
+                background: Item {}
+                width: 550
+            }
+
+            FluentTextInput {
+                id: glossiPathInput
+                text: manualInfo ? manualInfo.launch : ""
+                anchors.top: steamscreener.top
+                anchors.left: steamscreener.left
+                anchors.topMargin: 192
+                anchors.leftMargin: 24
+                readOnly: true
+                background: Item {}
+                width: 550
+            }
+
+            FluentTextInput {
+                id: startDirInput
+                text: manualInfo ? manualInfo.launchDir : ""
+                anchors.top: steamscreener.top
+                anchors.left: steamscreener.left
+                anchors.topMargin: 266
+                anchors.leftMargin: 24
+                readOnly: true
+                background: Item {}
+                width: 550
+            }
+
+             FluentTextInput {
+                id: launchOptsInput
+                text: manualInfo ? manualInfo.config : ""
+                anchors.top: steamscreener.top
+                anchors.left: steamscreener.left
+                anchors.topMargin: 432
+                anchors.leftMargin: 24
+                readOnly: true
+                background: Item {}
+                width: 550
+            }
+
+        	Row {
+			    id: madrow
+			    anchors.top: steamscreener.bottom
+			    anchors.topMargin: 16
+			    spacing: 16
+
+			    Button {
+				    text: qsTr("OK")
+				    onClicked: function(){
+					    manualAddDialog.close()
+				    }
+			    }
+			    anchors.right: parent.right
+		    }
+        }
+    }
+
+    InfoDialog {
+        id: writeErrorDialog
+        titleText: qsTr("Error")
+        text: qsTr("Error writing shortcuts.vdf...\nPlease make sure Steam is running")
+        extraButton: true
+        extraButtonText: qsTr("Manual instructions")
+        onConfirmedExtra: function(data) {
+           manualAddDialog.open();
+        }
     }
 
     Rectangle {
@@ -237,47 +377,64 @@ Window {
                     windowContent.editedIndex = index;
                 }
             }
-			Column {
+			Row {
                 spacing: 8
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 anchors.margins: 24
-				RoundButton {
-                    id: optionsBtn
-                    width: 64
-                    height: 64
-                    text: ""
-                    contentItem: Item {
-                        Image {
-                            anchors.centerIn: parent
-                            source: "qrc:/svg/settings_fill_white_24dp.svg"
-                            width: 24
-                            height: 24
+                Column {
+                    spacing: 8
+				    RoundButton {
+                        id: optionsBtn
+						anchors.right: parent.right
+                        width: 64
+                        height: 64
+                        text: ""
+                        contentItem: Item {
+                            Image {
+                                anchors.centerIn: parent
+                                source: "qrc:/svg/settings_fill_white_24dp.svg"
+                                width: 24
+                                height: 24
+                            }
+					    }
+                        highlighted: true
+                        onClicked: function() {
+                            globalConf.opacity = 1;
+                            homeContent.opacity = 0;
                         }
-					}
-                    highlighted: true
-                    onClicked: function() {
-                        globalConf.opacity = 1;
-                        homeContent.opacity = 0;
+                    }
+                    RoundButton {
+                        id: addBtn
+                        anchors.right: parent.right
+                        width: 64
+                        height: 64
+                        text: "+"
+                        contentItem: Label {
+                            anchors.centerIn: parent
+                            text: addBtn.text
+                            font.pixelSize: 32
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
+                        }
+                        highlighted: true
+                        onClicked: selectTypeDialog.open()
+                    }
+					Button {
+			            visible: shouldShowLoadGridImagesButton || steamShortcutsChanged
+                        id: loadGridImagesBtn
+                        text: qsTr("🖼️ Load steam grid images")
+                        highlighted: true
+                        onClicked: function() {
+                            steamGridDialog.open()
+                        }
                     }
                 }
-                RoundButton {
-                    id: addBtn
-                    width: 64
-                    height: 64
-                    text: "+"
-                    contentItem: Label {
-                        anchors.centerIn: parent
-                        text: addBtn.text
-                        font.pixelSize: 32
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                    }
-                    highlighted: true
-                    onClicked: selectTypeDialog.open()
-                }
+            
             }
+            
+            
         }
 
         Item {
@@ -318,7 +475,16 @@ Window {
                     if (windowContent.editedIndex < 0) {
                         uiModel.addTarget(shortcut)
                     } else {
-                        uiModel.updateTarget(windowContent.editedIndex, shortcut)
+					    if (uiModel.isInSteam(shortcut)) {
+                            if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
+						        if (steamShortcutsChanged == false) {
+                                    steamChangedDialog.open();
+                                }
+                            } else {
+						        manualInfo = uiModel.manualProps(shortcut);
+                                writeErrorDialog.open();
+                            }                    
+                        }
                     }
                 }
             }
@@ -387,7 +553,19 @@ Window {
                 if (param == "uwp") {
                     props.uwpSelectDialog.open();
                 }
+                if (param == "egs") {
+                    props.egsSelectDialog.open();
+                }
             }
         }
+
+		SteamGridDialog {
+            id: steamGridDialog
+            onConfirmed: function() {
+                shortcutgrid.model = [];
+                shortcutgrid.model = uiModel.targetList;
+            }
+        }
+
     }
 }

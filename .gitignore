@@ -370,3 +370,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 .visuallint
+GlosSIConfig/steamgrid_api_keys.h
+steamgrid.zip

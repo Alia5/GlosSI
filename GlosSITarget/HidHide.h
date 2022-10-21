@@ -15,7 +15,10 @@ limitations under the License.
 */
 #pragma once
 #define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <ntddscsi.h>
+#include <winioctl.h>
 
 #include <hidsdi.h>
 
@@ -25,6 +28,7 @@ limitations under the License.
 #include <map>
 #include <string>
 #include <vector>
+
 #ifndef WATCHDOG
 #include <SFML/System/Clock.hpp>
 #endif

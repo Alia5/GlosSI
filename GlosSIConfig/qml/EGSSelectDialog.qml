@@ -45,7 +45,7 @@ Dialog {
 
 	onOpened: function() {
 		unfilteredModel = null;
-		unfilteredModel = uiModel.uwpList;
+		unfilteredModel = uiModel.egsList;
 		listview.model = null;
 		filteredModel = [];
 		for(let i = 0; i < unfilteredModel.length; i++)
@@ -86,7 +86,7 @@ Dialog {
 		clip: true
 		Label {
 			id: titlelabel
-			text: qsTr("Select UWP App...")
+			text: qsTr("Select Epic Games Launcher Game...")
 			font.pixelSize: 24
 			font.bold: true
 		}
@@ -126,6 +126,15 @@ Dialog {
 			visible: opacity == 0 ? false : true
 		}
 
+		Button {
+			anchors.right: parent.right
+			anchors.top: listview.bottom
+			anchors.topMargin: 16
+			anchors.rightMargin: 2
+			text: qsTr("Cancel")
+			onClicked: dlg.close()
+		}
+
 		ListView {
 			anchors.top: searchBar.bottom
 			anchors.topMargin: 16
@@ -161,7 +170,7 @@ Dialog {
 				width: listview.width
 				height: textcolumn.implicitHeight > 72 ? 500 : 72
 
-				Image {
+				/*Image {
 					id: maybeIcon
 					width: textcolumn.implicitHeight > 72 ? 0 : 56
 					height: 56
@@ -170,24 +179,32 @@ Dialog {
 					source: "file:///" + modelData.IconPath
 					mipmap: true
 					smooth: true
-				}
+				}*/
 
 				Column {
 					id: textcolumn 
-					anchors.left: maybeIcon.right
+					anchors.left: parent.left
 					anchors.right: parent.right
 					anchors.leftMargin: 16
 					anchors.verticalCenter: parent.verticalCenter
 					spacing: 2
 					Label {
-						text: modelData.AppName
+						text: modelData.InstallLocation.split('/').pop().split('\\').pop()
 						font.pixelSize: 18
 						font.bold: true
 					}
 					Label {
-						id: umidLabel
-						text: modelData.AppUMId
+						id: appNameLabel
+						text: "AppName: " + modelData.AppName
 						font.pixelSize: 12
+						wrapMode: Text.WordWrap
+						width: parent.width
+					}
+					Label {
+						id: fullPathLabel
+						text: modelData.InstallLocation
+						font.pixelSize: 12
+						color: '#888888'
 						wrapMode: Text.WordWrap
 						width: parent.width
 					}
@@ -208,15 +225,6 @@ Dialog {
 					}
 				}
 			}
-		}
-		
-		Button {
-			anchors.right: parent.right
-			anchors.bottom: parent.bottom
-			anchors.bottomMargin: 2
-			anchors.rightMargin: 2
-			text: qsTr("Cancel")
-			onClicked: dlg.close()
 		}
 	}
 }

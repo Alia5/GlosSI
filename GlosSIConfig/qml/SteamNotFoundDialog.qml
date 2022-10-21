@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Controls 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls.Material 6.2
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 Dialog {
 	id: dlg
@@ -80,10 +82,6 @@ Dialog {
 			}
 
 			Button {
-				anchors.right: parent.right
-				anchors.top: listview.bottom
-				anchors.topMargin: 16
-				anchors.rightMargin: 2
 				text: qsTr("Ok")
 				onClicked: dlg.close()
 			}

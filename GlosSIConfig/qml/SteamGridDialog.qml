@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import QtQuick 6.2
-import QtQuick.Controls 6.2
-import QtQuick.Layouts 6.2
-import QtQuick.Controls.Material 6.2
+import QtQuick 
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Controls.Material
 
 Dialog {
-	id: dlg
+	id: gridDialog
 	anchors.centerIn: parent
 
 	signal confirmed(var param)
@@ -39,38 +39,27 @@ Dialog {
 	}
 	property real backdropOpacity: 1.0
 
-	property var unfilteredModel: null;
-	property var filteredModel: [];
+	property bool loading: true
 
 
 	onOpened: function() {
-		unfilteredModel = null;
-		unfilteredModel = uiModel.uwpList;
-		listview.model = null;
-		filteredModel = [];
-		for(let i = 0; i < unfilteredModel.length; i++)
-		{
-			filteredModel.push(unfilteredModel[i])					
-		}
-		listview.model = filteredModel
+		loading = true;
+		uiModel.loadSteamGridImages();
 	}
 
 	onClosed: function() {
-		listview.model = null;
-		unfilteredModel = null;
-		filteredModel = null;
 	}
 
 	enter: Transition {
 		NumberAnimation{target: content; property: "y"; from: parent.height; to: 16; duration: 300; easing.type: Easing.OutQuad }
 		NumberAnimation{target: background; property: "y"; from: parent.height; to: 0; duration: 300; easing.type: Easing.OutQuad }
-		NumberAnimation{target: dlg; property: "backdropOpacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuad }
+		NumberAnimation{target: gridDialog; property: "backdropOpacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutQuad }
 	}
 
 	exit: Transition {
 		NumberAnimation{target: content; property: "y"; from: 16; to: parent.height; duration: 300; easing.type: Easing.InQuad }
 		NumberAnimation{target: background; property: "y"; from: 0; to: parent.height; duration: 300; easing.type: Easing.InQuad }
-		NumberAnimation{target: dlg; property: "backdropOpacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuad }
+		NumberAnimation{target: gridDialog; property: "backdropOpacity"; from: 1; to: 0; duration: 300; easing.type: Easing.InQuad }
 	}
 
 	background: RPane {
@@ -86,59 +75,46 @@ Dialog {
 		clip: true
 		Label {
 			id: titlelabel
-			text: qsTr("Select UWP App...")
+			text: qsTr("Loading Grid images...")
 			font.pixelSize: 24
 			font.bold: true
 		}
 
-		FluentTextInput {
-            width: listview.width - 2
-			x: 1
-            anchors.top: titlelabel.bottom
-            anchors.topMargin: 8
-            id: searchBar
-            enabled: true
-			placeholderText: qsTr("Search...")
-            text: ""
-            onTextChanged: function() {
-				listview.model = null;
-				filteredModel = [];
-				for(let i = 0; i < unfilteredModel.length; i++)
-				{
-					if(unfilteredModel[i].AppName.toLowerCase().includes(searchBar.text.toLowerCase())) {
-						filteredModel.push(unfilteredModel[i])					
-					}
-				}
-				listview.model = filteredModel
-			}
-        }
-
 		BusyIndicator {
+			id: busyIndicator
 			running: visible
-			anchors.centerIn: parent
-			opacity: (!unfilteredModel || unfilteredModel.length == 0) ? 1 : 0
+			anchors.top: titlelabel.bottom
+			anchors.topMargin: 8
+			anchors.horizontalCenter: parent.horizontalCenter
+			opacity: loading ? 1 : 0
+			height: loading ? 72 : 0
             Behavior on opacity {
                 NumberAnimation {
                     duration: 350
                     easing.type: Easing.InOutQuad
                 }
             }
-			visible: opacity == 0 ? false : true
+			visible: loading
 		}
 
 		ListView {
-			anchors.top: searchBar.bottom
+			anchors.top: busyIndicator.bottom
 			anchors.topMargin: 16
+			anchors.bottom: parent.bottom
+			anchors.bottomMargin: 16
 			id: listview
 			width: window.width * 0.45
 			height: window.height * 0.66
 			spacing: 0
 			clip: true
-			model: filteredModel
+			model: uiModel.steamgridOutput
 			ScrollBar.vertical: ScrollBar {
 			}
+			onCountChanged: {
+				listview.positionViewAtIndex(listview.count - 1, ListView.Visible)
+				loading = !listview.model[listview.count - 1].includes("Press enter")
+			}
 
-			opacity: (!unfilteredModel || unfilteredModel.length == 0) ? 0 : 1
             Behavior on opacity {
 				ParallelAnimation {
 				    NumberAnimation {
@@ -157,66 +133,27 @@ Dialog {
             }
 
 			
-			delegate: Item {
+			delegate: /* Item {
 				width: listview.width
-				height: textcolumn.implicitHeight > 72 ? 500 : 72
+				height: outputLabel.implicitHeight */
 
-				Image {
-					id: maybeIcon
-					width: textcolumn.implicitHeight > 72 ? 0 : 56
-					height: 56
-					anchors.left: parent.left
-					anchors.verticalCenter: parent.verticalCenter
-					source: "file:///" + modelData.IconPath
-					mipmap: true
-					smooth: true
+				Label {
+					id: outputLabel
+					text: modelData
 				}
-
-				Column {
-					id: textcolumn 
-					anchors.left: maybeIcon.right
-					anchors.right: parent.right
-					anchors.leftMargin: 16
-					anchors.verticalCenter: parent.verticalCenter
-					spacing: 2
-					Label {
-						text: modelData.AppName
-						font.pixelSize: 18
-						font.bold: true
-					}
-					Label {
-						id: umidLabel
-						text: modelData.AppUMId
-						font.pixelSize: 12
-						wrapMode: Text.WordWrap
-						width: parent.width
-					}
-				}
-
-				Rectangle {
-					anchors.bottom: parent.bottom
-					height: 1
-					width: parent.width
-					color: Qt.rgba(1,1,1,0.25)
-				}
-
-				MouseArea {
-					anchors.fill: parent
-					onClicked: function(){
-						confirmed(modelData)
-						dlg.close();
-					}
-				}
-			}
+			// }
 		}
-		
 		Button {
 			anchors.right: parent.right
 			anchors.bottom: parent.bottom
 			anchors.bottomMargin: 2
 			anchors.rightMargin: 2
-			text: qsTr("Cancel")
-			onClicked: dlg.close()
+			text: qsTr("Ok")
+			onClicked: function() {
+				gridDialog.close();
+				confirmed(undefined);
+			}
 		}
+
 	}
 }

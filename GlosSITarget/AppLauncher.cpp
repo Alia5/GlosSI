@@ -23,6 +23,7 @@ limitations under the License.
 #include <tlhelp32.h>
 #include <Propsys.h>
 #include <propkey.h>
+#include <shellapi.h>
 
 #pragma comment(lib, "Shell32.lib")
 #endif
@@ -30,7 +31,9 @@ limitations under the License.
 
 #include <regex>
 
+#include "Overlay.h"
 #include "UnhookUtil.h"
+#include "util.h"
 
 AppLauncher::AppLauncher(
     std::vector<HWND>& process_hwnds,
@@ -48,6 +51,12 @@ AppLauncher::AppLauncher(
 void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
 {
 #ifdef _WIN32
+
+    if (!Settings::launch.launcherProcesses.empty()) {
+        has_extra_launchers_ = true;
+        spdlog::debug("Has extra launchers");
+    }
+
     if (Settings::launch.isUWP) {
         spdlog::info("LaunchApp is UWP, launching...");
         launched_uwp_path_ = path;
@@ -61,19 +70,38 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
         spdlog::info("LaunchApp is Win32, launching...");
         launchWin32App(path, args);
     }
+    Overlay::AddOverlayElem([this](bool has_focus, ImGuiID dockspace_id) {
+        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
+        if (ImGui::Begin("Launched Processes")) {
+            ImGui::BeginChild("Inner##LaunchedProcs", {0.f, ImGui::GetItemRectSize().y - 64}, true);
+            std::ranges::for_each(pids_, [](DWORD pid) {
+                ImGui::Text("%s | %d", std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(glossi_util::GetProcName(pid)).c_str(), pid);
+                ImGui::SameLine();
+                if (ImGui::Button((" Kill ##" + std::to_string(pid)).c_str())) {
+                    glossi_util::KillProcess(pid);
+                }
+            });
+            ImGui::EndChild();
+        }
+        ImGui::End();
+    });
 #endif
 }
 
 void AppLauncher::update()
 {
     if (process_check_clock_.getElapsedTime().asMilliseconds() > 250) {
+        pid_mutex_.lock();
 #ifdef _WIN32
+        if (has_extra_launchers_ && pids_.empty()) {
+            findLauncherPids();
+        }
         if (!pids_.empty() && pids_[0] > 0) {
             if (Settings::launch.waitForChildProcs) {
                 getChildPids(pids_[0]);
             }
             if (!IsProcessRunning(pids_[0])) {
-                spdlog::info("Launched App with PID \"{}\" died", pids_[0]);
+                spdlog::info(L"Launched App \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pids_[0]), pids_[0]);
                 if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs && Settings::launch.launch) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
@@ -82,22 +110,41 @@ void AppLauncher::update()
             }
         }
         if (Settings::launch.waitForChildProcs) {
+
             std::erase_if(pids_, [](auto pid) {
                 if (pid == 0) {
                     return true;
                 }
                 const auto running = IsProcessRunning(pid);
                 if (!running)
-                    spdlog::trace("Child process with PID \"{}\" died", pid);
+                    spdlog::trace(L"Child process \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pid), pid);
                 return !running;
             });
-            if (Settings::launch.closeOnExit && pids_.empty() && Settings::launch.launch) {
-                spdlog::info("Configured to close on all children exit. Shutting down...");
-                shutdown_();
+
+            auto filtered_pids = pids_ | std::ranges::views::filter([](DWORD pid) {
+                                     return std::ranges::find(Settings::launch.launcherProcesses, glossi_util::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
+                                 });
+            if (has_extra_launchers_ && !filtered_pids.empty()) {
+                launcher_has_launched_game_ = true;
+            }
+            if (Settings::launch.closeOnExit && Settings::launch.launch) {
+                if (has_extra_launchers_ && (Settings::launch.ignoreLauncher || Settings::launch.killLauncher)) {
+                    if (launcher_has_launched_game_ && filtered_pids.empty()) {
+                        spdlog::info("Configured to close on all children exit. Shutting down after game launched via EGS quit...");
+                        shutdown_();
+                    }
+                }
+                else {
+                    if (pids_.empty()) {
+                        spdlog::info("Configured to close on all children exit. Shutting down...");
+                        shutdown_();
+                    }
+                }
             }
         }
         getProcessHwnds();
 #endif
+        pid_mutex_.unlock();
         process_check_clock_.restart();
     }
 }
@@ -110,6 +157,43 @@ void AppLauncher::close()
         CloseHandle(process_info.hThread);
     }
 #endif
+}
+
+std::vector<DWORD> AppLauncher::launchedPids()
+{
+    pid_mutex_.lock();
+    std::vector<DWORD> res;
+    res.reserve(pids_.size());
+    if (!Settings::launch.killLauncher && Settings::launch.ignoreLauncher) {
+        for (const auto& pid : pids_ | std::ranges::views::filter(
+                                           [](DWORD pid) {
+                                               return std::ranges::find(
+                                                          Settings::launch.launcherProcesses,
+                                                          glossi_util::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
+                                           })) {
+            res.push_back(pid);
+        }
+    }
+    else {
+        std::ranges::copy(pids_.begin(), pids_.end(),
+                          std::back_inserter(res));
+    }
+    pid_mutex_.unlock();
+    return res;
+}
+
+void AppLauncher::addPids(const std::vector<DWORD>& pids)
+{
+    pid_mutex_.lock();
+    for (const auto pid : pids) {
+        if (pid > 0 && std::ranges::find(pids_, pid) == pids_.end()) {
+            if (Settings::common.extendedLogging) {
+                spdlog::debug("Added PID {} via API", pid);
+            }
+            pids_.push_back(pid);
+        }
+    }
+    pid_mutex_.unlock();
 }
 
 #ifdef _WIN32
@@ -132,10 +216,11 @@ void AppLauncher::getChildPids(DWORD parent_pid)
         do {
             if (pe.th32ParentProcessID == parent_pid) {
                 if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
-                    if (Settings::extendedLogging) {
-                        spdlog::info("Found new child process with PID \"{}\"", pe.th32ProcessID);
+                    if (Settings::common.extendedLogging) {
+                        spdlog::info(L"Found new child process \"{}\" with PID \"{}\"", glossi_util::GetProcName(pe.th32ProcessID), pe.th32ProcessID);
                     }
                     pids_.push_back(pe.th32ProcessID);
+                    getChildPids(pe.th32ProcessID);
                 }
             }
         } while (Process32Next(hp, &pe));
@@ -176,6 +261,16 @@ void AppLauncher::getProcessHwnds()
 #endif
 
 #ifdef _WIN32
+bool AppLauncher::findLauncherPids()
+{
+    if (const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe")) {
+        spdlog::debug("Found EGS-Launcher running");
+        pids_.push_back(pid);
+        return true;
+    }
+    return false;
+}
+
 void AppLauncher::UnPatchValveHooks()
 {
     // need to load addresses that way.. Otherwise we may land before some jumps...
@@ -198,10 +293,16 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     // } else {
     //     launch_dir = m[0];
     // }
-    std::wstring args_cpy(args);
+    std::wstring args_cpy(
+        args.empty()
+        ? L""
+            : ((native_seps_path.find(L" ") != std::wstring::npos
+                    ? L"\"" + native_seps_path + L"\""
+                    : native_seps_path) + L" " + args)
+    );
     spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
-                       args_cpy.data(),
+                       args_cpy.empty() ? nullptr : args_cpy.data(),
                        nullptr,
                        nullptr,
                        watchdog ? FALSE : TRUE,
@@ -213,7 +314,9 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
         // spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
         spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
         if (!watchdog) {
+            pid_mutex_.lock();
             pids_.push_back(process_info.dwProcessId);
+            pid_mutex_.unlock();
         }
     }
     else {
@@ -243,7 +346,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             if (!SUCCEEDED(result)) {
                 spdlog::warn("CoAllowSetForegroundWindow failed. Code: {}", result);
             }
-
+            pid_mutex_.lock();
             pids_.push_back(0);
             // Launch the app
             result = sp_app_activation_manager->ActivateApplication(
@@ -258,6 +361,7 @@ void AppLauncher::launchUWPApp(const LPCWSTR package_full_name, const std::wstri
             else {
                 spdlog::info(L"Launched UWP Package \"{}\"; PID: {}", package_full_name, pids_[0]);
             }
+            pid_mutex_.unlock();
         }
         else {
             spdlog::error("CoCreateInstance failed: Code {}", result);
@@ -296,12 +400,29 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
     }
     CoUninitialize();
 
+    if (url.find(L"epicgames.launcher") != std::wstring::npos) {
+        has_extra_launchers_ = true;
+    }
     if (execute_info.hProcess != nullptr) {
         if (const auto pid = GetProcessId(execute_info.hProcess); pid > 0) {
+            pid_mutex_.lock();
             pids_.push_back(pid);
             spdlog::trace("Launched URL; PID: {}", pid);
+            pid_mutex_.unlock();
             return;
         }
+    }
+
+    if (has_extra_launchers_) {
+        spdlog::debug("Epic Games launch; Couldn't find egs launcher PID");
+        pid_mutex_.lock();
+
+        const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe");
+        if (!findLauncherPids()) {
+            spdlog::debug("Did not find EGS-Launcher not running, retrying later...");
+        }
+        pid_mutex_.unlock();
+        return;
     }
     spdlog::warn("Couldn't get PID of launched URL process");
 }

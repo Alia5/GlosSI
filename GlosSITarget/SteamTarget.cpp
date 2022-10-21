@@ -30,6 +30,7 @@ limitations under the License.
 #include <tray.hpp>
 #endif
 
+
 SteamTarget::SteamTarget()
     : window_(
           [this] { run_ = false; },
@@ -44,15 +45,16 @@ SteamTarget::SteamTarget()
       launcher_(force_config_hwnds_, [this] {
           delayed_shutdown_ = true;
           delay_shutdown_clock_.restart();
-      })
+      }),
+      server_(launcher_)
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32
-    if (Settings::launch.isUWP) {
-        UWPOverlayEnabler::EnableUwpOverlay();
+    if (Settings::common.no_uwp_overlay) {
+        UWPOverlayEnabler::AddUwpOverlayOvWidget();
     }
     else {
-        UWPOverlayEnabler::AddUwpOverlayOvWidget();
+        UWPOverlayEnabler::EnableUwpOverlay();
     }
 #endif
 }
@@ -76,12 +78,14 @@ Application will not function!");
         steam_overlay_present_ = true;
 
 #ifdef WIN32
-        wchar_t buff[MAX_PATH];
-        GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
-        std::wstring watchDogPath(buff);
-        watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
+        if (!Settings::common.disable_watchdog) {
+            wchar_t buff[MAX_PATH];
+            GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+            std::wstring watchDogPath(buff);
+            watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
 
-        DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
+            DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
+        }
 #endif
     }
     getXBCRebindingEnabled();
@@ -123,6 +127,8 @@ Application will not function!");
             run_ = false;
         }});
 
+    server_.run();
+
     while (run_) {
         detector_.update();
         overlayHotkeyWorkaround();
@@ -139,6 +145,7 @@ Application will not function!");
     }
     tray.exit();
 
+    server_.stop();
 #ifdef _WIN32
     input_redirector_.stop();
     hidhide_.disableHidHide();

@@ -17,6 +17,7 @@ limitations under the License.
 #include <QJsonObject>
 #include <QObject>
 #include <QVariant>
+#include <QProcess>
 #include <filesystem>
 #include <shortcuts_vdf.hpp>
 
@@ -25,15 +26,19 @@ class QNetworkReply;
 class UIModel : public QObject {
     Q_OBJECT
 
+    Q_PROPERTY(bool isDebug READ getIsDebug CONSTANT)
     Q_PROPERTY(bool isWindows READ getIsWindows CONSTANT)
     Q_PROPERTY(bool hasAcrlyicEffect READ hasAcrylicEffect NOTIFY acrylicChanged)
     Q_PROPERTY(QVariantList targetList READ getTargetList NOTIFY targetListChanged)
     Q_PROPERTY(QVariantList uwpList READ uwpApps CONSTANT)
+    Q_PROPERTY(QVariantList egsList READ egsGamesList CONSTANT)
     Q_PROPERTY(bool foundSteam READ foundSteam CONSTANT)
     Q_PROPERTY(bool steamInputXboxSupportEnabled READ isSteamInputXboxSupportEnabled CONSTANT)
 
     Q_PROPERTY(QString versionString READ getVersionString CONSTANT)
     Q_PROPERTY(QString newVersionName READ getNewVersionName NOTIFY newVersionAvailable)
+
+    Q_PROPERTY(QStringList steamgridOutput READ getSteamgridOutput NOTIFY steamgridOutputChanged)
 
   public:
     UIModel();
@@ -41,9 +46,10 @@ class UIModel : public QObject {
     Q_INVOKABLE void readTargetConfigs();
     Q_INVOKABLE QVariantList getTargetList() const;
     Q_INVOKABLE void addTarget(QVariant shortcut);
-    Q_INVOKABLE void updateTarget(int index, QVariant shortcut);
+    Q_INVOKABLE bool updateTarget(int index, QVariant shortcut);
     Q_INVOKABLE void deleteTarget(int index);
-    Q_INVOKABLE bool isInSteam(QVariant shortcut);
+    Q_INVOKABLE bool isInSteam(QVariant shortcut) const;
+    Q_INVOKABLE uint32_t getAppId(QVariant shortcut) const;
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
@@ -60,21 +66,30 @@ class UIModel : public QObject {
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
 #endif
+    Q_INVOKABLE QVariantList egsGamesList() const;
+
+    Q_INVOKABLE void loadSteamGridImages();
+    Q_INVOKABLE QString getGridImagePath(QVariant shortcut) const;
 
     [[nodiscard]] bool writeShortcutsVDF(const std::wstring& mode, const std::wstring& name,
                                          const std::wstring& shortcutspath, bool is_admin_try = false) const;
 
+    bool getIsDebug() const;
     bool getIsWindows() const;
     [[nodiscard]] bool hasAcrylicEffect() const;
     void setAcrylicEffect(bool has_acrylic_affect);
+
+    QStringList getSteamgridOutput() const;
 
   signals:
     void acrylicChanged();
     void targetListChanged();
     void newVersionAvailable();
+    void steamgridOutputChanged();
 
   public slots:
     void onAvailFilesResponse(QNetworkReply* reply);
+    void onSteamGridReadReady();
 
   private:
 #ifdef _WIN32
@@ -92,10 +107,16 @@ class UIModel : public QObject {
     QString user_data_path_ = "/userdata/";
     QString steam_executable_name_ = "steam.exe";
 
+    const std::wstring_view egs_games_json_path_ =
+        L"Epic/UnrealEngineLauncher/LauncherInstalled.dat";
+
     QVariantList targets_;
 
     QString new_version_name_;
     bool notify_on_snapshots_ = false;
+
+    QProcess steamgrid_proc_;
+    QStringList steamgrid_output_;
 
     std::vector<VDFParser::Shortcut> shortcuts_vdf_;
 

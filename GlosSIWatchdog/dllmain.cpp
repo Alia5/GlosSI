@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <httplib.h>
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
 #include <ShlObj.h>
@@ -24,9 +26,43 @@ limitations under the License.
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "../version.hpp"
-#include "../GlosSITarget/HidHide.h"
+#include <nlohmann/json.hpp>
 
+#include "../version.hpp"
+#include "../GlosSITarget/Settings.h"
+#include "../GlosSITarget/HidHide.h"
+#include "../GlosSITarget/util.h"
+
+bool IsProcessRunning(DWORD pid)
+{
+	const HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+	if (process == nullptr)
+		return false;
+	const DWORD ret = WaitForSingleObject(process, 0);
+	CloseHandle(process);
+	return ret == WAIT_TIMEOUT;
+}
+
+void fetchSettings(httplib::Client& http_client, int retried_count = 0) {
+	http_client.set_connection_timeout(1 + (retried_count > 0 ? 2 : 0));
+
+	auto http_res = http_client.Get("/settings");
+	if (http_res.error() == httplib::Error::Success && http_res->status == 200)
+	{
+		const auto json = nlohmann::json::parse(http_res->body);
+		spdlog::debug("Received settings from GlosSITarget: {}", json.dump());
+		Settings::Parse(json);
+	}
+	else
+	{
+		spdlog::error("Couldn't get settings from GlosSITarget. Error: {}", (int)http_res.error());
+		if (retried_count < 2)
+		{
+			spdlog::info("Retrying... {}", retried_count);
+			fetchSettings(http_client, retried_count + 1);
+		}
+	}
+}
 
 DWORD WINAPI watchdog(HMODULE hModule)
 {
@@ -60,18 +96,65 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	if (!glossi_hwnd)
 	{
 		spdlog::error("Couldn't find GlosSITarget window. Exiting...");
+		FreeLibraryAndExitThread(hModule, 1);
 		return 1;
 	}
 	spdlog::debug("Found GlosSITarget window; Starting watch loop");
 
+	httplib::Client http_client("http://localhost:8756");
+
+	fetchSettings(http_client);
+
+	std::vector<DWORD> pids;
 	while (glossi_hwnd)
 	{
+		http_client.set_connection_timeout(120);
+		const auto http_res = http_client.Get("/launched-pids");
+		if (http_res.error() == httplib::Error::Success && http_res->status == 200)
+		{
+			const auto json = nlohmann::json::parse(http_res->body);
+			if (Settings::common.extendedLogging)
+			{
+				spdlog::trace("Received pids: {}", json.dump());
+			}
+			pids = json.get<std::vector<DWORD>>();
+		}
+		else {
+			spdlog::error("Couldn't fetch launched PIDs: {}", (int)http_res.error());
+		}
+
 		glossi_hwnd = FindWindowA(nullptr, "GlosSITarget");
-		Sleep(1337);
+
+		Sleep(333);
 	}
-	spdlog::info("GlosSITarget was closed. Cleaning up...");
+	spdlog::info("GlosSITarget was closed. Resetting HidHide state...");
 	HidHide hidhide;
 	hidhide.disableHidHide();
+
+	if (Settings::launch.closeOnExit)
+	{
+		spdlog::info("Closing launched processes");
+
+		for (const auto pid : pids)
+		{
+			if (Settings::common.extendedLogging)
+			{
+				spdlog::debug("Checking if process {} is running", pid);
+			}
+			if (IsProcessRunning(pid))
+			{
+				glossi_util::KillProcess(pid);
+			}
+			else
+			{
+				if (Settings::common.extendedLogging)
+				{
+					spdlog::debug("Process {} is not running", pid);
+				}
+			}
+		}
+	}
+
 	spdlog::info("Unloading Watchdog...");
 	FreeLibraryAndExitThread(hModule, 0);
 }
@@ -89,5 +172,5 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	}
 	return TRUE;
 
-    return 0;
+	return 0;
 }

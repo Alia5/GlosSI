@@ -14,11 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <ShlObj.h>
+#include <shellapi.h>
 #endif
+#include <httplib.h>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -162,12 +165,20 @@ int main(int argc, char* argv[])
     auto exit = 1;
     try {
 #ifdef _WIN32
+
+        auto existingwindow = FindWindowA(nullptr, "GlosSITarget");
+        if (existingwindow) {
+            spdlog::error("GlosSITarget is already running!");
+            return 1;
+        }
+
         int numArgs;
         LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &numArgs);
-        std::wstring argsv = L"";
+        std::vector<std::wstring> argsv;
+        argsv.reserve(numArgs);
         if (numArgs > 1) {
             for (int i = 1; i < numArgs; i++)
-                argsv += i == 1 ? args[i] : std::wstring(L" ") + args[i];
+                argsv.emplace_back(args[i]);
         }
         Settings::Parse(argsv);
         Settings::checkWinVer();
