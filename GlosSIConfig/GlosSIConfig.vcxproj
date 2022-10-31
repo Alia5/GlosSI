@@ -164,7 +164,6 @@
   <ItemGroup>
     <ClInclude Include="ExeImageProvider.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="steamgrid_api_keys.h" />
     <ClInclude Include="UWPFetch.h" />
     <ClInclude Include="WinEventFilter.h" />
   </ItemGroup>

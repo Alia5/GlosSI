@@ -29,6 +29,8 @@ CollapsiblePane {
 
     property var shortcutInfo: ({})
 
+	readonly property bool isAppSettings: subTitle != ""
+
     content: 
     Column {
         spacing: 16		

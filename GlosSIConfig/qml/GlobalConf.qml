@@ -82,6 +82,25 @@ Item {
                             }
                         }
                     }
+					Row {
+					    leftPadding: 12
+                        Row {
+					        spacing: 16
+                            Label {
+                                topPadding: 8
+                                id: apiKeyLabel
+                                font.bold: true
+                                text: qsTr("SteamGridDB-API-Key")
+                            }
+                            FluentTextInput {
+                                width: 128
+                                id: apiKeyInput
+                                placeholderText: qsTr("...")
+                                text: config.steamgridApiKey
+                                onTextChanged: config.steamgridApiKey = text
+                            }
+                        }
+                    }
 				}
             }
 

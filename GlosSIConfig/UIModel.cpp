@@ -36,7 +36,6 @@ limitations under the License.
 #include "ExeImageProvider.h"
 #include "ExeImageProvider.h"
 #include "../version.hpp"
-#include "steamgrid_api_keys.h"
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -375,6 +374,7 @@ QVariantMap UIModel::getDefaultConf() const
         {"version", 1},
         {"extendedLogging", false},
         {"snapshotNotify", false},
+        {"steamgridApiKey", QJsonValue::Null},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -489,8 +489,11 @@ void UIModel::loadSteamGridImages()
     std::filesystem::path path = QCoreApplication::applicationDirPath().toStdWString();
     path /= "steamgrid.exe";
 
+    auto api_key = getDefaultConf().value("steamgridApiKey").toString();
+    steamgrid_output_.clear();
+
     steamgrid_proc_.setProgram(path.string().c_str());
-    steamgrid_proc_.setArguments({"-nonsteamonly", "--onlymissingartwork", "--steamgriddb", steamgridb_key});
+    steamgrid_proc_.setArguments({"-nonsteamonly", "--onlymissingartwork", "--steamgriddb", api_key});
     connect(&steamgrid_proc_, &QProcess::readyReadStandardOutput, this, &UIModel::onSteamGridReadReady);
         steamgrid_proc_.start();
     steamgrid_proc_.write("\n");
@@ -678,8 +681,12 @@ void UIModel::onAvailFilesResponse(QNetworkReply* reply)
 
 void UIModel::onSteamGridReadReady()
 {
-    steamgrid_output_.push_back(QString::fromLocal8Bit(steamgrid_proc_.readAllStandardOutput()));
+    const auto output = QString::fromLocal8Bit(steamgrid_proc_.readAllStandardOutput());
+    steamgrid_output_.push_back(output);
     emit steamgridOutputChanged();
+    if (output.toLower().contains("token is missing or invalid")) {
+        steamgrid_proc_.kill();
+    }
 }
 
 void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
@@ -693,7 +700,10 @@ void UIModel::writeTarget(const QJsonObject& json, const QString& name) const
         return;
     }
 
-    file.write(QString(QJsonDocument(json).toJson(QJsonDocument::Indented)).toStdString().data());
+    auto json_ob = QJsonDocument(json).object();
+    json_ob.remove("steamgridApiKey");
+
+    file.write(QString(QJsonDocument(json_ob).toJson(QJsonDocument::Indented)).toStdString().data());
     file.close();
 }
 
