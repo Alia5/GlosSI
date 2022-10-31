@@ -375,7 +375,7 @@ void TargetWindow::createWindow()
         ImGui::SFML::UpdateFontTexture();
     }
     else {
-        spdlog::warn("Not applying too low screen scale setting");
+        spdlog::debug("Not applying too low screen scale setting");
     }
 
     // window_.setSize({desktop_mode.width - 1, desktop_mode.height - 1 });
