@@ -369,7 +369,7 @@ void TargetWindow::createWindow()
         spdlog::debug("Config file fps limit seems sane...");
         setFpsLimit(Settings::window.maxFps);
     }
-    if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
+    if (Settings::window.scale < 0.3f) { // Now that's just getting ridicoulus
         ImGuiIO& io = ImGui::GetIO();
         io.FontGlobalScale = Settings::window.scale;
         ImGui::SFML::UpdateFontTexture();
