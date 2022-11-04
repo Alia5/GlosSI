@@ -40,6 +40,7 @@ Dialog {
 	property real backdropOpacity: 1.0
 
 	property bool loading: true
+	property bool hasTokenError: false
 
 
 	onOpened: function() {
@@ -80,25 +81,55 @@ Dialog {
 			font.bold: true
 		}
 
-		BusyIndicator {
-			id: busyIndicator
-			running: visible
+		Item {
+			id: topContentContainer
 			anchors.top: titlelabel.bottom
 			anchors.topMargin: 8
 			anchors.horizontalCenter: parent.horizontalCenter
-			opacity: loading ? 1 : 0
-			height: loading ? 72 : 0
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 350
-                    easing.type: Easing.InOutQuad
-                }
-            }
-			visible: loading
+			anchors.left: parent.left
+			anchors.right: parent.right
+			height: loading || hasTokenError ? 72 : 0
+
+			BusyIndicator {
+				id: busyIndicator
+				running: visible
+				anchors.horizontalCenter: parent.horizontalCenter
+				opacity: loading ? 1 : 0
+				height: loading ? 72 : 0
+				Behavior on opacity {
+					NumberAnimation {
+						duration: 350
+						easing.type: Easing.InOutQuad
+					}
+				}
+				visible: loading
+			}
+
+			Label {
+				id: tokenErrorInfo
+				anchors.horizontalCenter: parent.horizontalCenter
+				opacity: hasTokenError ? 1 : 0
+				anchors.left: parent.left
+				anchors.right: parent.right
+				wrapMode: Text.Wrap
+				font.bold: true
+				color: "yellow"
+				textFormat: TextEdit.RichText 
+				onLinkActivated: Qt.openUrlExternally(link)
+				Behavior on opacity {
+					NumberAnimation {
+						duration: 350
+						easing.type: Easing.InOutQuad
+					}
+				}
+				visible: hasTokenError
+				text: qsTr("Please go to <a href=\"https://www.steamgriddb.com/profile/preferences/api\">SteamGridDB</a> and gerenate a new API token. Then paste it into the settings dialog.")
+			}
+		
 		}
 
 		ListView {
-			anchors.top: busyIndicator.bottom
+			anchors.top: topContentContainer.bottom
 			anchors.topMargin: 16
 			anchors.bottom: parent.bottom
 			anchors.bottomMargin: 16
@@ -110,9 +141,10 @@ Dialog {
 			model: uiModel.steamgridOutput
 			ScrollBar.vertical: ScrollBar {
 			}
-			onCountChanged: {
-				listview.positionViewAtIndex(listview.count - 1, ListView.Visible)
-				loading = !listview.model[listview.count - 1].includes("Press enter")
+			onCountChanged: function() {
+				listview.positionViewAtIndex(listview.count - 1, ListView.Visible);
+				hasTokenError = listview.model.some((l) => l.includes("missing or invalid"));
+				loading = !(listview.model.some((l) => l.includes("Press enter")) || hasTokenError);
 			}
 
             Behavior on opacity {
