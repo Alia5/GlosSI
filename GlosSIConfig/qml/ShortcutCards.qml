@@ -34,7 +34,7 @@ GridView {
 
     property real margins: 16
     cellWidth: 292 + 16
-    cellHeight: 190 + 16
+    cellHeight: 212 + 16
     readonly property real displayedItems: Math.floor((parent.width - margins*2) / cellWidth)
     width: displayedItems * cellWidth
     model: uiModel.targetList;
@@ -72,7 +72,7 @@ GridView {
         bgOpacity: 0.3
         radius: 8
         width: 292
-        height: 190
+        height: 212
         Material.elevation: 4
         clip: true
         property bool isInSteam: uiModel.isInSteam(modelData);
@@ -145,56 +145,72 @@ GridView {
             }
         }
 
-        Button {
-            id: steambutton
-            anchors.left: parent.left
+		Column {
+		    anchors.left: parent.left
             anchors.bottom: parent.bottom
-            width: 72
-            onClicked: function(){
-                if (delegateRoot.isInSteam) {
-                    if (!uiModel.removeFromSteam(modelData.name, "")) {
-                        writeErrorDialog.open();
-                        return;
-                    }                
-                } else {
-                    if (!uiModel.addToSteam(modelData, "")) {
-                        manualInfo = uiModel.manualProps(modelData);
-                        writeErrorDialog.open();
-                        return;
-                    }
+            spacing: 4
+
+			Button {
+                highlighted: true
+				visible: delegateRoot.isInSteam
+				text: qsTr("Steam controller config")
+                onClicked: function() {
+                    controllerConfigDialog.confirmedExtraParam = uiModel.getAppId(modelData)
+					controllerConfigDialog.confirmedParam = uiModel.getAppId(modelData)
+                    controllerConfigDialog.open();
                 }
-                if (steamShortcutsChanged == false) {
-                    steamChangedDialog.open();
-                }
-                delegateRoot.isInSteam = uiModel.isInSteam(modelData)
-                steamShortcutsChanged = true
             }
-            highlighted: delegateRoot.isInSteam
-            Material.accent: Material.color(Material.Red, Material.Shade800)
-            Row {
-                anchors.centerIn: parent
-                spacing: 8
-                Label {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: delegateRoot.isInSteam ? "-" : "+"
-                    font.bold: true
-                    font.pixelSize: 24
+
+            Button {
+                id: steambutton
+                width: 72
+                onClicked: function(){
+                    if (delegateRoot.isInSteam) {
+                        if (!uiModel.removeFromSteam(modelData.name, "")) {
+                            writeErrorDialog.open();
+                            return;
+                        }                
+                    } else {
+                        if (!uiModel.addToSteam(modelData, "")) {
+                            manualInfo = uiModel.manualProps(modelData);
+                            writeErrorDialog.open();
+                            return;
+                        }
+                    }
+                    if (steamShortcutsChanged == false) {
+                        steamChangedDialog.open();
+                    }
+                    delegateRoot.isInSteam = uiModel.isInSteam(modelData)
+                    steamShortcutsChanged = true
                 }
-                Image {
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "qrc:/svg/steam.svg"
-                    width: 22
-                    height: 22
-                    smooth: true
-                    mipmap: true
-                    ColorOverlay {
-                        anchors.fill: parent
-                        source: parent
-                        color: "white"
+                highlighted: delegateRoot.isInSteam
+                Material.accent: Material.color(Material.Red, Material.Shade800)
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 8
+                    Label {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: delegateRoot.isInSteam ? "-" : "+"
+                        font.bold: true
+                        font.pixelSize: 24
+                    }
+                    Image {
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/svg/steam.svg"
+                        width: 22
+                        height: 22
+                        smooth: true
+                        mipmap: true
+                        ColorOverlay {
+                            anchors.fill: parent
+                            source: parent
+                            color: "white"
+                        }
                     }
                 }
             }
         }
+
 
         Row {
             id: buttonrow

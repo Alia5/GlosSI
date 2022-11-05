@@ -34,7 +34,6 @@ limitations under the License.
 #endif
 
 #include "ExeImageProvider.h"
-#include "ExeImageProvider.h"
 #include "../version.hpp"
 
 UIModel::UIModel() : QObject(nullptr)
@@ -170,7 +169,7 @@ bool UIModel::isInSteam(QVariant shortcut) const
     return false;
 }
 
-uint32_t UIModel::getAppId(QVariant shortcut) const
+uint32_t UIModel::getAppId(QVariant shortcut)
 {
     if (!isInSteam(shortcut)) {
         return 0;
@@ -179,6 +178,10 @@ uint32_t UIModel::getAppId(QVariant shortcut) const
     for (auto& steam_shortcut : shortcuts_vdf_) {
         if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
             if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
+                if (steam_shortcut.appid == 0) {
+                    parseShortcutVDF();
+                    return getAppId(shortcut);
+                }
                 return steam_shortcut.appid;
             }
         }
@@ -323,13 +326,18 @@ void UIModel::enableSteamInputXboxSupport()
     }
 }
 
-bool UIModel::restartSteam()
+bool UIModel::restartSteam(const QString& steamURL)
 {
     const auto path = getSteamPath();
     if (QProcess::execute("taskkill.exe", {"/im", steam_executable_name_, "/f"}) != 0) {
         return false;
     }
-    QProcess::startDetached(QString::fromStdWString(path) + "/" + steam_executable_name_);
+    if (steamURL.isEmpty()) {
+        QProcess::startDetached(QString::fromStdWString(path) + "/" + steam_executable_name_);
+    }
+    else {
+        system((QString::fromLatin1("start ") + steamURL).toStdString().c_str());
+    }
     return true;
 }
 
@@ -499,7 +507,7 @@ void UIModel::loadSteamGridImages()
     steamgrid_proc_.write("\n");
 }
 
-QString UIModel::getGridImagePath(QVariant shortcut) const
+QString UIModel::getGridImagePath(QVariant shortcut)
 {
     if (!foundSteam()) {
         return "";
