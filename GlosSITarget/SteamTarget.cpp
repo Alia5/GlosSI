@@ -72,6 +72,41 @@ Application will not function!");
         if (!overlay_.expired())
             overlay_.lock()->setEnabled(true);
         steam_overlay_present_ = false;
+
+
+        spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
+        //SetEnvironmentVariable(L"SteamAppId", L"2934978560");
+        SetEnvironmentVariable(L"SteamTenfoot", L"1");
+        SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
+        SetEnvironmentVariable(L"SteamGamepadUI", L"1");
+        //SetEnvironmentVariable(L"SteamGameId", L"12605636929694728192");
+        //SetEnvironmentVariable(L"SteamOverlayGameId", L"12605636929694728192");
+        //SetEnvironmentVariable(L"SteamGameId", L"2934978560");
+        //SetEnvironmentVariable(L"SteamOverlayGameId", L"2934978560");
+
+        system("start steam://open/bigpicture");
+        auto steamwindow = FindWindow(L"SDL_app", nullptr);
+        int bla = 0;
+        while (!steamwindow && bla < 50) {
+            Sleep(100);
+            steamwindow = FindWindow(L"SDL_app", nullptr);
+            bla++;
+        }
+        if (steamwindow) {
+            LoadLibrary(L"C:\\Program Files (x86)\\Steam\\GameOverlayRenderer64.dll");
+
+            SendMessage(steamwindow, WM_CLOSE, 0, 0);
+            SendMessage(steamwindow, WM_QUIT, 0, 0);
+            SendMessage(steamwindow, WM_DESTROY, 0, 0);
+        } else {
+            spdlog::warn("Steam window not found!");
+        }
+
+        window_.setClickThrough(true);
+        if (!overlay_.expired())
+            overlay_.lock()->setEnabled(false);
+        steam_overlay_present_ = true;
+
     }
     else {
         spdlog::info("Steam-overlay detected.");
