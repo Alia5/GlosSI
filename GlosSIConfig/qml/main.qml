@@ -266,6 +266,23 @@ Window {
         }
     }
 
+	InfoDialog {
+        id: controllerConfigDialog
+        titleText: qsTr("Open Steam controller config")
+        text: qsTr("Steams controller config can only open if a controller is connected")
+            + "\n"
+            + qsTr("and the shortcut is visible in Steam (Steam restarted after adding).")
+        buttonText: qsTr("Open")
+        extraButton: true
+        extraButtonText: qsTr("Restart and open")
+        onConfirmedExtra: function(data) {
+            uiModel.restartSteam("steam://currentcontrollerconfig/" + data + "/")
+        }
+		onConfirmed: function(data) {
+            Qt.openUrlExternally("steam://currentcontrollerconfig/" + data + "/");
+        }
+    }
+
     Rectangle {
         id: titleBar
         visible: uiModel.isWindows

@@ -357,6 +357,7 @@ void TargetWindow::createWindow()
     overlay_ = std::make_shared<Overlay>(
         window_, [this]() { close(); }, toggle_overlay_state_, Settings::window.windowMode);
 
+    spdlog::debug("auto screen sCale: {}", dpi/96.f);
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
     ImGui::SFML::UpdateFontTexture();
@@ -369,7 +370,8 @@ void TargetWindow::createWindow()
         spdlog::debug("Config file fps limit seems sane...");
         setFpsLimit(Settings::window.maxFps);
     }
-    if (Settings::window.scale < 0.3f) { // Now that's just getting ridicoulus
+    if (Settings::window.scale > 0.3f) { // Now that's just getting ridicoulus
+        spdlog::debug("setting screen scale by config: {}", Settings::window.scale);
         ImGuiIO& io = ImGui::GetIO();
         io.FontGlobalScale = Settings::window.scale;
         ImGui::SFML::UpdateFontTexture();

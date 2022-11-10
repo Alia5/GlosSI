@@ -228,6 +228,9 @@ inline void Parse(const std::vector<std::wstring>& args)
         else if (arg == L"-ignorelauncher") {
             launch.ignoreLauncher = true;
         }
+        else if (arg == L"-window") {
+            window.windowMode = true;
+        }
         else {
             configName += L" " + std::wstring(arg.begin(), arg.end());
         }
