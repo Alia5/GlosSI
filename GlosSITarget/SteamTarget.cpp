@@ -46,7 +46,7 @@ SteamTarget::SteamTarget()
           delayed_shutdown_ = true;
           delay_shutdown_clock_.restart();
       }),
-      server_(launcher_)
+      server_(launcher_, [this] { run_ = false; })
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32

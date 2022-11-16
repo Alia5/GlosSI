@@ -168,8 +168,9 @@ int main(int argc, char* argv[])
 
         auto existingwindow = FindWindowA(nullptr, "GlosSITarget");
         if (existingwindow) {
-            spdlog::error("GlosSITarget is already running!");
-            return 1;
+            spdlog::error("GlosSITarget is already running! Closing old process...");
+            httplib::Client client("http://localhost:8756");
+            client.Post("/quit");
         }
 
         int numArgs;

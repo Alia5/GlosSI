@@ -23,7 +23,7 @@ class AppLauncher;
 class HttpServer {
 
   public:
-    explicit HttpServer(AppLauncher& app_launcher);
+    explicit HttpServer(AppLauncher& app_launcher, std::function<void()> close);
 
     void run();
     void stop();
@@ -34,4 +34,5 @@ class HttpServer {
     uint16_t port_ = 8756;
 
     AppLauncher& app_launcher_;
+    std::function<void()> close_;
 };
