@@ -37,6 +37,9 @@
     <ClCompile Include="ExeImageProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\GlosSITarget\UnhookUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="qml\main.qml">

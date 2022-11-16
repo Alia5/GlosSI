@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -168,8 +168,9 @@ int main(int argc, char* argv[])
 
         auto existingwindow = FindWindowA(nullptr, "GlosSITarget");
         if (existingwindow) {
-            spdlog::error("GlosSITarget is already running!");
-            return 1;
+            spdlog::error("GlosSITarget is already running! Closing old process...");
+            httplib::Client client("http://localhost:8756");
+            client.Post("/quit");
         }
 
         int numArgs;

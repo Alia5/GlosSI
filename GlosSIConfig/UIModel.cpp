@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ limitations under the License.
 #include <QJsonArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QMetaType>
+
 
 #include <WinReg/WinReg.hpp>
 
@@ -35,6 +37,9 @@ limitations under the License.
 
 #include "ExeImageProvider.h"
 #include "../version.hpp"
+
+#include "../../GlosSITarget/UnhookUtil.h"
+
 
 UIModel::UIModel() : QObject(nullptr)
 {
@@ -60,9 +65,13 @@ UIModel::UIModel() : QObject(nullptr)
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
 
+    auto defaultConf = getDefaultConf();
+    saveDefaultConf(defaultConf);
+
     parseShortcutVDF();
     readTargetConfigs();
     updateCheck();
+    readUnhookBytes();
 
     auto font = QGuiApplication::font();
     font.setPointSize(11);
@@ -115,6 +124,8 @@ bool UIModel::updateTarget(int index, QVariant shortcut)
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
+    const auto was_in_steam_ = isInSteam(shortcut);
+
     auto oldSteamName = targets_[index].toMap()["name"].toString();
     auto oldName =
         targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
@@ -132,15 +143,19 @@ bool UIModel::updateTarget(int index, QVariant shortcut)
     path /= config_dir_name_.toStdString();
     path /= (map["name"].toString()).toStdString();
 
-    if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
-        if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
-            qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
-            return false;
+    if (was_in_steam_) {
+        if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
+            if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
+                qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
+                return false;
+            }
+            return true;
         }
+        qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
+        return false;
+    } else {
         return true;
     }
-    qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
-    return false;
 }
 
 void UIModel::deleteTarget(int index)
@@ -159,7 +174,9 @@ bool UIModel::isInSteam(QVariant shortcut) const
 {
     const auto map = shortcut.toMap();
     for (auto& steam_shortcut : shortcuts_vdf_) {
-        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
+        if (
+            map["name"].toString() == QString::fromStdString(steam_shortcut.appname) ||
+            map["oldName"].toString() == QString::fromStdString(steam_shortcut.appname)) {
             if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
                 return true;
             }
@@ -383,6 +400,10 @@ QVariantMap UIModel::getDefaultConf() const
         {"extendedLogging", false},
         {"snapshotNotify", false},
         {"steamgridApiKey", QJsonValue::Null},
+        {"steamPath",
+         QJsonValue::fromVariant(QString::fromStdWString(getSteamPath(false).wstring()))},
+        {"steamUserId",
+         QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -403,9 +424,11 @@ QVariantMap UIModel::getDefaultConf() const
         {"window",
          QJsonObject{
              {"disableOverlay", false},
+             {"hideAltTab", false},
              {"maxFps", QJsonValue::Null},
              {"scale", QJsonValue::Null},
              {"windowMode", false},
+             {"disableGlosSIOverlay", false},
          }},
     };
 
@@ -719,20 +742,33 @@ QString UIModel::getVersionString() const { return QString(version::VERSION_STR)
 
 QString UIModel::getNewVersionName() const { return new_version_name_; }
 
-std::filesystem::path UIModel::getSteamPath() const
+std::filesystem::path UIModel::getSteamPath(bool tryConfig) const
 {
+    QVariantMap defaultConf;
+    if (tryConfig) {
+        defaultConf = getDefaultConf();
+    }   
+
     try {
 #ifdef _WIN32
         // TODO: check if keys/value exist
         // steam should always be open and have written reg values...
         winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
         if (!key.IsValid()) {
+            if (defaultConf.contains("steamPath") &&
+                QMetaType::canConvert(defaultConf["steamPath"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamPath"].toString().toStdWString();
+            }
             return "";
         }
         const auto res = key.GetStringValue(L"SteamPath");
         return res;
     }
     catch (...) {
+        if (defaultConf.contains("steamPath") &&
+            QMetaType::canConvert(defaultConf["steamPath"].metaType(), QMetaType(QMetaType::QString))) {
+            return defaultConf["steamPath"].toString().toStdWString();
+        }
         return "";
     }
 #else
@@ -740,23 +776,39 @@ std::filesystem::path UIModel::getSteamPath() const
 #endif
 }
 
-std::wstring UIModel::getSteamUserId() const
+std::wstring UIModel::getSteamUserId(bool tryConfig) const
 {
+    QVariantMap defaultConf;
+    if (tryConfig) {
+        defaultConf = getDefaultConf();
+    }
 #ifdef _WIN32
     try {
         // TODO: check if keys/value exist
         // steam should always be open and have written reg values...
         winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
         if (!key.IsValid()) {
+            if (defaultConf.contains("steamUserId") &&
+                QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamUserId"].toString().toStdWString();
+            }
             return L"0";
         }
         const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
         if (res == L"0") {
             qDebug() << "Steam not open?";
+            if (defaultConf.contains("steamUserId") &&
+                QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamUserId"].toString().toStdWString();
+            }
         }
         return res;
     }
     catch (...) {
+        if (defaultConf.contains("steamUserId") &&
+            QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+            return defaultConf["steamUserId"].toString().toStdWString();
+        }
         return L"0";
     }
 #else
@@ -829,4 +881,36 @@ bool UIModel::isSteamInputXboxSupportEnabled() const
         }
     }
     return true;
+}
+
+void UIModel::readUnhookBytes() const
+{
+    std::map<std::string, std::string> unhook_bytes;
+    for (const auto& name : UnhookUtil::UNHOOK_BYTES_ORIGINAL_22000 | std::views::keys) {
+        auto bytes = UnhookUtil::ReadOriginalBytes(
+            name,
+            name.starts_with("Hid")
+                ? L"hid.dll"
+                   : name.starts_with("Setup") 
+                        ? L"setupapi.dll"
+                        : L"Kernel32.dll"
+        );
+        unhook_bytes[name] = bytes;
+    }
+    auto path = config_path_;
+    path /= "unhook_bytes";
+    QFile file(path);
+    if (!file.open(QIODevice::Truncate | QIODevice::ReadWrite)) {
+        qDebug() << "Couldn't open file for writing: " << path;
+        return;
+    }
+
+    for (const auto& [name, bytes] : unhook_bytes) {
+        file.write(
+            QString::fromStdString(name + ":").toStdString().data()
+        );
+        file.write(bytes.data(), bytes.size());
+        file.write("\n");
+    }
+    file.close();
 }

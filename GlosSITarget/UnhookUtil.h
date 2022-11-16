@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ limitations under the License.
 namespace UnhookUtil {
 void UnPatchHook(const std::string& name, HMODULE module);
 
+std::string ReadOriginalBytes(const std::string& name, const std::wstring& moduleName);
+
 static inline const std::vector<uint8_t> JUMP_INSTR_OPCODES = {
     0xE9,
     0xE8,
@@ -34,6 +36,9 @@ static inline const std::vector<uint8_t> JUMP_INSTR_OPCODES = {
 
 // Valve Hooks various functions and hides Gaming devices like this.
 // To be able to query them, unpatch the hook with the original bytes...
+
+// Bytes here are just fallbacks; originalbytes will get read from GlosSIConfig and stored in %APPDATA%\GlosSI\unhook_bytes
+
 // 22000 ^= Windows build number
 static inline const std::map<std::string, std::string> UNHOOK_BYTES_ORIGINAL_22000 = {
     {"SetupDiEnumDeviceInfo", "\x48\x89\x5C\x24\x08"},

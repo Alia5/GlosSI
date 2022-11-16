@@ -1,5 +1,5 @@
 ﻿/*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ CollapsiblePane {
 
             RPane {
                 width: parent.width / 2 - 8
-                height: 248
+                height: 324
                 radius: 4
                 Material.elevation: 32
                 bgOpacity: 0.97
@@ -290,7 +290,7 @@ CollapsiblePane {
             }
             RPane {
                 width: parent.width / 2 - 8
-                height: 248
+                height: 324
                 radius: 4
                 Material.elevation: 32
                 bgOpacity: 0.97
@@ -345,6 +345,76 @@ CollapsiblePane {
                                     qsTr("Only controller emulation - No extra window")
                                     + "\n"
                                     + qsTr("Might help with Steam remote play.")
+
+                                helpInfoDialog.open()
+                            }
+                            width: 48
+                            height: 48
+                            Material.elevation: 0
+                            anchors.topMargin: 16
+                            Image {
+                                anchors.centerIn: parent
+                                source: "qrc:/svg/help_outline_white_24dp.svg"
+                                width: 24
+                                height: 24
+                            }
+                        }
+                    }
+                                        Item {
+                        width: 1
+                        height: 4
+                    }
+
+                    Row {
+                        CheckBox {
+                            id: hideAltTabCheckbox
+                            text: qsTr("Hide GlosSI from Windowlist (Alt+Tab)")
+                            checked: shortcutInfo.window.hideAltTab
+                            onCheckedChanged: shortcutInfo.window.hideAltTab = checked
+                        }
+                        RoundButton {
+                            onClicked: () => {
+                                helpInfoDialog.titleText = qsTr("Hide GlosSI from Windowlist (Alt+Tab)")
+                                helpInfoDialog.text = 
+                                    qsTr("Hides GlosSI from the Windowlist (Alt+Tab)")
+                                    + "\n"
+                                    + qsTr("You can close the GlosSI-Window via the system-tray")
+                                    + "\n"
+                                    + "\n"
+                                    + qsTr("Might help with Steam remote play.")
+
+                                helpInfoDialog.open()
+                            }
+                            width: 48
+                            height: 48
+                            Material.elevation: 0
+                            anchors.topMargin: 16
+                            Image {
+                                anchors.centerIn: parent
+                                source: "qrc:/svg/help_outline_white_24dp.svg"
+                                width: 24
+                                height: 24
+                            }
+                        }
+                    }
+                    Item {
+                        width: 1
+                        height: 4
+                    }
+                    Row {
+                        CheckBox {
+                            id: disableGlosSIOverlayCheckbox
+                            text: qsTr("Disable GlosSI overlay")
+                            checked: shortcutInfo.window.disableGlosSIOverlay
+                            onCheckedChanged: shortcutInfo.window.disableGlosSIOverlay = checked
+                        }
+                        RoundButton {
+                            onClicked: () => {
+                                helpInfoDialog.titleText = qsTr("Disable GlosSI overlay")
+                                helpInfoDialog.text = 
+                                    qsTr("Disables the additional GlosSI overlay")
+                                    + "\n"
+                                    + qsTr("but keeps the Steam overlay");
 
                                 helpInfoDialog.open()
                             }

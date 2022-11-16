@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ limitations under the License.
 #include "AppLauncher.h"
 #include "Settings.h"
 
-HttpServer::HttpServer(AppLauncher& app_launcher) : app_launcher_(app_launcher)
+HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(close)
 {
 }
 
@@ -60,6 +60,10 @@ void HttpServer::run()
         }
         const nlohmann::json j = app_launcher_.launchedPids();
         res.set_content(j.dump(), "text/json");
+    });
+
+    server_.Post("/quit", [this](const httplib::Request& req, httplib::Response& res) {
+        close_();
     });
 
     server_.Get("/settings", [this](const httplib::Request& req, httplib::Response& res) {

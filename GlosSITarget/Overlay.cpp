@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -180,6 +180,11 @@ void Overlay::update()
         } else {
             showSplash(128);
         }
+    }
+
+    if (Settings::window.disableGlosSIOverlay) {
+        ImGui::SFML::Render(window_);
+        return;
     }
 
     showLogs(0);

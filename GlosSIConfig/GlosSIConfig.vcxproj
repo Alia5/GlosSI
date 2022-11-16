@@ -69,7 +69,7 @@
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/Zc:__cplusplus /Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;CONFIGAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;..\deps\fifo_map\src;..\deps\Shortcuts_VDF\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
@@ -92,7 +92,7 @@
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/Zc:__cplusplus  /Zc:zwoPhase-  /permissive- %(AdditionalOptions)</AdditionalOptions>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;CONFIGAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\deps\WinReg;..\deps\fifo_map\src;..\deps\Shortcuts_VDF\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Manifest>
@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\GlosSITarget\UnhookUtil.cpp" />
     <ClCompile Include="ExeImageProvider.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIModel.cpp" />
