@@ -336,6 +336,9 @@ void TargetWindow::createWindow()
     style |= WS_POPUP;
     SetWindowLong(hwnd, GWL_STYLE, style);
     
+    // hiding GlosSI from Alt-Tab list
+    // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+    auto exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
     exStyle |= WS_EX_TOOLWINDOW;
     SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
