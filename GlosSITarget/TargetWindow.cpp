@@ -336,9 +336,8 @@ void TargetWindow::createWindow()
     style |= WS_POPUP;
     SetWindowLong(hwnd, GWL_STYLE, style);
     
-    auto exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
     exStyle |= WS_EX_TOOLWINDOW;
-    SetWindowLong(hWnd, GWL_EXSTYLE, exStyle);
+    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
     MARGINS margins;
     margins.cxLeftWidth = -1;
