@@ -116,13 +116,28 @@ void TargetWindow::setClickThrough(bool click_through)
     }
 #ifdef _WIN32
     HWND hwnd = window_.getSystemHandle();
-    if (click_through) {
-        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED);
-        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+    // hiding GlosSI from Alt-Tab list
+    // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+    if (Settings::window.hideAltTab) {
+        if (click_through) {
+            SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED | WS_EX_TOOLWINDOW);
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+        else {
+            SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_COMPOSITED | WS_EX_TOOLWINDOW);
+            SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
     }
     else {
-        SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_COMPOSITED);
-        SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        if (click_through) {
+            SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED);
+            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
+        else {
+            SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_COMPOSITED);
+            SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        }
     }
 #endif
 }
@@ -336,11 +351,6 @@ void TargetWindow::createWindow()
     style |= WS_POPUP;
     SetWindowLong(hwnd, GWL_STYLE, style);
     
-    // hiding GlosSI from Alt-Tab list
-    // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-    auto exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-    exStyle |= WS_EX_TOOLWINDOW;
-    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
 
     MARGINS margins;
     margins.cxLeftWidth = -1;
