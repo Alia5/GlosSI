@@ -82,4 +82,5 @@ class TargetWindow {
     void createWindow();
 
     bool toggle_window_mode_after_frame_ = false;
+    bool toggle_hidealttab_after_frame_ = false;
 };

@@ -56,6 +56,11 @@ TargetWindow::TargetWindow(
         if (ImGui::Checkbox("Window mode", &Settings::window.windowMode)) {
             toggle_window_mode_after_frame_ = true;
         }
+#ifdef _WIN32
+        if (ImGui::Checkbox("Hide from Alt+Tab", &Settings::window.hideAltTab)) {
+            toggle_hidealttab_after_frame_ = true;
+        }
+#endif
         ImGui::Text("Max. FPS");
         ImGui::SameLine();
         int max_fps_copy = Settings::window.maxFps;
@@ -120,6 +125,8 @@ void TargetWindow::setClickThrough(bool click_through)
     // hiding GlosSI from Alt-Tab list
     // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
     if (Settings::window.hideAltTab) {
+        toggle_hidealttab_after_frame_ = false;
+
         if (click_through) {
             SetWindowLong(hwnd, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_COMPOSITED | WS_EX_TOOLWINDOW);
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -157,9 +164,15 @@ void TargetWindow::update()
     screenShotWorkaround();
     overlay_->update();
     window_.display();
+#ifdef _WIN32
+    if (toggle_hidealttab_after_frame_) {
+        toggle_hidealttab_after_frame_ = false;
+    }
+#endif
     if (toggle_window_mode_after_frame_) {
         createWindow();
     }
+
     // As SFML screws us out of most windows-events, just poll resolution every once in a while
     // If changed, recreate window.
     // Fixes Blackscreen issues when user does funky stuff and still uses GlosSI in non windowed mod...
