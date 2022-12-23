@@ -54,6 +54,7 @@ inline struct Window {
     int maxFps = 0;
     float scale = 0.f;
     bool disableOverlay = false;
+    bool hideAltTab = false;
 } window;
 
 inline struct Controller {
@@ -189,6 +190,7 @@ inline void Parse(const nlohmann::basic_json<>& json)
             safeParseValue(winconf, "maxFps", window.maxFps);
             safeParseValue(winconf, "scale", window.scale);
             safeParseValue(winconf, "disableOverlay", window.disableOverlay);
+            safeParseValue(winconf, "hideAltTab", window.hideAltTab);
         }
 
         if (auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object()) {
@@ -293,6 +295,7 @@ inline nlohmann::json toJson()
     json["window"]["maxFps"] = window.maxFps;
     json["window"]["scale"] = window.scale;
     json["window"]["disableOverlay"] = window.disableOverlay;
+    json["window"]["hideAltTab"] = window.hideAltTab;
     json["controller"]["maxControllers"] = controller.maxControllers;
     json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
     json["controller"]["emulateDS4"] = controller.emulateDS4;
