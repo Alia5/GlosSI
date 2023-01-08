@@ -27,13 +27,13 @@
 	url = https://github.com/nlohmann/json
 [submodule "deps/traypp"]
 	path = deps/traypp
-	url = https://github.com/Soundux/traypp.git
+	url = https://github.com/Soundux/traypp
 [submodule "deps/fifo_map"]
 	path = deps/fifo_map
-	url = git@github.com:nlohmann/fifo_map.git
+	url =  https://github.com/nlohmann/fifo_map
 [submodule "deps/Shortcuts_VDF"]
 	path = deps/Shortcuts_VDF
-	url = git@github.com:Alia5/Shortcuts_VDF.git
+	url =  https://github.com/Alia5/Shortcuts_VDF
 [submodule "deps/cpp-httplib"]
 	path = deps/cpp-httplib
-	url = git@github.com:yhirose/cpp-httplib.git
+	url =  https://github.com/yhirose/cpp-httplib
