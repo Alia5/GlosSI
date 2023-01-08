@@ -492,12 +492,12 @@ Window {
                     if (windowContent.editedIndex < 0) {
                         uiModel.addTarget(shortcut)
                     } else {
-					    if (uiModel.isInSteam(shortcut)) {
-                            if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
-						        if (steamShortcutsChanged == false) {
-                                    steamChangedDialog.open();
-                                }
-                            } else {
+                        if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
+						    if (uiModel.isInSteam(shortcut) && steamShortcutsChanged == false) {
+                                steamChangedDialog.open();
+                            }
+                        } else {
+                            if (uiModel.isInSteam(shortcut)) {
 						        manualInfo = uiModel.manualProps(shortcut);
                                 writeErrorDialog.open();
                             }                    

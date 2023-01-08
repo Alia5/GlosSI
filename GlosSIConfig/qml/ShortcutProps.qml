@@ -136,7 +136,11 @@ Item {
                     id: nameInput
                     placeholderText: qsTr("...")
                     text: shortcutInfo.name
-                    onTextChanged: shortcutInfo.name = text
+				    onTextChanged: function() {
+                        shortcutInfo.oldName = shortcutInfo.oldName || shortcutInfo.name
+                        shortcutInfo.name = nameInput.text
+						shortcutInfo = shortcutInfo
+					}
                     validator: RegularExpressionValidator { regularExpression: /([0-z]|\s|.)+/gm }
                 }
             }
