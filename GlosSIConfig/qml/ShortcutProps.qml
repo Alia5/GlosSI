@@ -374,7 +374,7 @@ Item {
         id: egsSelectDialog
         onConfirmed: function(modelData) {
             if (nameInput.text == "") {
-                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop()
+                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop().replace(/([a-z])([A-Z])/g, '$1 $2')
             }
             pathInput.text = "com.epicgames.launcher://apps/"
                 + modelData.NamespaceId

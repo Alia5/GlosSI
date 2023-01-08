@@ -189,7 +189,7 @@ Dialog {
 					anchors.verticalCenter: parent.verticalCenter
 					spacing: 2
 					Label {
-						text: modelData.InstallLocation.split('/').pop().split('\\').pop()
+						text: modelData.InstallLocation.split('/').pop().split('\\').pop().replace(/([a-z])([A-Z])/g, '$1 $2')
 						font.pixelSize: 18
 						font.bold: true
 					}
