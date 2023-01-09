@@ -1,5 +1,5 @@
 ﻿/*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -492,12 +492,12 @@ Window {
                     if (windowContent.editedIndex < 0) {
                         uiModel.addTarget(shortcut)
                     } else {
-					    if (uiModel.isInSteam(shortcut)) {
-                            if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
-						        if (steamShortcutsChanged == false) {
-                                    steamChangedDialog.open();
-                                }
-                            } else {
+                        if (uiModel.updateTarget(windowContent.editedIndex, shortcut)) {
+						    if (uiModel.isInSteam(shortcut) && steamShortcutsChanged == false) {
+                                steamChangedDialog.open();
+                            }
+                        } else {
+                            if (uiModel.isInSteam(shortcut)) {
 						        manualInfo = uiModel.manualProps(shortcut);
                                 writeErrorDialog.open();
                             }                    

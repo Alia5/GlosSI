@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -115,6 +115,8 @@ bool UIModel::updateTarget(int index, QVariant shortcut)
     const auto map = shortcut.toMap();
     const auto json = QJsonObject::fromVariantMap(map);
 
+    const auto was_in_steam_ = isInSteam(shortcut);
+
     auto oldSteamName = targets_[index].toMap()["name"].toString();
     auto oldName =
         targets_[index].toMap()["name"].toString().replace(QRegularExpression("[\\\\/:*?\"<>|]"), "") + ".json";
@@ -132,15 +134,19 @@ bool UIModel::updateTarget(int index, QVariant shortcut)
     path /= config_dir_name_.toStdString();
     path /= (map["name"].toString()).toStdString();
 
-    if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
-        if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
-            qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
-            return false;
+    if (was_in_steam_) {
+        if (removeFromSteam(oldSteamName, QString::fromStdWString(path.wstring()))) {
+            if (!addToSteam(shortcut, QString::fromStdWString(path.wstring()))) {
+                qDebug() << "Couldn't add shortcut \"" << (map["name"].toString()) << "\" to Steam when updating";
+                return false;
+            }
+            return true;
         }
+        qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
+        return false;
+    } else {
         return true;
     }
-    qDebug() << "Couldn't remove shortcut \"" << oldName << "\" from Steam when updating";
-    return false;
 }
 
 void UIModel::deleteTarget(int index)
@@ -159,7 +165,9 @@ bool UIModel::isInSteam(QVariant shortcut) const
 {
     const auto map = shortcut.toMap();
     for (auto& steam_shortcut : shortcuts_vdf_) {
-        if (map["name"].toString() == QString::fromStdString(steam_shortcut.appname)) {
+        if (
+            map["name"].toString() == QString::fromStdString(steam_shortcut.appname) ||
+            map["oldName"].toString() == QString::fromStdString(steam_shortcut.appname)) {
             if (QString::fromStdString(steam_shortcut.exe).toLower().contains("glossitarget.exe")) {
                 return true;
             }
