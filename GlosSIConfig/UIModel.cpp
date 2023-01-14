@@ -411,6 +411,7 @@ QVariantMap UIModel::getDefaultConf() const
         {"window",
          QJsonObject{
              {"disableOverlay", false},
+             {"hideAltTab", false},
              {"maxFps", QJsonValue::Null},
              {"scale", QJsonValue::Null},
              {"windowMode", false},
