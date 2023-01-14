@@ -70,6 +70,8 @@ inline struct Common {
     std::wstring name;
     std::wstring icon;
     int version;
+    std::wstring steamPath;
+    std::wstring steamUserId;
 } common;
 
 inline std::filesystem::path settings_path_ = "";
@@ -202,6 +204,9 @@ inline void Parse(const nlohmann::basic_json<>& json)
         safeWStringParse(json, "name", common.name);
         safeWStringParse(json, "icon", common.icon);
         safeParseValue(json, "version", common.version);
+
+        safeWStringParse(json, "steamPath", common.steamPath);
+        safeWStringParse(json, "steamUserId", common.steamUserId);
     }
     catch (const nlohmann::json::exception& e) {
         spdlog::warn("Err parsing config: {}", e.what());

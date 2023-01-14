@@ -125,8 +125,8 @@ class UIModel : public QObject {
     QString getVersionString() const;
     QString getNewVersionName() const;
 
-    std::filesystem::path getSteamPath() const;
-    std::wstring getSteamUserId() const;
+    std::filesystem::path getSteamPath(bool tryConfig = true) const;
+    std::wstring getSteamUserId(bool tryConfig = true) const;
     bool foundSteam() const;
     void parseShortcutVDF();
 

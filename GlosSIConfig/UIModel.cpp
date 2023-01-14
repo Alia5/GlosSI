@@ -22,6 +22,8 @@ limitations under the License.
 #include <QJsonArray>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QMetaType>
+
 
 #include <WinReg/WinReg.hpp>
 
@@ -62,6 +64,9 @@ UIModel::UIModel() : QObject(nullptr)
 
     if (!std::filesystem::exists(path))
         std::filesystem::create_directories(path);
+
+    auto defaultConf = getDefaultConf();
+    saveDefaultConf(defaultConf);
 
     parseShortcutVDF();
     readTargetConfigs();
@@ -395,6 +400,10 @@ QVariantMap UIModel::getDefaultConf() const
         {"extendedLogging", false},
         {"snapshotNotify", false},
         {"steamgridApiKey", QJsonValue::Null},
+        {"steamPath",
+         QJsonValue::fromVariant(QString::fromStdWString(getSteamPath(false).wstring()))},
+        {"steamUserId",
+         QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -732,20 +741,33 @@ QString UIModel::getVersionString() const { return QString(version::VERSION_STR)
 
 QString UIModel::getNewVersionName() const { return new_version_name_; }
 
-std::filesystem::path UIModel::getSteamPath() const
+std::filesystem::path UIModel::getSteamPath(bool tryConfig) const
 {
+    QVariantMap defaultConf;
+    if (tryConfig) {
+        defaultConf = getDefaultConf();
+    }   
+
     try {
 #ifdef _WIN32
         // TODO: check if keys/value exist
         // steam should always be open and have written reg values...
         winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
         if (!key.IsValid()) {
+            if (defaultConf.contains("steamPath") &&
+                QMetaType::canConvert(defaultConf["steamPath"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamPath"].toString().toStdWString();
+            }
             return "";
         }
         const auto res = key.GetStringValue(L"SteamPath");
         return res;
     }
     catch (...) {
+        if (defaultConf.contains("steamPath") &&
+            QMetaType::canConvert(defaultConf["steamPath"].metaType(), QMetaType(QMetaType::QString))) {
+            return defaultConf["steamPath"].toString().toStdWString();
+        }
         return "";
     }
 #else
@@ -753,23 +775,39 @@ std::filesystem::path UIModel::getSteamPath() const
 #endif
 }
 
-std::wstring UIModel::getSteamUserId() const
+std::wstring UIModel::getSteamUserId(bool tryConfig) const
 {
+    QVariantMap defaultConf;
+    if (tryConfig) {
+        defaultConf = getDefaultConf();
+    }
 #ifdef _WIN32
     try {
         // TODO: check if keys/value exist
         // steam should always be open and have written reg values...
         winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
         if (!key.IsValid()) {
+            if (defaultConf.contains("steamUserId") &&
+                QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamUserId"].toString().toStdWString();
+            }
             return L"0";
         }
         const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
         if (res == L"0") {
             qDebug() << "Steam not open?";
+            if (defaultConf.contains("steamUserId") &&
+                QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+                return defaultConf["steamUserId"].toString().toStdWString();
+            }
         }
         return res;
     }
     catch (...) {
+        if (defaultConf.contains("steamUserId") &&
+            QMetaType::canConvert(defaultConf["steamUserId"].metaType(), QMetaType(QMetaType::QString))) {
+            return defaultConf["steamUserId"].toString().toStdWString();
+        }
         return L"0";
     }
 #else

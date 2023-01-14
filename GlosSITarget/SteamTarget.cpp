@@ -253,7 +253,7 @@ std::filesystem::path SteamTarget::getSteamPath() const
     catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
-    return L"";
+    return Settings::common.steamPath;
 #else
     return L""; // TODO
 #endif
@@ -273,7 +273,7 @@ std::wstring SteamTarget::getSteamUserId() const
     catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
-    return L"";
+    return Settings::common.steamUserId;
 #else
     return L""; // TODO
 #endif
