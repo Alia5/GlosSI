@@ -15,12 +15,63 @@ limitations under the License.
 */
 #include "UnhookUtil.h"
 
+#ifndef CONFIGAPP
 #include <spdlog/spdlog.h>
 
 #include "Settings.h"
+#endif
 
 void UnhookUtil::UnPatchHook(const std::string& name, HMODULE module)
 {
+#ifndef CONFIGAPP
+
+
+    std::map<std::string, std::string> original_bytes_from_file;
+
+    wchar_t* localAppDataFolder;
+    std::filesystem::path configDirPath;
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
+        configDirPath = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
+    }
+    else {
+        configDirPath = std::filesystem::path(localAppDataFolder).parent_path();
+    }
+
+    configDirPath /= "Roaming";
+    configDirPath /= "GlosSI";
+    if (std::filesystem::exists(configDirPath)) {
+        auto unhook_file_path = configDirPath / "unhook_bytes";
+        if (std::filesystem::exists(unhook_file_path)) {
+
+            std::ifstream ifile;
+            ifile.open(unhook_file_path, std::ios::binary | std::ios::in);
+            if (ifile.is_open()) {
+
+                std::string funcName;
+                char buff;
+                do {
+                    if (ifile.eof()) {
+                        break;
+                    }
+                    ifile.read(&buff, sizeof(char));
+                    if (buff != ':') {
+                        funcName.push_back(buff);
+                    } else {
+                        char bytes[8];
+                        ifile.read(bytes, sizeof(char) * 8);
+                        ifile.read(&buff, sizeof(char)); // newline
+                        original_bytes_from_file[funcName] = std::string(bytes, 8);
+                        funcName = "";
+                    }
+                } while (!ifile.eof());
+
+                ifile.close();
+            }
+        }
+    }
+
+
+
     spdlog::trace("Patching \"{}\"...", name);
 
     BYTE* address = reinterpret_cast<BYTE*>(GetProcAddress(module, name.c_str()));
@@ -28,11 +79,19 @@ void UnhookUtil::UnPatchHook(const std::string& name, HMODULE module)
         spdlog::error("failed to unpatch \"{}\"", name);
     }
     std::string bytes;
-    if (Settings::isWin10 && UNHOOK_BYTES_ORIGINAL_WIN10.contains(name)) {
-        bytes = UNHOOK_BYTES_ORIGINAL_WIN10.at(name);
+
+    if (original_bytes_from_file.contains(name)) {
+        bytes = original_bytes_from_file.at(name);
+        spdlog::trace("Using originalBytes from file for {}", name);
     }
     else {
-        bytes = UNHOOK_BYTES_ORIGINAL_22000.at(name);
+        if (Settings::isWin10 && UNHOOK_BYTES_ORIGINAL_WIN10.contains(name)) {
+            bytes = UNHOOK_BYTES_ORIGINAL_WIN10.at(name);
+        }
+        else {
+            bytes = UNHOOK_BYTES_ORIGINAL_22000.at(name);
+        }
+        spdlog::trace("Using fallback originalBytes for {}", name);
     }
     DWORD dw_old_protect, dw_bkup;
     const auto len = bytes.size();
@@ -52,4 +111,18 @@ void UnhookUtil::UnPatchHook(const std::string& name, HMODULE module)
         spdlog::trace("Unpatched \"{}\"", name);
     }
     VirtualProtect(address, len, dw_old_protect, &dw_bkup); // Revert permission change...
+#endif
+}
+
+std::string UnhookUtil::ReadOriginalBytes(const std::string& name, const std::wstring& moduleName)
+{
+    auto module = LoadLibraryW(moduleName.c_str());
+    auto address = reinterpret_cast<BYTE*>(GetProcAddress(module, name.c_str()));
+    std::string res;
+    res.resize(8);
+
+    for (int i = 0; i < 8; i++) {
+        res[i] = static_cast<char>(*(address + i));
+    }
+    return res;
 }

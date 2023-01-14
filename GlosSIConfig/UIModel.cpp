@@ -36,6 +36,9 @@ limitations under the License.
 #include "ExeImageProvider.h"
 #include "../version.hpp"
 
+#include "../../GlosSITarget/UnhookUtil.h"
+
+
 UIModel::UIModel() : QObject(nullptr)
 {
     wchar_t* localAppDataFolder;
@@ -63,6 +66,7 @@ UIModel::UIModel() : QObject(nullptr)
     parseShortcutVDF();
     readTargetConfigs();
     updateCheck();
+    readUnhookBytes();
 
     auto font = QGuiApplication::font();
     font.setPointSize(11);
@@ -838,4 +842,36 @@ bool UIModel::isSteamInputXboxSupportEnabled() const
         }
     }
     return true;
+}
+
+void UIModel::readUnhookBytes() const
+{
+    std::map<std::string, std::string> unhook_bytes;
+    for (const auto& name : UnhookUtil::UNHOOK_BYTES_ORIGINAL_22000 | std::views::keys) {
+        auto bytes = UnhookUtil::ReadOriginalBytes(
+            name,
+            name.starts_with("Hid")
+                ? L"hid.dll"
+                   : name.starts_with("Setup") 
+                        ? L"setupapi.dll"
+                        : L"Kernel32.dll"
+        );
+        unhook_bytes[name] = bytes;
+    }
+    auto path = config_path_;
+    path /= "unhook_bytes";
+    QFile file(path);
+    if (!file.open(QIODevice::Truncate | QIODevice::ReadWrite)) {
+        qDebug() << "Couldn't open file for writing: " << path;
+        return;
+    }
+
+    for (const auto& [name, bytes] : unhook_bytes) {
+        file.write(
+            QString::fromStdString(name + ":").toStdString().data()
+        );
+        file.write(bytes.data(), bytes.size());
+        file.write("\n");
+    }
+    file.close();
 }

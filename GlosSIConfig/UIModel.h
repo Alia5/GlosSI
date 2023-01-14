@@ -131,4 +131,6 @@ class UIModel : public QObject {
     void parseShortcutVDF();
 
     bool isSteamInputXboxSupportEnabled() const;
+
+    void readUnhookBytes() const;
 };
