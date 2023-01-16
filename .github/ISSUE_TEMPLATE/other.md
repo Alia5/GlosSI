@@ -18,4 +18,7 @@ assignees: ''
   
 ## Logs / Additional Files
 
-(Log and config files are located in `%appdata%/GlosSI`)
+Log and config files are located in `%appdata%/GlosSI`
+The files are called: glossiconfig.log, glossitarget.log, GlosSIWatchdog.log and UWPOverlayEnabler.log
+
+_(Windows-search may not pick up the files when searching for `log` **if** file endings are hidden (default setting))_
