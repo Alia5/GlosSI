@@ -55,6 +55,7 @@ inline struct Window {
     float scale = 0.f;
     bool disableOverlay = false;
     bool hideAltTab = false;
+    bool disableGlosSIOverlay = false;
 } window;
 
 inline struct Controller {
@@ -193,6 +194,7 @@ inline void Parse(const nlohmann::basic_json<>& json)
             safeParseValue(winconf, "scale", window.scale);
             safeParseValue(winconf, "disableOverlay", window.disableOverlay);
             safeParseValue(winconf, "hideAltTab", window.hideAltTab);
+            safeParseValue(winconf, "disableGlosSIOverlay", window.disableGlosSIOverlay);
         }
 
         if (auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object()) {

@@ -180,6 +180,9 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
 
 void SteamTarget::toggleGlossiOverlay()
 {
+    if (Settings::window.disableGlosSIOverlay) {
+        return;
+    }
     if (overlay_.expired()) {
         return;
     }

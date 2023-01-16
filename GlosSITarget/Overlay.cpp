@@ -182,6 +182,11 @@ void Overlay::update()
         }
     }
 
+    if (Settings::window.disableGlosSIOverlay) {
+        ImGui::SFML::Render(window_);
+        return;
+    }
+
     showLogs(0);
 
     if (enabled_ || force_enable_) {
