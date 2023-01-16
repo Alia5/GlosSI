@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 
-  - [ ] _**I Have read and understand that tickets without Logs (or other info if Logs are 1000% not relevant) will be closed without comment.**_
+  - [ ] _**I have read and understand that tickets without Logs (or other info if Logs are 1000% not relevant) will be closed without comment.**_
 
 ## Expected Behavior
 
