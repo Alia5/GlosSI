@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+  - [ ] _**I have read and understand that tickets without Logs (or other info if Logs are 1000% not relevant) will be closed without comment.**_
+
 ## General Information
 
   - Version: (0.0.0.0-0-g1234567)
