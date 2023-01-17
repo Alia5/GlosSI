@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ SteamTarget::SteamTarget()
           delayed_shutdown_ = true;
           delay_shutdown_clock_.restart();
       }),
-      server_(launcher_)
+      server_(launcher_, [this] { run_ = false; })
 {
     target_window_handle_ = window_.getSystemHandle();
 #ifdef _WIN32
@@ -180,6 +180,9 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
 
 void SteamTarget::toggleGlossiOverlay()
 {
+    if (Settings::window.disableGlosSIOverlay) {
+        return;
+    }
     if (overlay_.expired()) {
         return;
     }
@@ -253,7 +256,7 @@ std::filesystem::path SteamTarget::getSteamPath() const
     catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
-    return L"";
+    return Settings::common.steamPath;
 #else
     return L""; // TODO
 #endif
@@ -273,7 +276,7 @@ std::wstring SteamTarget::getSteamUserId() const
     catch (const winreg::RegException& e) {
         spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
     }
-    return L"";
+    return Settings::common.steamUserId;
 #else
     return L""; // TODO
 #endif

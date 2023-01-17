@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ inline struct Window {
     int maxFps = 0;
     float scale = 0.f;
     bool disableOverlay = false;
+    bool hideAltTab = false;
+    bool disableGlosSIOverlay = false;
 } window;
 
 inline struct Controller {
@@ -69,6 +71,8 @@ inline struct Common {
     std::wstring name;
     std::wstring icon;
     int version;
+    std::wstring steamPath;
+    std::wstring steamUserId;
 } common;
 
 inline std::filesystem::path settings_path_ = "";
@@ -189,6 +193,8 @@ inline void Parse(const nlohmann::basic_json<>& json)
             safeParseValue(winconf, "maxFps", window.maxFps);
             safeParseValue(winconf, "scale", window.scale);
             safeParseValue(winconf, "disableOverlay", window.disableOverlay);
+            safeParseValue(winconf, "hideAltTab", window.hideAltTab);
+            safeParseValue(winconf, "disableGlosSIOverlay", window.disableGlosSIOverlay);
         }
 
         if (auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object()) {
@@ -200,6 +206,9 @@ inline void Parse(const nlohmann::basic_json<>& json)
         safeWStringParse(json, "name", common.name);
         safeWStringParse(json, "icon", common.icon);
         safeParseValue(json, "version", common.version);
+
+        safeWStringParse(json, "steamPath", common.steamPath);
+        safeWStringParse(json, "steamUserId", common.steamUserId);
     }
     catch (const nlohmann::json::exception& e) {
         spdlog::warn("Err parsing config: {}", e.what());
@@ -293,6 +302,7 @@ inline nlohmann::json toJson()
     json["window"]["maxFps"] = window.maxFps;
     json["window"]["scale"] = window.scale;
     json["window"]["disableOverlay"] = window.disableOverlay;
+    json["window"]["hideAltTab"] = window.hideAltTab;
     json["controller"]["maxControllers"] = controller.maxControllers;
     json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
     json["controller"]["emulateDS4"] = controller.emulateDS4;

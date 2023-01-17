@@ -1,5 +1,5 @@
 ﻿/*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ Dialog {
 					anchors.verticalCenter: parent.verticalCenter
 					spacing: 2
 					Label {
-						text: modelData.InstallLocation.split('/').pop().split('\\').pop()
+						text: modelData.InstallLocation.split('/').pop().split('\\').pop().replace(/([a-z])([A-Z])/g, '$1 $2')
 						font.pixelSize: 18
 						font.bold: true
 					}

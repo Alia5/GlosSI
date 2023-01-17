@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ class AppLauncher;
 class HttpServer {
 
   public:
-    explicit HttpServer(AppLauncher& app_launcher);
+    explicit HttpServer(AppLauncher& app_launcher, std::function<void()> close);
 
     void run();
     void stop();
@@ -34,4 +34,5 @@ class HttpServer {
     uint16_t port_ = 8756;
 
     AppLauncher& app_launcher_;
+    std::function<void()> close_;
 };

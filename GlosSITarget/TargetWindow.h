@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -82,4 +82,5 @@ class TargetWindow {
     void createWindow();
 
     bool toggle_window_mode_after_frame_ = false;
+    bool toggle_hidealttab_after_frame_ = false;
 };

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -136,7 +136,11 @@ Item {
                     id: nameInput
                     placeholderText: qsTr("...")
                     text: shortcutInfo.name
-                    onTextChanged: shortcutInfo.name = text
+				    onTextChanged: function() {
+                        shortcutInfo.oldName = shortcutInfo.oldName || shortcutInfo.name
+                        shortcutInfo.name = nameInput.text
+						shortcutInfo = shortcutInfo
+					}
                     validator: RegularExpressionValidator { regularExpression: /([0-z]|\s|.)+/gm }
                 }
             }
@@ -374,7 +378,7 @@ Item {
         id: egsSelectDialog
         onConfirmed: function(modelData) {
             if (nameInput.text == "") {
-                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop()
+                    nameInput.text = modelData.InstallLocation.split('/').pop().split('\\').pop().replace(/([a-z])([A-Z])/g, '$1 $2')
             }
             pathInput.text = "com.epicgames.launcher://apps/"
                 + modelData.NamespaceId

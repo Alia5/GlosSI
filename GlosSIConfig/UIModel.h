@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022 Peter Repukat - FlatspotSoftware
+Copyright 2021-2023 Peter Repukat - FlatspotSoftware
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -125,10 +125,12 @@ class UIModel : public QObject {
     QString getVersionString() const;
     QString getNewVersionName() const;
 
-    std::filesystem::path getSteamPath() const;
-    std::wstring getSteamUserId() const;
+    std::filesystem::path getSteamPath(bool tryConfig = true) const;
+    std::wstring getSteamUserId(bool tryConfig = true) const;
     bool foundSteam() const;
     void parseShortcutVDF();
 
     bool isSteamInputXboxSupportEnabled() const;
+
+    void readUnhookBytes() const;
 };
