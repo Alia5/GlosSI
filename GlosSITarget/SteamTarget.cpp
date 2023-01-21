@@ -61,41 +61,46 @@ SteamTarget::SteamTarget()
 
 int SteamTarget::run()
 {
+    auto closeBPM = false;
+    auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
-        spdlog::warn("Steam-overlay not detected. Showing GlosSI-overlay!\n\
-Application will not function!");
-        window_.setClickThrough(false);
-        if (!overlay_.expired())
-            overlay_.lock()->setEnabled(true);
-        steam_overlay_present_ = false;
-
-
         spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
-        //SetEnvironmentVariable(L"SteamAppId", L"2934978560");
-        SetEnvironmentVariable(L"SteamTenfoot", L"1");
-        SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
-        SetEnvironmentVariable(L"SteamGamepadUI", L"1");
-        //SetEnvironmentVariable(L"SteamGameId", L"12605636929694728192");
-        //SetEnvironmentVariable(L"SteamOverlayGameId", L"12605636929694728192");
-        //SetEnvironmentVariable(L"SteamGameId", L"2934978560");
-        //SetEnvironmentVariable(L"SteamOverlayGameId", L"2934978560");
-
-        system("start steam://open/bigpicture");
-        auto steamwindow = FindWindow(L"SDL_app", nullptr);
-        int bla = 0;
-        while (!steamwindow && bla < 50) {
-            Sleep(100);
-            steamwindow = FindWindow(L"SDL_app", nullptr);
-            bla++;
+        if (Settings::common.standaloneModeGameId == L"") {
+            spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
         }
-        if (steamwindow) {
-            LoadLibrary(L"C:\\Program Files (x86)\\Steam\\GameOverlayRenderer64.dll");
 
-            SendMessage(steamwindow, WM_CLOSE, 0, 0);
-            SendMessage(steamwindow, WM_QUIT, 0, 0);
-            SendMessage(steamwindow, WM_DESTROY, 0, 0);
-        } else {
-            spdlog::warn("Steam window not found!");
+		
+        SetEnvironmentVariable(L"SteamAppId", L"0");
+        SetEnvironmentVariable(L"SteamClientLaunch", L"0");
+        SetEnvironmentVariable(L"SteamEnv", L"1");
+        SetEnvironmentVariable(L"SteamPath", getSteamPath().wstring().c_str());
+        SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+        //SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
+        SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+        SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
+        SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
+        SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
+        SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
+
+		if (Settings::common.standaloneUseGamepadUI) {
+            system("start steam://open/bigpicture");
+            auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+            auto timer = sf::Clock{};
+            while (!steamwindow && timer.getElapsedTime().asSeconds() < 2) {
+                steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+                Sleep(50);
+            }
+            Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
+            // TODO: find way to force BPM even if BPM is not active
+            LoadLibrary((getSteamPath() / "GameOverlayRenderer64.dll").wstring().c_str());
+			
+			// Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
+			// TODO: find way to force BPM even if BPM is not active
+            // closeBPM = true;
+            closeBPMTimer.restart();
+        }
+        else {
+		    LoadLibrary( (getSteamPath() / "GameOverlayRenderer64.dll").wstring().c_str());
         }
 
         window_.setClickThrough(true);
@@ -168,6 +173,12 @@ Application will not function!");
         detector_.update();
         overlayHotkeyWorkaround();
         window_.update();
+
+		if (closeBPM && closeBPMTimer.getElapsedTime().asSeconds() >= 3) {
+            system("start steam://close/bigpicture");	
+			closeBPM = false;
+        }
+
         // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
         if (delayed_shutdown_) {
             if (delay_shutdown_clock_.getElapsedTime().asSeconds() >= 3) {

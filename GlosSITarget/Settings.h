@@ -73,6 +73,8 @@ inline struct Common {
     int version;
     std::wstring steamPath;
     std::wstring steamUserId;
+    std::wstring standaloneModeGameId; /* = L"12605636929694728192"; */
+    bool standaloneUseGamepadUI = false;
 } common;
 
 inline std::filesystem::path settings_path_ = "";
@@ -209,6 +211,9 @@ inline void Parse(const nlohmann::basic_json<>& json)
 
         safeWStringParse(json, "steamPath", common.steamPath);
         safeWStringParse(json, "steamUserId", common.steamUserId);
+
+        safeWStringParse(json, "standaloneModeGameId", common.standaloneModeGameId);
+        safeParseValue(json, "standaloneUseGamepadUI", common.standaloneUseGamepadUI);
     }
     catch (const nlohmann::json::exception& e) {
         spdlog::warn("Err parsing config: {}", e.what());
