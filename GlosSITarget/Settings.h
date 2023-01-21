@@ -54,7 +54,7 @@ inline struct Window {
     int maxFps = 0;
     float scale = 0.f;
     bool disableOverlay = false;
-    bool hideAltTab = false;
+    bool hideAltTab = true;
     bool disableGlosSIOverlay = false;
 } window;
 
