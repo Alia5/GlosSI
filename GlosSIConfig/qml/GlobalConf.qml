@@ -120,6 +120,85 @@ Item {
 
             Item {
                 width: 1
+                height: 4
+            }
+
+            RPane {
+                width: parent.width
+                radius: 4
+		        Material.elevation: 32
+                bgOpacity: 0.97
+                Column {
+                    width: parent.width
+                    height: parent.height
+                    spacing: 4
+					Label {
+                        font.bold: true
+                        font.pixelSize: 24
+						text: qsTr("Experimental 🧪")
+                    }
+                    Row {
+                        Row {
+                            CheckBox {
+                                id: standaloneUseGamepadUI
+                                text: qsTr("Use BPM for standalone-/desktop-mode")
+                                checked: config.standaloneUseGamepadUI
+                                onCheckedChanged: config.standaloneUseGamepadUI = checked
+                            }
+                        }
+                    }
+                    Row {
+                    	leftPadding: 12
+                        Row {
+                            spacing: 16
+                            Label {
+                                topPadding: 8
+                                id: standAloneGameIdLabel
+                                text: qsTr("StandaloneGameId")
+                            }
+                            FluentTextInput {
+                                width: 128
+                                id: standAloneGameId
+								enabled: false
+                                text: config.standaloneModeGameId
+                                onTextChanged: config.standaloneModeGameId = text
+                            }
+							Button {
+                                id: standAloneGameIdButton
+								text: qsTr("Create standalone-/desktop-mode shortcut")
+								onClicked: {
+									const standaloneConf = uiModel.getDefaultConf();
+                                    standaloneConf.name = "GlosSI Standalone/Desktop";
+									standaloneConf.launch.launch = false;
+									uiModel.addTarget(standaloneConf);
+                                    if (uiModel.addToSteam(standaloneConf, "")) {
+									    steamChangedDialog.open();
+                                    }
+									const standaloneGID = uiModel.standaloneModeShortcutGameId();
+									standAloneGameId.text = standaloneGID;
+                                    setTimeout(() => {
+                                        uiModel.saveDefaultConf(config);
+                                        done();
+                                    }, 10);
+								}
+								highlighted: true
+                                visible: !uiModel.standaloneModeShortcutExists()
+                            }
+							Button {
+                                id: standAloneGameIdConfigButton
+								text: qsTr("Open standalone-/desktop-mode controller config")
+								onClicked: {
+                                    Qt.openUrlExternally("steam://currentcontrollerconfig/" + uiModel.standaloneModeShortcutAppId() + "/");
+								}
+                                visible: uiModel.standaloneModeShortcutExists()
+                            }
+                        }
+                    }
+				}
+			}
+
+            Item {
+                width: 1
                 height: 32
             }
         }
