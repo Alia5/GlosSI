@@ -206,6 +206,21 @@ uint32_t UIModel::getAppId(QVariant shortcut)
     return 0;
 }
 
+Q_INVOKABLE QString UIModel::getGameId(QVariant shortcut) {
+
+	/*
+    * enum SteamLaunchableType
+        {
+            App = 0,
+            GameMod = 1,
+            Shortcut = 2,
+            P2P = 3
+        }
+    */
+    uint64_t gameId = (((uint64_t)getAppId(shortcut) << 32) | ((uint32_t)2 << 24) | 0);
+    return QVariant(gameId).toString();
+}
+
 bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd)
 {
     QDir appDir = QGuiApplication::applicationDirPath();
@@ -404,6 +419,8 @@ QVariantMap UIModel::getDefaultConf() const
          QJsonValue::fromVariant(QString::fromStdWString(getSteamPath(false).wstring()))},
         {"steamUserId",
          QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
+        {"standaloneModeGameId", ""},
+        {"standaloneUseGamepadUI", false},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -484,6 +501,38 @@ void UIModel::saveDefaultConf(QVariantMap conf) const
 
     file.write(QString(QJsonDocument::fromVariant(conf).toJson(QJsonDocument::Indented)).toStdString().data());
     file.close();
+}
+
+Q_INVOKABLE QVariant UIModel::standaloneShortcutConf() {
+    for (auto& target : targets_) {
+        const auto map = target.toMap();
+        if (map["name"] == "GlosSI Standalone/Desktop") {
+            return target;
+        }
+    }
+    return QVariant();
+}
+
+Q_INVOKABLE bool UIModel::standaloneModeShortcutExists() {
+    const auto map = standaloneShortcutConf().toMap();
+    if (map["name"] == "GlosSI Standalone/Desktop") {
+        return true;
+    }
+    return false;
+}
+
+Q_INVOKABLE uint32_t UIModel::standaloneModeShortcutAppId() {
+    if (!standaloneModeShortcutExists()) {
+        return 0;
+    }
+    return getAppId(standaloneShortcutConf());
+}
+
+Q_INVOKABLE QString UIModel::standaloneModeShortcutGameId() {
+    if (!standaloneModeShortcutExists()) {
+        return "";
+    }
+    return getGameId(standaloneShortcutConf());
 }
 
 #ifdef _WIN32

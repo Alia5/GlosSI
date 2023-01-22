@@ -50,6 +50,7 @@ class UIModel : public QObject {
     Q_INVOKABLE void deleteTarget(int index);
     Q_INVOKABLE bool isInSteam(QVariant shortcut) const;
     Q_INVOKABLE uint32_t getAppId(QVariant shortcut);
+    Q_INVOKABLE QString getGameId(QVariant shortcut);
     Q_INVOKABLE bool addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd = false);
     bool addToSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
     Q_INVOKABLE bool removeFromSteam(const QString& name, const QString& shortcutspath, bool from_cmd = false);
@@ -62,6 +63,11 @@ class UIModel : public QObject {
 
     Q_INVOKABLE QVariantMap getDefaultConf() const;
     Q_INVOKABLE void saveDefaultConf(QVariantMap conf) const;
+	
+	Q_INVOKABLE QVariant standaloneShortcutConf();
+	Q_INVOKABLE bool standaloneModeShortcutExists();
+    Q_INVOKABLE uint32_t standaloneModeShortcutAppId();
+    Q_INVOKABLE QString standaloneModeShortcutGameId();
     
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();
