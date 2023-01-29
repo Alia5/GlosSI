@@ -136,17 +136,10 @@ namespace Settings {
 				}
 			}
 			catch (const nlohmann::json::exception& e) {
-				if constexpr (std::is_same_v<T, std::wstring>) {
-					e.id == 403
-						? spdlog::trace("Err parsing \"{}\"; {}; Using default: {}", key, e.what(), util::string::to_string(value))
-						: spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
-				}
-				else
-				{
-					e.id == 403
-						? spdlog::trace("Err parsing \"{}\"; {}; Using default: {}", key, e.what(), value)
-						: spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
-				}
+				e.id == 403
+					? spdlog::trace("Err parsing \"{}\"; {}", key, e.what())
+					: spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
+
 			}
 			catch (const std::exception& e) {
 				spdlog::warn("Err parsing \"{}\"; {}", key, e.what());
