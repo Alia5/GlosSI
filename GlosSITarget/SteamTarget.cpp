@@ -30,6 +30,7 @@ limitations under the License.
 #include <tray.hpp>
 #endif
 
+#include <CEFInject.h>
 
 SteamTarget::SteamTarget()
     : window_(
@@ -61,6 +62,9 @@ SteamTarget::SteamTarget()
 
 int SteamTarget::run()
 {
+
+    // CEFInject::InjectJs(L"Steam Shared Context presented by Valve", L"console.log('FUCK YEAH!')");
+
     if (!SteamOverlayDetector::IsSteamInjected()) {
         spdlog::warn("Steam-overlay not detected. Showing GlosSI-overlay!\n\
 Application will not function!");

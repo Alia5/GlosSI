@@ -37,3 +37,6 @@
 [submodule "deps/cpp-httplib"]
 	path = deps/cpp-httplib
 	url =  https://github.com/yhirose/cpp-httplib
+[submodule "deps/easywsclient"]
+	path = deps/easywsclient
+	url = https://github.com/dhbaird/easywsclient
