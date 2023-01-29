@@ -69,6 +69,11 @@ namespace CEFInject
 
 	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port)
 	{
+		return InjectJs_Unscoped(tabname, L"(function(){\n" + js + L"\n})()", port);
+	}
+
+    nlohmann::json InjectJs_Unscoped(const std::wstring &tabname, const std::wstring &js, uint16_t port)
+    {
 		auto cli = internal::GetHttpClient(port);
 		if (auto res = cli.Get("/json")) {
 			if (res->status == 200) {
@@ -127,6 +132,5 @@ namespace CEFInject
 			}
 		}
 		return nullptr;
-	}
-
+    }
 }
