@@ -13,24 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 #pragma once
 
-#include <httplib.h>
+
 #include <nlohmann/json.hpp>
 
+#include "util.h"
 
-namespace CEFInject
-{
-	namespace internal {
-		httplib::Client GetHttpClient(uint16_t port);
-		static inline uint16_t port_ = 8080;
-	}
-	inline void setPort(uint16_t port)
-	{
-		internal::port_ = port;
-	}
-	bool CEFDebugAvailable(uint16_t port = internal::port_);
-	std::vector<std::wstring> AvailableTabs(uint16_t port = internal::port_);
-	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port = internal::port_);
 
+namespace nlohmann {
+	template <>
+	struct adl_serializer<std::wstring> {
+		static void to_json(json& j, const std::wstring& str) {
+			j = util::string::to_string(str);
+		}
+
+		static void from_json(const json& j, std::wstring& str) {
+			str = util::string::to_wstring(j.get<std::string>());
+		}
+	};
 }

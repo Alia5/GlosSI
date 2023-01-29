@@ -32,30 +32,18 @@ limitations under the License.
 #ifdef _WIN32
 #include "UWPFetch.h"
 #include <Windows.h>
-#include <shlobj.h>
 #endif
 
 #include "ExeImageProvider.h"
 #include "../version.hpp"
 
-#include "../../GlosSITarget/UnhookUtil.h"
+#include "../common/UnhookUtil.h"
 
+#include "../common/util.h"
 
 UIModel::UIModel() : QObject(nullptr)
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!std::filesystem::exists(path))
-        std::filesystem::create_directories(path);
+    auto path = util::path::getDataDirPath();
 
     qDebug() << "Version: " << getVersionString();
 
@@ -395,17 +383,8 @@ void UIModel::updateCheck()
 
 QVariantMap UIModel::getDefaultConf() const
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
+    auto path = util::path::getDataDirPath();
 
-    path /= "Roaming";
-    path /= "GlosSI";
     path /= "default.json";
     
     QJsonObject defaults = {
@@ -481,16 +460,8 @@ QVariantMap UIModel::getDefaultConf() const
 
 void UIModel::saveDefaultConf(QVariantMap conf) const
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-    path /= "Roaming";
-    path /= "GlosSI";
+    auto path = util::path::getDataDirPath();
+
     path /= "default.json";
 
     QFile file(path);

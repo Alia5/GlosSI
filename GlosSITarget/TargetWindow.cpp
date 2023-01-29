@@ -30,7 +30,7 @@ limitations under the License.
 
 #include "ProcessPriority.h"
 
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 #if !defined(WM_DPICHANGED)
 #define WM_DPICHANGED 0x02E0

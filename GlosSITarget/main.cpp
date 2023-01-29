@@ -30,7 +30,7 @@ limitations under the License.
 #include "SteamTarget.h"
 
 #include "OverlayLogSink.h"
-#include "Settings.h"
+#include "..\common\Settings.h"
 #include <iostream>
 
 #include "../version.hpp"
@@ -71,19 +71,7 @@ LONG Win32FaultHandler(struct _EXCEPTION_POINTERS* ExInfo)
     MINIDUMP_EXCEPTION_INFORMATION M;
     HANDLE hDump_File;
 
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!std::filesystem::exists(path))
-        std::filesystem::create_directories(path);
+    auto path = util::path::getDataDirPath();
     path /= "glossitarget.dmp";
 
     M.ThreadId = GetCurrentThreadId();
@@ -127,19 +115,7 @@ int main(int argc, char* argv[])
     const auto console_sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
     console_sink->set_level(spdlog::level::trace);
 #ifdef _WIN32
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!std::filesystem::exists(path))
-        std::filesystem::create_directories(path);
+    auto path = util::path::getDataDirPath();
     path /= "glossitarget.log";
     // For "path.wstring()" to be usable here, SPDLOG_WCHAR_FILENAMES must be defined.
     const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path.wstring(), true);

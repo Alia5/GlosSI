@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlosSIWatchdog", "GlosSIWat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEFInjectLib", "CEFInjectLib\CEFInjectLib.vcxproj", "{74FBA967-AB7E-43EA-B561-3F4821954B3B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -62,6 +64,14 @@ Global
 		{74FBA967-AB7E-43EA-B561-3F4821954B3B}.Release|x64.Build.0 = Release|x64
 		{74FBA967-AB7E-43EA-B561-3F4821954B3B}.Release|x86.ActiveCfg = Release|Win32
 		{74FBA967-AB7E-43EA-B561-3F4821954B3B}.Release|x86.Build.0 = Release|Win32
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x64.ActiveCfg = Debug|x64
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x64.Build.0 = Debug|x64
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x86.ActiveCfg = Debug|Win32
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x86.Build.0 = Debug|Win32
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x64.ActiveCfg = Release|x64
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x64.Build.0 = Release|x64
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x86.ActiveCfg = Release|Win32
+		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

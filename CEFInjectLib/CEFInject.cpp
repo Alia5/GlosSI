@@ -22,21 +22,7 @@ limitations under the License.
 #define _SSIZE_T_DEFINED
 #include <easywsclient.cpp> // seems like a hack to me, but eh
 
-#include <locale>
-#include <codecvt>
-
-namespace nlohmann {
-	template <>
-	struct adl_serializer<std::wstring> {
-		static void to_json(json& j, const std::wstring& str) {
-			j = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(str);
-		}
-
-		static void from_json(const json& j, std::wstring& str) {
-			str = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(j.get<std::string>());
-		}
-	};
-}
+#include "../common/nlohmann_json_wstring.h"
 
 namespace CEFInject
 {

@@ -27,13 +27,13 @@ limitations under the License.
 
 #pragma comment(lib, "Shell32.lib")
 #endif
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 #include <regex>
 
 #include "Overlay.h"
-#include "UnhookUtil.h"
-#include "util.h"
+#include "../common/UnhookUtil.h"
+#include "../common/util.h"
 
 AppLauncher::AppLauncher(
     std::vector<HWND>& process_hwnds,
@@ -75,10 +75,10 @@ void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
         if (ImGui::Begin("Launched Processes")) {
             ImGui::BeginChild("Inner##LaunchedProcs", {0.f, ImGui::GetItemRectSize().y - 64}, true);
             std::ranges::for_each(pids_, [](DWORD pid) {
-                ImGui::Text("%s | %d", std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().to_bytes(glossi_util::GetProcName(pid)).c_str(), pid);
+                ImGui::Text("%s | %d", util::string::to_string(util::win::process::GetProcName(pid)).c_str(), pid);
                 ImGui::SameLine();
                 if (ImGui::Button((" Kill ##" + std::to_string(pid)).c_str())) {
-                    glossi_util::KillProcess(pid);
+                    util::win::process::KillProcess(pid);
                 }
             });
             ImGui::EndChild();
@@ -101,7 +101,7 @@ void AppLauncher::update()
                 getChildPids(pids_[0]);
             }
             if (!IsProcessRunning(pids_[0])) {
-                spdlog::info(L"Launched App \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pids_[0]), pids_[0]);
+                spdlog::info(L"Launched App \"{}\" with PID \"{}\" died", util::win::process::GetProcName(pids_[0]), pids_[0]);
                 if (Settings::launch.closeOnExit && !Settings::launch.waitForChildProcs && Settings::launch.launch) {
                     spdlog::info("Configured to close on exit. Shutting down...");
                     shutdown_();
@@ -117,12 +117,12 @@ void AppLauncher::update()
                 }
                 const auto running = IsProcessRunning(pid);
                 if (!running)
-                    spdlog::trace(L"Child process \"{}\" with PID \"{}\" died", glossi_util::GetProcName(pid), pid);
+                    spdlog::trace(L"Child process \"{}\" with PID \"{}\" died", util::win::process::GetProcName(pid), pid);
                 return !running;
             });
 
             auto filtered_pids = pids_ | std::ranges::views::filter([](DWORD pid) {
-                                     return std::ranges::find(Settings::launch.launcherProcesses, glossi_util::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
+                                     return std::ranges::find(Settings::launch.launcherProcesses, util::win::process::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
                                  });
             if (has_extra_launchers_ && !filtered_pids.empty()) {
                 launcher_has_launched_game_ = true;
@@ -169,7 +169,7 @@ std::vector<DWORD> AppLauncher::launchedPids()
                                            [](DWORD pid) {
                                                return std::ranges::find(
                                                           Settings::launch.launcherProcesses,
-                                                          glossi_util::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
+                                                          util::win::process::GetProcName(pid)) == Settings::launch.launcherProcesses.end();
                                            })) {
             res.push_back(pid);
         }
@@ -217,7 +217,7 @@ void AppLauncher::getChildPids(DWORD parent_pid)
             if (pe.th32ParentProcessID == parent_pid) {
                 if (std::ranges::find(pids_, pe.th32ProcessID) == pids_.end()) {
                     if (Settings::common.extendedLogging) {
-                        spdlog::info(L"Found new child process \"{}\" with PID \"{}\"", glossi_util::GetProcName(pe.th32ProcessID), pe.th32ProcessID);
+                        spdlog::info(L"Found new child process \"{}\" with PID \"{}\"", util::win::process::GetProcName(pe.th32ProcessID), pe.th32ProcessID);
                     }
                     pids_.push_back(pe.th32ProcessID);
                     getChildPids(pe.th32ProcessID);
@@ -263,7 +263,7 @@ void AppLauncher::getProcessHwnds()
 #ifdef _WIN32
 bool AppLauncher::findLauncherPids()
 {
-    if (const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe")) {
+    if (const auto pid = util::win::process::PidByName(L"EpicGamesLauncher.exe")) {
         spdlog::debug("Found EGS-Launcher running");
         pids_.push_back(pid);
         return true;
@@ -417,7 +417,7 @@ void AppLauncher::launchURL(const std::wstring& url, const std::wstring& args, c
         spdlog::debug("Epic Games launch; Couldn't find egs launcher PID");
         pid_mutex_.lock();
 
-        const auto pid = glossi_util::PidByName(L"EpicGamesLauncher.exe");
+        const auto pid = util::win::process::PidByName(L"EpicGamesLauncher.exe");
         if (!findLauncherPids()) {
             spdlog::debug("Did not find EGS-Launcher not running, retrying later...");
         }

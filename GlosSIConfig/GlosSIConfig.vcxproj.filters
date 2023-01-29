@@ -37,7 +37,7 @@
     <ClCompile Include="ExeImageProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GlosSITarget\UnhookUtil.cpp">
+    <ClCompile Include="..\common\UnhookUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

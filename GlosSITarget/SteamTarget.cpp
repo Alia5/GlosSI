@@ -15,7 +15,7 @@ limitations under the License.
 */
 #include "SteamTarget.h"
 
-#include "Settings.h"
+#include "..\common\Settings.h"
 #include "steam_sf_keymap.h"
 
 #include <SFML/Window/Keyboard.hpp>
@@ -65,6 +65,7 @@ int SteamTarget::run()
     auto closeBPM = false;
     auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
+        return 1;
         spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
         if (Settings::common.standaloneModeGameId == L"") {
             spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");

@@ -19,7 +19,7 @@ limitations under the License.
 #include <nlohmann/json.hpp>
 
 #include "AppLauncher.h"
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(close)
 {

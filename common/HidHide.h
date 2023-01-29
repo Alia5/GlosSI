@@ -34,7 +34,7 @@ limitations under the License.
 #endif
 
 class HidHide {
-  private:
+private:
     using DeviceInstancePath = std::wstring;
     using SetupDiDestroyDeviceInfoListPtr = std::unique_ptr<std::remove_pointer_t<HDEVINFO>, decltype(&SetupDiDestroyDeviceInfoList)>;
     using CloseHandlePtr = std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype(&CloseHandle)>;
@@ -62,7 +62,7 @@ class HidHide {
         bool gaming_device = false;
     };
 
-  public:
+public:
     HidHide();
 
     void openCtrlDevice();
@@ -72,7 +72,7 @@ class HidHide {
     void disableHidHide();
     // TODO: MAYBE: restore hidhide state/lists when app closes. not only disable device_hiding
 
-  private:
+private:
     HANDLE hidhide_handle = nullptr;
 
     std::filesystem::path steam_path_;
@@ -89,12 +89,12 @@ class HidHide {
     std::vector<std::wstring> blacklisted_devices_;
     std::vector<SmallHidInfo> avail_devices_;
     bool hidhide_active_ = false;
-    static constexpr int OVERLAY_ELEM_REFRESH_INTERVAL_S_ = 5; 
+    static constexpr int OVERLAY_ELEM_REFRESH_INTERVAL_S_ = 5;
 
     static inline constexpr std::array<std::wstring_view, 3> whitelist_executeables_{
         L"GameOverlayUI.exe",
         L"steam.exe",
-        L"streaming_client.exe"};
+        L"streaming_client.exe" };
 
     static [[nodiscard]] std::wstring DosDeviceForVolume(const std::wstring& volume);
 

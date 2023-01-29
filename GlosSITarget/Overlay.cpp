@@ -17,13 +17,11 @@ limitations under the License.
 
 #include <filesystem>
 #include <utility>
-#include <locale>
-#include <codecvt>
 #include <regex>
 #include <shlobj_core.h>
 
 #include "Roboto.h"
-#include "Settings.h"
+#include "..\common\Settings.h"
 #include "GlosSI_logo.h"
 
 #include "../version.hpp"
@@ -52,23 +50,11 @@ Overlay::Overlay(
     ImGui::SFML::UpdateFontTexture();
 
 #ifdef _WIN32
-    wchar_t* localAppDataFolder;
-    std::filesystem::path config_path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        config_path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        config_path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    config_path /= "Roaming";
-    config_path /= "GlosSI";
-    if (!std::filesystem::exists(config_path))
-        std::filesystem::create_directories(config_path);
+    auto config_path = util::path::getDataDirPath();
     config_path /= "imgui.ini";
 
     // This assumes that char is utf8 and wchar_t is utf16, which is guaranteed on Windows.
-    config_file_name_ = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(config_path.wstring());
+    config_file_name_ = util::string::to_string(config_path.wstring());
     io.IniFilename = config_file_name_.data();
 #endif
 

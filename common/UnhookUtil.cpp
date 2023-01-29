@@ -13,7 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#include "UnhookUtil.h"
+#include "../common/UnhookUtil.h"
+
+#include "util.h"
 
 #ifndef CONFIGAPP
 #include <spdlog/spdlog.h>
@@ -28,17 +30,7 @@ void UnhookUtil::UnPatchHook(const std::string& name, HMODULE module)
 
     std::map<std::string, std::string> original_bytes_from_file;
 
-    wchar_t* localAppDataFolder;
-    std::filesystem::path configDirPath;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        configDirPath = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        configDirPath = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    configDirPath /= "Roaming";
-    configDirPath /= "GlosSI";
+    auto configDirPath = util::path::getDataDirPath();
     if (std::filesystem::exists(configDirPath)) {
         auto unhook_file_path = configDirPath / "unhook_bytes";
         if (std::filesystem::exists(unhook_file_path)) {
@@ -56,7 +48,8 @@ void UnhookUtil::UnPatchHook(const std::string& name, HMODULE module)
                     ifile.read(&buff, sizeof(char));
                     if (buff != ':') {
                         funcName.push_back(buff);
-                    } else {
+                    }
+                    else {
                         char bytes[8];
                         ifile.read(bytes, sizeof(char) * 8);
                         ifile.read(&buff, sizeof(char)); // newline

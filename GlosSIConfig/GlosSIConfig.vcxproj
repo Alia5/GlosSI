@@ -136,7 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\GlosSITarget\UnhookUtil.cpp" />
+    <ClCompile Include="..\common\UnhookUtil.cpp" />
     <ClCompile Include="ExeImageProvider.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="UIModel.cpp" />

@@ -20,7 +20,7 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 
 #include "Overlay.h"
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 InputRedirector::InputRedirector()
 {

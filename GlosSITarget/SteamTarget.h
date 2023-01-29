@@ -21,7 +21,7 @@ limitations under the License.
 #include "TargetWindow.h"
 
 #ifdef _WIN32
-#include "HidHide.h"
+#include "../common/HidHide.h"
 #include "InputRedirector.h"
 #include <subhook.h>
 #endif

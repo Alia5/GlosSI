@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <spdlog/spdlog.h>
 
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 #ifdef _WIN32
 #define NOMINMAX
