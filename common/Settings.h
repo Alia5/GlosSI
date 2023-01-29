@@ -219,13 +219,14 @@ namespace Settings {
 	inline void Parse(const std::vector<std::wstring>& args)
 	{
 		std::wstring configName;
+		std::vector<std::function<void()>> cli_overrides;
 		for (const auto& arg : args) {
 			if (arg.empty()) {
 				continue;
 			}
 			if (cmd_args.contains(arg))
 			{
-				cmd_args.at(arg)();
+				cli_overrides.push_back(cmd_args.at(arg));
 			}
 			else {
 				configName += L" " + std::wstring(arg.begin(), arg.end());
@@ -254,12 +255,18 @@ namespace Settings {
 		if (!json_file.is_open()) {
 			spdlog::error(L"Couldn't open settings file {}", path.wstring());
 			spdlog::debug(L"Using sane defaults...");
+			for (const auto& ovr : cli_overrides) {
+				ovr();
+			}
 			return;
 		}
 		settings_path_ = path;
 		const auto& json = nlohmann::json::parse(json_file);
 		Parse(json);
 
+		for (const auto& ovr : cli_overrides) {
+			ovr();
+		}
 		spdlog::debug("Read config file \"{}\"; config: {}", path.string(), json.dump());
 		json_file.close();
 	}
