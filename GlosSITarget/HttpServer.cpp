@@ -21,6 +21,7 @@ limitations under the License.
 
 #include "AppLauncher.h"
 #include "../common/Settings.h"
+#include "../common/steam_util.h"
 
 HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(std::move(close))
 {
@@ -28,12 +29,17 @@ HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) :
 
 void HttpServer::run()
 {
-    server_.Get("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
+    auto setCorsHeader = [](httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+    };
+    server_.Get("/launched-pids", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
         const nlohmann::json j = app_launcher_.launchedPids();
         res.set_content(j.dump(), "text/json");
+        setCorsHeader(res);
     });
 
-    server_.Post("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
+    server_.Post("/launched-pids", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
         try {
             const nlohmann::json postbody = nlohmann::json::parse(req.body);
             app_launcher_.addPids(postbody.get<std::vector<DWORD>>());   
@@ -63,12 +69,19 @@ void HttpServer::run()
         res.set_content(j.dump(), "text/json");
     });
 
-    server_.Post("/quit", [this](const httplib::Request& req, httplib::Response& res) {
+    server_.Post("/quit", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
         close_();
     });
 
-    server_.Get("/settings", [this](const httplib::Request& req, httplib::Response& res) {
+    server_.Get("/settings", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
         res.set_content(Settings::toJson().dump(), "text/json");
+    });
+
+    server_.Get("/steam_settings", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
+        res.set_content(util::steam::getSteamConfig().dump(4), "text/json");
     });
 
     server_thread_ = std::thread([this]() {
@@ -77,7 +90,7 @@ void HttpServer::run()
             return;
         }
         spdlog::debug("Started http-server on port {}", static_cast<int>(port_));
-    });
+});
 }
 
 void HttpServer::stop()
