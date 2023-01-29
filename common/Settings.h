@@ -163,12 +163,14 @@ namespace Settings {
 				safeParseValue(launchconf, "killLauncher", launch.killLauncher);
 				safeParseValue(launchconf, "ignoreLauncher", launch.ignoreLauncher);
 
-				if (const auto launcherProcs = launchconf["launcherProcesses"];
-					!launcherProcs.is_null() && !launcherProcs.empty() && launcherProcs.is_array()) {
-					launch.launcherProcesses.clear();
-					launch.launcherProcesses.reserve(launcherProcs.size());
-					for (auto& proc : launcherProcs) {
-						launch.launcherProcesses.push_back(util::string::to_wstring(proc));
+				if (launchconf.contains("launcherProcesses") && launchconf["launcherProcesses"].is_array()) {
+					if (const auto launcherProcs = launchconf["launcherProcesses"];
+						!launcherProcs.is_null() && !launcherProcs.empty() && launcherProcs.is_array()) {
+						launch.launcherProcesses.clear();
+						launch.launcherProcesses.reserve(launcherProcs.size());
+						for (auto& proc : launcherProcs) {
+							launch.launcherProcesses.push_back(util::string::to_wstring(proc));
+						}
 					}
 				}
 			}
