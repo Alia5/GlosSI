@@ -18,6 +18,8 @@ limitations under the License.
 #include "util.h"
 
 #ifndef CONFIGAPP
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
 
 #include "Settings.h"

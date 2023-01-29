@@ -30,6 +30,9 @@
     <ClInclude Include="HidHide.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="steam_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UnhookUtil.cpp">

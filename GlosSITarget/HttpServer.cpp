@@ -17,11 +17,12 @@ limitations under the License.
 
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
+#include <utility>
 
 #include "AppLauncher.h"
-#include "..\common\Settings.h"
+#include "../common/Settings.h"
 
-HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(close)
+HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(std::move(close))
 {
 }
 

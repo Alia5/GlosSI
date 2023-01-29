@@ -31,6 +31,8 @@ limitations under the License.
 #include <filesystem>
 
 #ifdef SPDLOG_H
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
 #endif
 
@@ -158,6 +160,6 @@ namespace util {
 				return res;
 			}
 		}
-				}
+	}
 #endif
-			}
+}

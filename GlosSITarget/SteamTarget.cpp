@@ -23,7 +23,6 @@ limitations under the License.
 #include <numeric>
 #include <regex>
 #include <spdlog/spdlog.h>
-#include <vdf_parser.hpp>
 
 #ifdef _WIN32
 #include "UWPOverlayEnabler.h"
@@ -36,7 +35,7 @@ SteamTarget::SteamTarget()
     : window_(
           [this] { run_ = false; },
           [this] { toggleGlossiOverlay(); },
-          getScreenshotHotkey(),
+          util::steam::getScreenshotHotkey(steam_path_, steam_user_id_),
           [this]() {
               target_window_handle_ = window_.getSystemHandle();
               overlay_ = window_.getOverlay();
@@ -65,26 +64,24 @@ int SteamTarget::run()
     auto closeBPM = false;
     auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
-        return 1;
         spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
         if (Settings::common.standaloneModeGameId == L"") {
             spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
         }
 
-		
         SetEnvironmentVariable(L"SteamAppId", L"0");
         SetEnvironmentVariable(L"SteamClientLaunch", L"0");
         SetEnvironmentVariable(L"SteamEnv", L"1");
-        SetEnvironmentVariable(L"SteamPath", getSteamPath().wstring().c_str());
+        SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
         SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-        //SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
+        // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
         SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
         SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
         SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
         SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
         SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
 
-		if (Settings::common.standaloneUseGamepadUI) {
+        if (Settings::common.standaloneUseGamepadUI) {
             system("start steam://open/bigpicture");
             auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
             auto timer = sf::Clock{};
@@ -94,22 +91,21 @@ int SteamTarget::run()
             }
             Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
             // TODO: find way to force BPM even if BPM is not active
-            LoadLibrary((getSteamPath() / "GameOverlayRenderer64.dll").wstring().c_str());
-			
-			// Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
-			// TODO: find way to force BPM even if BPM is not active
+            LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
+
+            // Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
+            // TODO: find way to force BPM even if BPM is not active
             // closeBPM = true;
             closeBPMTimer.restart();
         }
         else {
-		    LoadLibrary( (getSteamPath() / "GameOverlayRenderer64.dll").wstring().c_str());
+            LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
         }
 
         window_.setClickThrough(true);
         if (!overlay_.expired())
             overlay_.lock()->setEnabled(false);
         steam_overlay_present_ = true;
-
     }
     else {
         spdlog::info("Steam-overlay detected.");
@@ -130,7 +126,7 @@ int SteamTarget::run()
         }
 #endif
     }
-    getXBCRebindingEnabled();
+    util::steam::getXBCRebindingEnabled(steam_path_, steam_user_id_);
 
     run_ = true;
 
@@ -145,29 +141,7 @@ int SteamTarget::run()
 
     keepControllerConfig(true);
 
-#ifdef _WIN32
-    HICON icon = 0;
-    TCHAR path[MAX_PATH];
-    GetModuleFileName(nullptr, path, MAX_PATH);
-    icon = (HICON)LoadImage(
-        0,
-        path,
-        IMAGE_ICON,
-        GetSystemMetrics(SM_CXSMICON),
-        GetSystemMetrics(SM_CYSMICON),
-        LR_LOADFROMFILE | LR_LOADMAP3DCOLORS);
-    if (!icon) {
-        ExtractIconEx(path, 0, &icon, nullptr, 1);
-    }
-    Tray::Tray tray{"GlosSITarget", icon};
-#else
-    Tray::Tray tray{"GlosSITarget", "ico.png"};
-#endif
-
-    tray.addEntry(Tray::Button{
-        "Quit", [this, &tray]() {
-            run_ = false;
-        }});
+    const auto tray = createTrayMenu();
 
     server_.run();
 
@@ -176,9 +150,9 @@ int SteamTarget::run()
         overlayHotkeyWorkaround();
         window_.update();
 
-		if (closeBPM && closeBPMTimer.getElapsedTime().asSeconds() >= 3) {
-            system("start steam://close/bigpicture");	
-			closeBPM = false;
+        if (closeBPM && closeBPMTimer.getElapsedTime().asSeconds() >= 3) {
+            system("start steam://close/bigpicture");
+            closeBPM = false;
         }
 
         // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
@@ -191,7 +165,7 @@ int SteamTarget::run()
             launcher_.update();
         }
     }
-    tray.exit();
+    tray->exit();
 
     server_.stop();
 #ifdef _WIN32
@@ -290,154 +264,11 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 #endif
 }
 
-std::filesystem::path SteamTarget::getSteamPath() const
-{
-#ifdef _WIN32
-    try {
-        // TODO: check if keys/value exist
-        // steam should always be open and have written reg values...
-        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam"};
-        const auto res = key.GetStringValue(L"SteamPath");
-        spdlog::info(L"Detected Steam Path: {}", res);
-        return res;
-    }
-    catch (const winreg::RegException& e) {
-        spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
-    }
-    return Settings::common.steamPath;
-#else
-    return L""; // TODO
-#endif
-}
-
-std::wstring SteamTarget::getSteamUserId() const
-{
-#ifdef _WIN32
-    try {
-        // TODO: check if keys/value exist
-        // steam should always be open and have written reg values...
-        winreg::RegKey key{HKEY_CURRENT_USER, L"SOFTWARE\\Valve\\Steam\\ActiveProcess"};
-        const auto res = std::to_wstring(key.GetDwordValue(L"ActiveUser"));
-        spdlog::info(L"Detected Steam UserId: {}", res);
-        return res;
-    }
-    catch (const winreg::RegException& e) {
-        spdlog::error("Couldn't get Steam path from Registry; {}", e.what());
-    }
-    return Settings::common.steamUserId;
-#else
-    return L""; // TODO
-#endif
-}
-
-std::vector<std::string> SteamTarget::getOverlayHotkey()
-{
-    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
-    if (!std::filesystem::exists(config_path)) {
-        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
-        return {"Shift", "KEY_TAB"}; // default
-    }
-    std::ifstream config_file(config_path);
-    auto root = tyti::vdf::read(config_file);
-
-    std::shared_ptr<tyti::vdf::basic_object<char>> children = root.childs["system"];
-    if (!children || children->attribs.empty() || !children->attribs.contains("InGameOverlayShortcutKey")) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
-        return {"Shift", "KEY_TAB"}; // default
-    }
-    auto hotkeys = children->attribs.at("InGameOverlayShortcutKey");
-
-    // has anyone more than 4 keys to open overlay?!
-    std::smatch m;
-    if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
-        return {"Shift", "KEY_TAB"}; // default
-    }
-
-    std::vector<std::string> res;
-    for (auto i = 1; i < m.size(); i++) {
-        const auto s = std::string(m[i]);
-        if (!s.empty()) {
-            res.push_back(s);
-        }
-    }
-    if (res.empty()) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: Shift+Tab");
-        return {"Shift", "KEY_TAB"}; // default
-    }
-    spdlog::info("Detected Overlay hotkey(s): {}", std::accumulate(
-                                                       res.begin() + 1, res.end(), res[0],
-                                                       [](auto acc, const auto curr) { return acc += "+" + curr; }));
-    return res;
-}
-
-std::vector<std::string> SteamTarget::getScreenshotHotkey()
-{
-    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
-    if (!std::filesystem::exists(config_path)) {
-        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
-        return {"KEY_F12"}; // default
-    }
-    std::ifstream config_file(config_path);
-    auto root = tyti::vdf::read(config_file);
-
-    std::shared_ptr<tyti::vdf::basic_object<char>> children = root.childs["system"];
-    if (!children || children->attribs.empty() || !children->attribs.contains("InGameOverlayScreenshotHotKey")) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; // default
-    }
-    auto hotkeys = children->attribs.at("InGameOverlayScreenshotHotKey");
-
-    // has anyone more than 4 keys to screenshot?!
-    std::smatch m;
-    if (!std::regex_match(hotkeys, m, std::regex(R"((\w*)\s*(\w*)\s*(\w*)\s*(\w*))"))) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; // default
-    }
-
-    std::vector<std::string> res;
-    for (auto i = 1; i < m.size(); i++) {
-        const auto s = std::string(m[i]);
-        if (!s.empty()) {
-            res.push_back(s);
-        }
-    }
-    if (res.empty()) {
-        spdlog::warn("Couldn't detect overlay hotkey, using default: F12");
-        return {"KEY_F12"}; // default
-    }
-    spdlog::info("Detected screenshot hotkey(s): {}", std::accumulate(
-                                                          res.begin() + 1, res.end(), res[0],
-                                                          [](auto acc, const auto curr) { return acc += "+" + curr; }));
-    return res;
-}
-
-bool SteamTarget::getXBCRebindingEnabled()
-{
-    const auto config_path = std::wstring(steam_path_) + std::wstring(user_data_path_) + steam_user_id_ + std::wstring(config_file_name_);
-    if (!std::filesystem::exists(config_path)) {
-        spdlog::warn(L"Couldn't read Steam config file: \"{}\"", config_path);
-        return false;
-    }
-    std::ifstream config_file(config_path);
-    auto root = tyti::vdf::read(config_file);
-
-    if (root.attribs.empty() || !root.attribs.contains("SteamController_XBoxSupport")) {
-        spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
-        return false;
-    }
-    auto xbsup = root.attribs.at("SteamController_XBoxSupport");
-    if (xbsup != "1") {
-        spdlog::warn("\"Xbox Configuration Support\" is disabled in Steam. This may cause doubled Inputs!");
-    }
-    return xbsup == "1";
-}
-
 /*
  * The "magic" that keeps a controller-config forced (without hooking into Steam)
  *
  * Hook into own process and detour "GetForegroundWindow"
- * Deatour function always returns HWND of own application window
+ * Detour function always returns HWND of own application window
  * Steam now doesn't detect application changes and keeps the game-specific input config without reverting to desktop-conf
  */
 void SteamTarget::keepControllerConfig(bool keep)
@@ -487,6 +318,34 @@ HWND SteamTarget::keepFgWindowHookFn()
     return real_fg_win;
 }
 #endif
+
+std::unique_ptr<Tray::Tray> SteamTarget::createTrayMenu()
+{
+#ifdef _WIN32
+    HICON icon = 0;
+    TCHAR path[MAX_PATH];
+    GetModuleFileName(nullptr, path, MAX_PATH);
+    icon = (HICON)LoadImage(
+        0,
+        path,
+        IMAGE_ICON,
+        GetSystemMetrics(SM_CXSMICON),
+        GetSystemMetrics(SM_CYSMICON),
+        LR_LOADFROMFILE | LR_LOADMAP3DCOLORS);
+    if (!icon) {
+        ExtractIconEx(path, 0, &icon, nullptr, 1);
+    }
+    auto tray = std::make_unique<Tray::Tray>("GlosSITarget", icon);
+#else
+    auto tray = std::make_unique<Tray::Tray>("GlosSITarget", "ico.png");
+#endif
+
+    tray->addEntry(Tray::Button{
+        "Quit", [this, &tray]() {
+            run_ = false;
+        }});
+    return tray;
+}
 
 void SteamTarget::overlayHotkeyWorkaround()
 {
