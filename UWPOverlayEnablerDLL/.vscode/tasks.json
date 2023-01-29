@@ -3,17 +3,16 @@
     "tasks": [
       {
         "type": "shell",
-        "label": "Build GlosSITarget (Debug)",
+        "label": "Build UWPOverlayEnablerDLL (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget",
+            "/target:UWPOverlayEnablerDLL",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
         "options": {
           "cwd": "${workspaceFolder}/..",
-
         },
         "problemMatcher": ["$msCompile"],
         "group": {
@@ -22,17 +21,16 @@
       },
       {
         "type": "shell",
-        "label": "Re-Build GlosSITarget (Debug)",
+        "label": "Re-Build UWPOverlayEnablerDLL (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget:Rebuild",
+            "/target:UWPOverlayEnablerDLL:Rebuild",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
         "options": {
           "cwd": "${workspaceFolder}/..",
-
         },
         "problemMatcher": ["$msCompile"],
         "group": {

@@ -1,0 +1,37 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../deps/SFML/include",
+                "${workspaceFolder}/../deps/WinReg",
+                "${workspaceFolder}/../deps/spdlog/include",
+                "${workspaceFolder}/../deps/ValveFileVDF",
+                "${workspaceFolder}/../deps/subhook",
+                "${workspaceFolder}/../deps/ViGEmClient/include",
+                "${workspaceFolder}/../deps/imgui",
+                "${workspaceFolder}/../deps/imgui-sfml",
+                "${workspaceFolder}/../deps/json/include",
+                "${workspaceFolder}/../deps/traypp/tray/include",
+                "${workspaceFolder}/../deps/cpp-httplib",
+                "${workspaceFolder}/../CEFInjectLib"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "SPDLOG_WCHAR_TO_UTF8_SUPPORT",
+                "SPDLOG_WCHAR_FILENAMES",
+                "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING",
+                "SUBHOOK_STATIC"
+            ],
+            "windowsSdkVersion": "10.0.18362.0",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

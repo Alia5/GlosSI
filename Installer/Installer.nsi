@@ -3,7 +3,7 @@
 !define APP_NAME "GlosSI"
 !define COMP_NAME "Peter Repukat - Flatspotsoftware"
 !define WEB_SITE "https://glossi.flatspot.pictures/"
-!define VERSION "0.1.2.0-11-g1f3fb52"
+!define VERSION "0.1.2.0-18-g27056b4"
 !define COPYRIGHT "Peter Repukat - FlatspotSoftware  © 2017-2022"
 !define DESCRIPTION "SteamInput compatibility tool"
 !define INSTALLER_NAME "GlosSI-Installer.exe"

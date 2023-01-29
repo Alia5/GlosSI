@@ -3,17 +3,16 @@
     "tasks": [
       {
         "type": "shell",
-        "label": "Build GlosSITarget (Debug)",
+        "label": "Build Solution (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget",
+            "/target:Build",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
         "options": {
-          "cwd": "${workspaceFolder}/..",
-
+          "cwd": "${workspaceFolder}",
         },
         "problemMatcher": ["$msCompile"],
         "group": {
@@ -22,17 +21,16 @@
       },
       {
         "type": "shell",
-        "label": "Re-Build GlosSITarget (Debug)",
+        "label": "Re-Build Solution (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget:Rebuild",
+            "/target:Rebuild",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
         "options": {
-          "cwd": "${workspaceFolder}/..",
-
+          "cwd": "${workspaceFolder}",
         },
         "problemMatcher": ["$msCompile"],
         "group": {

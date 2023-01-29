@@ -1,0 +1,42 @@
+{
+    "folders": [
+        {
+            "path": "common"
+        },
+        {
+            "path": "CEFInjectLib"
+        },
+        {
+            "path": "GlosSIConfig"
+        },
+        {
+            "path": "GlosSITarget"
+        },
+        {
+            "path": "GlosSIWatchdog"
+        },
+        {
+            "path": "UWPOverlayEnablerDLL"
+        },
+        {
+            "path": "Installer"
+        },
+        {
+            "name": "root",
+            "path": "."
+        },
+    ],
+    "settings": {
+        // uncomment if not already in user settings and wanting to debug/build c++ code (vs 2022 required!)
+        // "terminal.integrated.profiles.windows": {
+        //     "Developer PowerShell for VS 2022": {
+        //         "source": "PowerShell",
+        //         "icon": "terminal-powershell",
+        //         "args": [
+        //             "-c",
+        //             "$vsPath = & '${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe' -property installationpath; Import-Module \"$vsPath/Common7/Tools/Microsoft.VisualStudio.DevShell.dll\"; Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation; powershell.exe"
+        //         ]
+        //     }
+        // },
+    }
+}

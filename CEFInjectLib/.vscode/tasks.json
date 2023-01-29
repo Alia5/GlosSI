@@ -3,11 +3,11 @@
     "tasks": [
       {
         "type": "shell",
-        "label": "Build GlosSITarget (Debug)",
+        "label": "Build CEFInjectLib (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget",
+            "/target:CEFInjectLib",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
@@ -22,11 +22,11 @@
       },
       {
         "type": "shell",
-        "label": "Re-Build GlosSITarget (Debug)",
+        "label": "Re-Build CEFInjectLib (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget:Rebuild",
+            "/target:CEFInjectLib:Rebuild",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],

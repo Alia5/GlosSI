@@ -5,24 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
+            "name": "Launch GlosSITarget",
+            "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/GlosSITarget",
-            "preLaunchTask": "Build",
-            "args": [],
+            "program": "${workspaceFolder}/../x64/Debug/GlosSITarget.exe",
+            "preLaunchTask": "Build GlosSITarget (Debug)",
+            "args": [
+                "-window"
+            ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
+            "cwd": "${workspaceFolder}/../x64/Debug",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
         }
     ]
 }

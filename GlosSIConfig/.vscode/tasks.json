@@ -3,11 +3,11 @@
     "tasks": [
       {
         "type": "shell",
-        "label": "Build GlosSITarget (Debug)",
+        "label": "Build GlosSIConfig (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget",
+            "/target:GlosSIConfig",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
@@ -20,13 +20,13 @@
           "kind": "build",
         },
       },
-      {
+            {
         "type": "shell",
-        "label": "Re-Build GlosSITarget (Debug)",
+        "label": "Re-Build GlosSIConfig (Debug)",
         "command": "msbuild.exe",
         "args": [
             "GlosSI.sln",
-            "/target:GlosSITarget:Rebuild",
+            "/target:GlosSIConfig:Rebuild",
             "/p:Configuration=Debug",
             "/p:Platform=x64"
         ],
