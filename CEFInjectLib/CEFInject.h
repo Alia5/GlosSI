@@ -27,6 +27,6 @@ namespace CEFInject
 
 	bool CEFDebugAvailable(uint16_t port = 8080);
 	std::vector<std::wstring> AvailableTabs(uint16_t port = 8080);
-	std::string InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port = 8080);
+	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port = 8080);
 
 }

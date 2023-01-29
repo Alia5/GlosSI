@@ -81,7 +81,7 @@ namespace CEFInject
 	}
 
 
-	std::string InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port)
+	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port)
 	{
 		auto cli = internal::GetHttpClient(port);
 		if (auto res = cli.Get("/json")) {
@@ -98,7 +98,7 @@ namespace CEFInject
 						rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
 						if (rc) {
 							printf("WSAStartup Failed.\n");
-							return {};
+							return nullptr;
 						}
 #endif
 
@@ -116,13 +116,18 @@ namespace CEFInject
 											{"expression", js}
 										}}
 								}.dump());
-							std::string res;
+							nlohmann::json res = nullptr;
+							bool exit = false;
 							while (ws->getReadyState() != easywsclient::WebSocket::CLOSED) {
 								ws->poll();
-								ws->dispatch([&ws, &res](const std::string& message) {
-									res = message;
+								ws->dispatch([&ws, & res, & exit](const std::string & message) {
+									res = nlohmann::json::parse(message)["result"]["result"]["value"];
+									exit = true;
 								});
-								ws->close();
+								if (exit) {
+									ws->close();
+									return res;
+								}
 							}
 #ifdef _WIN32
 							WSACleanup();
@@ -132,7 +137,7 @@ namespace CEFInject
 #ifdef _WIN32
 						WSACleanup();
 #endif
-						return {};
+						return nullptr;
 					}
 				}
 			}
