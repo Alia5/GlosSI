@@ -69,7 +69,7 @@ namespace CEFInject
 
 	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port)
 	{
-		return InjectJs_Unscoped(tabname, L"(function(){\n" + js + L"\n})()", port);
+		return InjectJs_Unscoped(tabname, L"(async function(){\n" + js + L"\n})();", port);
 	}
 
     nlohmann::json InjectJs_Unscoped(const std::wstring &tabname, const std::wstring &js, uint16_t port)
