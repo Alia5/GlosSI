@@ -398,7 +398,7 @@ void TargetWindow::createWindow()
     overlay_ = std::make_shared<Overlay>(
         window_, [this]() { close(); }, toggle_overlay_state_, Settings::window.windowMode);
 
-    spdlog::debug("auto screen sCale: {}", dpi/96.f);
+    spdlog::debug("auto screen Scale: {}", dpi/96.f);
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
     ImGui::SFML::UpdateFontTexture();

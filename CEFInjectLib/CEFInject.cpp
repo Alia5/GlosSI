@@ -75,8 +75,6 @@ namespace CEFInject
 				const auto json = nlohmann::json::parse(res->body);
 				for (const auto& tab : json) {
 					if (tab["title"].get<std::wstring>().starts_with(tabname)) {
-
-
 #ifdef _WIN32
 						INT rc;
 						WSADATA wsaData;
@@ -106,10 +104,10 @@ namespace CEFInject
 							bool exit = false;
 							while (ws->getReadyState() != easywsclient::WebSocket::CLOSED) {
 								ws->poll();
-								ws->dispatch([&ws, & res, & exit](const std::string & message) {
+								ws->dispatch([&ws, &res, &exit](const std::string& message) {
 									res = nlohmann::json::parse(message)["result"]["result"]["value"];
-									exit = true;
-								});
+								exit = true;
+									});
 								if (exit) {
 									ws->close();
 									return res;
@@ -128,6 +126,7 @@ namespace CEFInject
 				}
 			}
 		}
+		return nullptr;
 	}
 
 }

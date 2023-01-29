@@ -15,13 +15,10 @@ limitations under the License.
 */
 #include "SteamTarget.h"
 
-#include "..\common\Settings.h"
+#include "../common/Settings.h"
 #include "steam_sf_keymap.h"
 
 #include <SFML/Window/Keyboard.hpp>
-#include <WinReg/WinReg.hpp>
-#include <numeric>
-#include <regex>
 #include <spdlog/spdlog.h>
 
 #ifdef _WIN32
