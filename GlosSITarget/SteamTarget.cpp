@@ -61,48 +61,50 @@ int SteamTarget::run()
     auto closeBPM = false;
     auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
-        spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
-        if (Settings::common.standaloneModeGameId == L"") {
-            spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
-        }
-
-        SetEnvironmentVariable(L"SteamAppId", L"0");
-        SetEnvironmentVariable(L"SteamClientLaunch", L"0");
-        SetEnvironmentVariable(L"SteamEnv", L"1");
-        SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
-        SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-        // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
-        SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-        SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
-        SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
-        SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
-        SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
-
-        if (Settings::common.standaloneUseGamepadUI) {
-            system("start steam://open/bigpicture");
-            auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
-            auto timer = sf::Clock{};
-            while (!steamwindow && timer.getElapsedTime().asSeconds() < 2) {
-                steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
-                Sleep(50);
+        if (Settings::common.allowStandAlone) {
+            spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
+            if (Settings::common.standaloneModeGameId == L"") {
+                spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
             }
-            Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
-            // TODO: find way to force BPM even if BPM is not active
-            LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
 
-            // Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
-            // TODO: find way to force BPM even if BPM is not active
-            // closeBPM = true;
-            closeBPMTimer.restart();
-        }
-        else {
-            LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
-        }
+            SetEnvironmentVariable(L"SteamAppId", L"0");
+            SetEnvironmentVariable(L"SteamClientLaunch", L"0");
+            SetEnvironmentVariable(L"SteamEnv", L"1");
+            SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
+            SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+            // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
+            SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+            SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
+            SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
+            SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
+            SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
 
-        window_.setClickThrough(true);
-        if (!overlay_.expired())
-            overlay_.lock()->setEnabled(false);
-        steam_overlay_present_ = true;
+            if (Settings::common.standaloneUseGamepadUI) {
+                system("start steam://open/bigpicture");
+                auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+                auto timer = sf::Clock{};
+                while (!steamwindow && timer.getElapsedTime().asSeconds() < 2) {
+                    steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+                    Sleep(50);
+                }
+                Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
+                // TODO: find way to force BPM even if BPM is not active
+                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
+
+                // Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
+                // TODO: find way to force BPM even if BPM is not active
+                // closeBPM = true;
+                closeBPMTimer.restart();
+            }
+            else {
+                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
+            }
+
+            window_.setClickThrough(true);
+            if (!overlay_.expired())
+                overlay_.lock()->setEnabled(false);
+            steam_overlay_present_ = true;
+        }
     }
     else {
         spdlog::info("Steam-overlay detected.");
