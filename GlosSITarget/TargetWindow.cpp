@@ -73,7 +73,7 @@ TargetWindow::TargetWindow(
             }
             if (Settings::window.maxFps < 15 && Settings::window.maxFps > 0) {
                 Settings::window.maxFps = 0;
-                setFpsLimit(screen_refresh_rate_);
+                setFpsLimit(TargetWindow::calcAutoRefreshRate(screen_refresh_rate_));
             } else {
                 setFpsLimit(Settings::window.maxFps);
             }
@@ -307,6 +307,18 @@ WORD TargetWindow::GetWindowDPI(HWND hWnd)
 }
 #endif
 
+unsigned int TargetWindow::calcAutoRefreshRate(unsigned int rate)
+{
+    unsigned int auto_refresh_rate = rate;
+    while (auto_refresh_rate > 60) {
+        auto_refresh_rate /= 2;
+    }
+    if (auto_refresh_rate < 30) {
+        auto_refresh_rate = 30;
+    }
+    return auto_refresh_rate;
+}
+
 void TargetWindow::createWindow()
 {
     toggle_window_mode_after_frame_ = false;
@@ -379,7 +391,7 @@ void TargetWindow::createWindow()
         screen_refresh_rate_ = 60;
     }
     else {
-        setFpsLimit(dev_mode.dmDisplayFrequency);
+        setFpsLimit(TargetWindow::calcAutoRefreshRate(dev_mode.dmDisplayFrequency));
         screen_refresh_rate_ = dev_mode.dmDisplayFrequency;
     }
 
