@@ -22,6 +22,9 @@
             "path": "Installer"
         },
         {
+            "path": "SteamTweaks"
+        },
+        {
             "name": "root",
             "path": "."
         },

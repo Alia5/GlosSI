@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name": "Attach to Steam CEF",
+            "port": 8080,
+            "request": "attach",
+            "type": "chrome",
+        }
+    ]
+}
