@@ -1,6 +1,6 @@
 
-import type { SteamConfig } from "../../common/util/types";
-import { initTweak } from "../../common/tweakApi";
+import type { SteamConfig } from "../../../common/util/types";
+import { initTweak } from "../../../common/tweakApi";
 
 
 const backup: { originalFpsCorner?: number } = {};
