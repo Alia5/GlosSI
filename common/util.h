@@ -73,6 +73,14 @@ namespace util {
 				std::filesystem::create_directories(path);
 			return path;
 		}
+
+		inline std::filesystem::path getGlosSIDir()
+		{
+			wchar_t result[MAX_PATH];
+			std::filesystem::path res{ std::wstring{result, GetModuleFileNameW(NULL, result, MAX_PATH)} };
+			return res.parent_path();
+		}
+
 	}
 
 #ifdef _WIN32
