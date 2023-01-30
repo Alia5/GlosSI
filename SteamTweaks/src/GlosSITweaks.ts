@@ -38,11 +38,15 @@ const installGlosSIApi = () => {
                 Object.assign(window, { GlosSIApi: api });
             },
             uninstall: () => {
-                Object.values(window.GlosSITweaks)
-                    .forEach((obj) => obj.uninstall?.());
+                Object.entries(window.GlosSITweaks)
+                    .filter(([tweakName, obj]) => (tweakName !== 'GlosSI'))
+                    .forEach(([, obj]) => obj.uninstall?.());
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 delete window.GlosSIApi;
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                delete window.GlosSITweaks;
             }
         }
     };
