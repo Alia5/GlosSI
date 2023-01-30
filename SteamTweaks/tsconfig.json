@@ -11,6 +11,7 @@
         "skipLibCheck": true,
         "useDefineForClassFields": true,
         "forceConsistentCasingInFileNames": true,
+        "incremental": true,
         "lib": [
             "esnext",
             "DOM"
@@ -20,6 +21,6 @@
         "src/**/*"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
     ]
 }
