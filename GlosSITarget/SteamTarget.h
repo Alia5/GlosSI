@@ -51,6 +51,9 @@ class SteamTarget {
     std::wstring steam_user_id_ = util::steam::getSteamUserId();
 
     bool steam_overlay_present_ = false;
+    bool fully_initialized_ = false;
+    bool can_fully_initialize_ = true;
+    void init_FuckingRenameMe();
 
     // Keep controllerConfig even is window is switched.
     // On Windoze hooking "GetForeGroundWindow" is enough;

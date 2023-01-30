@@ -46,14 +46,6 @@ SteamTarget::SteamTarget()
       server_(launcher_, [this] { run_ = false; })
 {
     target_window_handle_ = window_.getSystemHandle();
-#ifdef _WIN32
-    if (Settings::common.no_uwp_overlay) {
-        UWPOverlayEnabler::AddUwpOverlayOvWidget();
-    }
-    else {
-        UWPOverlayEnabler::EnableUwpOverlay();
-    }
-#endif
 }
 
 int SteamTarget::run()
@@ -67,92 +59,42 @@ int SteamTarget::run()
                 spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
             }
 
-            SetEnvironmentVariable(L"SteamAppId", L"0");
-            SetEnvironmentVariable(L"SteamClientLaunch", L"0");
-            SetEnvironmentVariable(L"SteamEnv", L"1");
-            SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
-            SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-            // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
-            SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-            SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
-            SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
-            SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
-            SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
+    std::vector<std::function<void()>> end_frame_callbacks;
 
-            if (Settings::common.standaloneUseGamepadUI) {
-                system("start steam://open/bigpicture");
-                auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
-                auto timer = sf::Clock{};
-                while (!steamwindow && timer.getElapsedTime().asSeconds() < 2) {
-                    steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
-                    Sleep(50);
+    if (!util::steam::getXBCRebindingEnabled(steam_path_, steam_user_id_)) {
+        auto overlay_id = std::make_shared<int>(-1);
+        *overlay_id = Overlay::AddOverlayElem(
+            [this, overlay_id, &end_frame_callbacks](bool window_has_focus, ImGuiID dockspace_id) {
+                can_fully_initialize_ = false;
+                ImGui::Begin("XBox Controller configuration support Disabled", nullptr, ImGuiWindowFlags_NoSavedSettings);
+                ImGui::TextColored({1.f, 0.8f, 0.f, 1.f}, "XBox Controller configuration support is disabled in Steam. Please enable it in Steam Settings.");
+                if (ImGui::Button("OK")) {
+                    can_fully_initialize_ = true;
+                    if (*overlay_id != -1) {
+                        end_frame_callbacks.emplace_back([this, overlay_id] {
+                            Overlay::RemoveOverlayElem(*overlay_id);
+                        });
+                    }
                 }
-                Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
-                // TODO: find way to force BPM even if BPM is not active
-                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
-
-                // Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
-                // TODO: find way to force BPM even if BPM is not active
-                // closeBPM = true;
-                closeBPMTimer.restart();
-            }
-            else {
-                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
-            }
-
-            window_.setClickThrough(true);
-            if (!overlay_.expired())
-                overlay_.lock()->setEnabled(false);
-            steam_overlay_present_ = true;
-        }
+                ImGui::End();
+            },
+            true);
+        can_fully_initialize_ = false;
     }
-    else {
-        spdlog::info("Steam-overlay detected.");
-        spdlog::warn("Double press Steam- overlay key(s)/Controller button to show GlosSI-overlay"); // Just to color output and really get users attention
-        window_.setClickThrough(true);
-        if (!overlay_.expired())
-            overlay_.lock()->setEnabled(false);
-        steam_overlay_present_ = true;
-
-#ifdef WIN32
-        if (!Settings::common.disable_watchdog) {
-            wchar_t buff[MAX_PATH];
-            GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
-            std::wstring watchDogPath(buff);
-            watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
-
-            DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
-        }
-#endif
-    }
-    util::steam::getXBCRebindingEnabled(steam_path_, steam_user_id_);
 
     run_ = true;
-
-#ifdef _WIN32
-    hidhide_.hideDevices(steam_path_);
-    input_redirector_.run();
-#endif
-
-    if (Settings::launch.launch) {
-        launcher_.launchApp(Settings::launch.launchPath, Settings::launch.launchAppArgs);
-    }
-
-    keepControllerConfig(true);
 
     const auto tray = createTrayMenu();
 
     server_.run();
 
     while (run_) {
+        if (!fully_initialized_ && can_fully_initialize_) {
+            init_FuckingRenameMe();
+        }
         detector_.update();
         overlayHotkeyWorkaround();
         window_.update();
-
-        if (closeBPM && closeBPMTimer.getElapsedTime().asSeconds() >= 3) {
-            system("start steam://close/bigpicture");
-            closeBPM = false;
-        }
 
         // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
         if (delayed_shutdown_) {
@@ -161,17 +103,25 @@ int SteamTarget::run()
             }
         }
         else {
-            launcher_.update();
+            if (fully_initialized_) {
+                launcher_.update();
+            }
         }
+        for (auto& efc : end_frame_callbacks) {
+            efc();
+        }
+        end_frame_callbacks.clear();
     }
     tray->exit();
 
     server_.stop();
+    if (fully_initialized_) {
 #ifdef _WIN32
-    input_redirector_.stop();
-    hidhide_.disableHidHide();
+        input_redirector_.stop();
+        hidhide_.disableHidHide();
 #endif
-    launcher_.close();
+        launcher_.close();
+    }
     return 0;
 }
 
@@ -262,6 +212,93 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 
 #endif
 }
+void SteamTarget::init_FuckingRenameMe()
+{
+    if (!SteamOverlayDetector::IsSteamInjected()) {
+        if (Settings::common.allowStandAlone) {
+            spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
+            if (Settings::common.standaloneModeGameId == L"") {
+                spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
+            }
+
+            SetEnvironmentVariable(L"SteamAppId", L"0");
+            SetEnvironmentVariable(L"SteamClientLaunch", L"0");
+            SetEnvironmentVariable(L"SteamEnv", L"1");
+            SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
+            SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+            // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
+            SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+            SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
+            SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
+            SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
+            SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
+
+            if (Settings::common.standaloneUseGamepadUI) {
+                system("start steam://open/bigpicture");
+                auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+                auto timer = sf::Clock{};
+                while (!steamwindow && timer.getElapsedTime().asSeconds() < 2) {
+                    steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
+                    Sleep(50);
+                }
+                Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
+                // TODO: find way to force BPM even if BPM is not active
+                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
+
+                // Overlay switches back to desktop one, once BPM is closed... Disable closing BPM for now.
+                // TODO: find way to force BPM even if BPM is not active
+                // closeBPM = true;
+                // closeBPMTimer.restart();
+            }
+            else {
+                LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
+            }
+
+            window_.setClickThrough(true);
+            steam_overlay_present_ = true;
+        }
+        else {
+            spdlog::warn("Steam-overlay not detected and global mode disabled. Showing GlosSI-overlay!\n\
+Application will not function!");
+            window_.setClickThrough(false);
+            if (!overlay_.expired())
+                overlay_.lock()->setEnabled(true);
+            steam_overlay_present_ = false;
+        }
+    }
+    else {
+        spdlog::info("Steam-overlay detected.");
+        spdlog::warn("Double press Steam- overlay key(s)/Controller button to show GlosSI-overlay"); // Just to color output and really get users attention
+        window_.setClickThrough(true);
+        steam_overlay_present_ = true;
+    }
+
+#ifdef WIN32
+    if (!Settings::common.disable_watchdog) {
+        wchar_t buff[MAX_PATH];
+        GetModuleFileName(GetModuleHandle(NULL), buff, MAX_PATH);
+        std::wstring watchDogPath(buff);
+        watchDogPath = watchDogPath.substr(0, 1 + watchDogPath.find_last_of(L'\\')) + L"GlosSIWatchdog.dll";
+
+        DllInjector::injectDllInto(watchDogPath, L"explorer.exe");
+    }
+
+    if (Settings::common.no_uwp_overlay) {
+        UWPOverlayEnabler::AddUwpOverlayOvWidget();
+    }
+    else {
+        UWPOverlayEnabler::EnableUwpOverlay();
+    }
+
+    hidhide_.hideDevices(steam_path_);
+    input_redirector_.run();
+#endif
+    if (Settings::launch.launch) {
+        launcher_.launchApp(Settings::launch.launchPath, Settings::launch.launchAppArgs);
+    }
+    keepControllerConfig(true);
+    fully_initialized_ = true;
+}
 
 /*
  * The "magic" that keeps a controller-config forced (without hooking into Steam)
@@ -287,6 +324,7 @@ void SteamTarget::keepControllerConfig(bool keep)
             spdlog::error("Couldn't un-install GetForegroundWindow hook!");
         }
     }
+
 #endif
 }
 

@@ -38,7 +38,7 @@ class Overlay {
     static void Shutdown();
     static void AddLog(const spdlog::details::log_msg& msg);
 
-    static int AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn);
+    static int AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn, bool force_show_ = false);
     static void RemoveOverlayElem(int id);
 
   private:
@@ -70,6 +70,8 @@ class Overlay {
 
     static inline int overlay_element_id_ = 0;
     static inline std::map<int, std::function<void(bool window_has_focus, ImGuiID dockspace_id)>> OVERLAY_ELEMS_;
+
+    static inline std::map<int, std::function<void(bool window_has_focus, ImGuiID dockspace_id)>> FORCED_OVERLAY_ELEMS_;
 
 #ifdef _WIN32
     std::string config_file_name_;

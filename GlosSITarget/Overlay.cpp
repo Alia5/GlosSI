@@ -163,12 +163,16 @@ void Overlay::update()
         const auto remain_millis = SPLASH_DURATION_S_ * 1000 - millis;
         if (remain_millis <= fade_millis) {
             showSplash(static_cast<float>(remain_millis) / static_cast<float>(fade_millis) * 128.f);
-        } else {
+        }
+        else {
             showSplash(128);
         }
     }
 
     if (Settings::window.disableGlosSIOverlay) {
+        std::ranges::for_each(FORCED_OVERLAY_ELEMS_, [this](const auto& elem) {
+            elem.second(window_.hasFocus(), 0);
+        });
         ImGui::SFML::Render(window_);
         return;
     }
@@ -211,6 +215,17 @@ void Overlay::update()
         closeOverlayButton();
     }
 
+    std::ranges::for_each(FORCED_OVERLAY_ELEMS_, [this](const auto& elem) {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.05f, 0.07f, 0.07f, 0.95f));
+        ImGui::SetNextWindowPos({
+            ImGui::GetMainViewport()->Size.x * 0.5f,
+            ImGui::GetMainViewport()->Size.y * 0.5f
+        }, ImGuiCond_Always, 
+            {0.5f, 0.5f});
+        elem.second(window_.hasFocus(), 0);
+        ImGui::PopStyleColor();
+    });
+
     ImGui::SFML::Render(window_);
 }
 
@@ -229,9 +244,14 @@ void Overlay::AddLog(const spdlog::details::log_msg& msg)
     LOG_MSGS_.push_back({.time = msg.time, .level = msg.level, .payload = msg.payload.data()});
 }
 
-int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn)
+int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus, ImGuiID dockspace_id)>& elem_fn, bool force_show)
 {
-    OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
+    if (force_show) {
+        FORCED_OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
+    }
+    else {
+        OVERLAY_ELEMS_.insert({overlay_element_id_, elem_fn});
+    }
     // keep this non confusing, but longer...
     const auto res = overlay_element_id_;
     overlay_element_id_++;
@@ -240,7 +260,10 @@ int Overlay::AddOverlayElem(const std::function<void(bool window_has_focus, ImGu
 
 void Overlay::RemoveOverlayElem(int id)
 {
-    OVERLAY_ELEMS_.erase(id);
+    if (OVERLAY_ELEMS_.contains(id))
+        OVERLAY_ELEMS_.erase(id);
+    if (FORCED_OVERLAY_ELEMS_.contains(id))
+        FORCED_OVERLAY_ELEMS_.erase(id);
 }
 
 void Overlay::showLogs(ImGuiID dockspace_id)
