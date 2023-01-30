@@ -153,18 +153,18 @@ Item {
                             spacing: 16
                             Label {
                                 topPadding: 8
-                                id: GlobalModeGameIdLabel
+                                id: globalModeGameIdLabel
                                 text: qsTr("GlobalMode GameId")
                             }
                             FluentTextInput {
                                 width: 128
-                                id: GlobalModeGameId
+                                id: globalModeGameId
 								enabled: false
                                 text: config.globalModeGameId
                                 onTextChanged: config.globalModeGameId = text
                             }
 							Button {
-                                id: GlobalModeGameIdButton
+                                id: globalModeGameIdButton
 								text: qsTr("Create global-/desktop-mode shortcut")
 								onClicked: {
 									const globalModeConf = uiModel.getDefaultConf();
@@ -175,7 +175,7 @@ Item {
 									    steamChangedDialog.open();
                                     }
 									const globalModeGID = uiModel.globalModeShortcutGameId();
-									GlobalModeGameId.text = globalModeGID;
+									globalModeGameId.text = globalModeGID;
                                     setTimeout(() => {
                                         uiModel.saveDefaultConf(config);
                                         done();
@@ -185,7 +185,7 @@ Item {
                                 visible: !uiModel.globalModeShortcutExists()
                             }
 							Button {
-                                id: GlobalModeGameIdConfigButton
+                                id: globalModeGameIdConfigButton
 								text: qsTr("Open global-/desktop-mode controller config")
 								onClicked: {
                                     Qt.openUrlExternally("steam://currentcontrollerconfig/" + uiModel.globalModeShortcutAppId() + "/");
