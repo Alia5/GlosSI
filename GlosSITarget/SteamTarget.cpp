@@ -61,6 +61,33 @@ int SteamTarget::run()
 
     std::vector<std::function<void()>> end_frame_callbacks;
 
+    if (!SteamOverlayDetector::IsSteamInjected() && Settings::common.allowGlobalMode && Settings::common.globalModeGameId == L"") {
+        auto overlay_id = std::make_shared<int>(-1);
+        *overlay_id = Overlay::AddOverlayElem(
+            [this, overlay_id, &end_frame_callbacks](bool window_has_focus, ImGuiID dockspace_id) {
+                can_fully_initialize_ = false;
+                ImGui::Begin("Global mode", nullptr, ImGuiWindowFlags_NoSavedSettings);
+                ImGui::Text("You are running GlosSI in (experimental) global mode (=outside of Steam)");
+                ImGui::Text("but global mode doesn't appear to be setup properly.");
+                ImGui::Text("");
+                ImGui::Text("Please open GlosSI-Config first and setup global mode");
+                ImGui::Text("");
+                ImGui::Text("Application will exit on confirm");
+                if (ImGui::Button("OK")) {
+                    can_fully_initialize_ = true;
+                    if (*overlay_id != -1) {
+                        end_frame_callbacks.emplace_back([this, overlay_id] {
+                            Overlay::RemoveOverlayElem(*overlay_id);
+                            run_ = false;
+                        });
+                    }
+                }
+                ImGui::End();
+            },
+            true);
+        can_fully_initialize_ = false;
+    }
+
     if (!util::steam::getXBCRebindingEnabled(steam_path_, steam_user_id_)) {
         auto overlay_id = std::make_shared<int>(-1);
         *overlay_id = Overlay::AddOverlayElem(
@@ -88,9 +115,16 @@ int SteamTarget::run()
 
     server_.run();
 
+    bool delayed_full_init_1_frame = false;
     while (run_) {
-        if (!fully_initialized_ && can_fully_initialize_) {
+        if (!fully_initialized_ && can_fully_initialize_ && delayed_full_init_1_frame) {
             init_FuckingRenameMe();
+        }
+        else if (!fully_initialized_ && can_fully_initialize_) {
+            delayed_full_init_1_frame = true;
+        }
+        else {
+            delayed_full_init_1_frame = false;
         }
         detector_.update();
         overlayHotkeyWorkaround();
