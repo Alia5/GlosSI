@@ -65,11 +65,9 @@ Global
 		{74FBA967-AB7E-43EA-B561-3F4821954B3B}.Release|x86.ActiveCfg = Release|Win32
 		{74FBA967-AB7E-43EA-B561-3F4821954B3B}.Release|x86.Build.0 = Release|Win32
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x64.ActiveCfg = Debug|x64
-		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x64.Build.0 = Debug|x64
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x86.ActiveCfg = Debug|Win32
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Debug|x86.Build.0 = Debug|Win32
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x64.ActiveCfg = Release|x64
-		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x64.Build.0 = Release|x64
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x86.ActiveCfg = Release|Win32
 		{DFED4B7E-D04C-442B-BB48-5B6068A6B31B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
@@ -77,7 +75,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		Qt5Version = 6.2.2_msvc2019_64
 		SolutionGuid = {789386B6-7D1E-4F9C-BF2E-9B5EDC3BB7C8}
+		Qt5Version = 6.2.2_msvc2019_64
 	EndGlobalSection
 EndGlobal
