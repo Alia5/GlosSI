@@ -32,6 +32,5 @@ namespace CEFInject
 	bool CEFDebugAvailable(uint16_t port = internal::port_);
 	std::vector<std::wstring> AvailableTabs(uint16_t port = internal::port_);
 	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port = internal::port_);
-	nlohmann::json InjectJs_Unscoped(const std::wstring& tabname, const std::wstring& js, uint16_t port = internal::port_);
 
 }
