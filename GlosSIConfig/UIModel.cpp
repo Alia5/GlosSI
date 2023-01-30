@@ -398,8 +398,8 @@ QVariantMap UIModel::getDefaultConf() const
          QJsonValue::fromVariant(QString::fromStdWString(getSteamPath(false).wstring()))},
         {"steamUserId",
          QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
-        {"standaloneModeGameId", ""},
-        {"standaloneUseGamepadUI", false},
+        {"globalModeGameId", ""},
+        {"globalModeUseGamepadUI", false},
         {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{
@@ -474,36 +474,36 @@ void UIModel::saveDefaultConf(QVariantMap conf) const
     file.close();
 }
 
-Q_INVOKABLE QVariant UIModel::standaloneShortcutConf() {
+Q_INVOKABLE QVariant UIModel::globalModeShortcutConf() {
     for (auto& target : targets_) {
         const auto map = target.toMap();
-        if (map["name"] == "GlosSI Standalone/Desktop") {
+        if (map["name"] == "GlosSI GlobalMode/Desktop") {
             return target;
         }
     }
     return QVariant();
 }
 
-Q_INVOKABLE bool UIModel::standaloneModeShortcutExists() {
-    const auto map = standaloneShortcutConf().toMap();
-    if (map["name"] == "GlosSI Standalone/Desktop") {
+Q_INVOKABLE bool UIModel::globalModeShortcutExists() {
+    const auto map = globalModeShortcutConf().toMap();
+    if (map["name"] == "GlosSI GlobalMode/Desktop") {
         return true;
     }
     return false;
 }
 
-Q_INVOKABLE uint32_t UIModel::standaloneModeShortcutAppId() {
-    if (!standaloneModeShortcutExists()) {
+Q_INVOKABLE uint32_t UIModel::globalModeShortcutAppId() {
+    if (!globalModeShortcutExists()) {
         return 0;
     }
-    return getAppId(standaloneShortcutConf());
+    return getAppId(globalModeShortcutConf());
 }
 
-Q_INVOKABLE QString UIModel::standaloneModeShortcutGameId() {
-    if (!standaloneModeShortcutExists()) {
+Q_INVOKABLE QString UIModel::globalModeShortcutGameId() {
+    if (!globalModeShortcutExists()) {
         return "";
     }
-    return getGameId(standaloneShortcutConf());
+    return getGameId(globalModeShortcutConf());
 }
 
 #ifdef _WIN32

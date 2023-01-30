@@ -64,10 +64,10 @@ class UIModel : public QObject {
     Q_INVOKABLE QVariantMap getDefaultConf() const;
     Q_INVOKABLE void saveDefaultConf(QVariantMap conf) const;
 	
-	Q_INVOKABLE QVariant standaloneShortcutConf();
-	Q_INVOKABLE bool standaloneModeShortcutExists();
-    Q_INVOKABLE uint32_t standaloneModeShortcutAppId();
-    Q_INVOKABLE QString standaloneModeShortcutGameId();
+	Q_INVOKABLE QVariant globalModeShortcutConf();
+	Q_INVOKABLE bool globalModeShortcutExists();
+    Q_INVOKABLE uint32_t globalModeShortcutAppId();
+    Q_INVOKABLE QString globalModeShortcutGameId();
     
 #ifdef _WIN32
     Q_INVOKABLE QVariantList uwpApps();

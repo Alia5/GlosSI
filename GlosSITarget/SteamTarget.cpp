@@ -215,25 +215,25 @@ void SteamTarget::focusWindow(WindowHandle hndl)
 void SteamTarget::init_FuckingRenameMe()
 {
     if (!SteamOverlayDetector::IsSteamInjected()) {
-        if (Settings::common.allowStandAlone) {
+        if (Settings::common.allowGlobalMode) {
             spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
-            if (Settings::common.standaloneModeGameId == L"") {
-                spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
+            if (Settings::common.globalModeGameId == L"") {
+                spdlog::error("No game id set for global mode. Controller will use desktop-config!");
             }
 
             SetEnvironmentVariable(L"SteamAppId", L"0");
             SetEnvironmentVariable(L"SteamClientLaunch", L"0");
             SetEnvironmentVariable(L"SteamEnv", L"1");
             SetEnvironmentVariable(L"SteamPath", steam_path_.wstring().c_str());
-            SetEnvironmentVariable(L"SteamTenfoot", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
+            SetEnvironmentVariable(L"SteamTenfoot", Settings::common.globalModeUseGamepadUI ? L"1" : L"0");
             // SetEnvironmentVariable(L"SteamTenfootHybrid", L"1");
-            SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.standaloneUseGamepadUI ? L"1" : L"0");
-            SetEnvironmentVariable(L"SteamGameId", Settings::common.standaloneModeGameId.c_str());
-            SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.standaloneModeGameId.c_str());
+            SetEnvironmentVariable(L"SteamGamepadUI", Settings::common.globalModeUseGamepadUI ? L"1" : L"0");
+            SetEnvironmentVariable(L"SteamGameId", Settings::common.globalModeGameId.c_str());
+            SetEnvironmentVariable(L"SteamOverlayGameId", Settings::common.globalModeGameId.c_str());
             SetEnvironmentVariable(L"EnableConfiguratorSupport", L"15");
             SetEnvironmentVariable(L"SteamStreamingForceWindowedD3D9", L"1");
 
-            if (Settings::common.standaloneUseGamepadUI) {
+            if (Settings::common.globalModeUseGamepadUI) {
                 system("start steam://open/bigpicture");
                 auto steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
                 auto timer = sf::Clock{};

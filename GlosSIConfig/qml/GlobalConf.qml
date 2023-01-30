@@ -140,10 +140,10 @@ Item {
                     Row {
                         Row {
                             CheckBox {
-                                id: standaloneUseGamepadUI
-                                text: qsTr("Use BPM for standalone-/desktop-mode")
-                                checked: config.standaloneUseGamepadUI
-                                onCheckedChanged: config.standaloneUseGamepadUI = checked
+                                id: globalModeUseGamepadUI
+                                text: qsTr("Use BPM for global-/desktop-mode")
+                                checked: config.globalModeUseGamepadUI
+                                onCheckedChanged: config.globalModeUseGamepadUI = checked
                             }
                         }
                     }
@@ -153,44 +153,44 @@ Item {
                             spacing: 16
                             Label {
                                 topPadding: 8
-                                id: standAloneGameIdLabel
-                                text: qsTr("StandaloneGameId")
+                                id: GlobalModeGameIdLabel
+                                text: qsTr("GlobalMode GameId")
                             }
                             FluentTextInput {
                                 width: 128
-                                id: standAloneGameId
+                                id: GlobalModeGameId
 								enabled: false
-                                text: config.standaloneModeGameId
-                                onTextChanged: config.standaloneModeGameId = text
+                                text: config.globalModeGameId
+                                onTextChanged: config.globalModeGameId = text
                             }
 							Button {
-                                id: standAloneGameIdButton
-								text: qsTr("Create standalone-/desktop-mode shortcut")
+                                id: GlobalModeGameIdButton
+								text: qsTr("Create global-/desktop-mode shortcut")
 								onClicked: {
-									const standaloneConf = uiModel.getDefaultConf();
-                                    standaloneConf.name = "GlosSI Standalone/Desktop";
-									standaloneConf.launch.launch = false;
-									uiModel.addTarget(standaloneConf);
-                                    if (uiModel.addToSteam(standaloneConf, "")) {
+									const globalModeConf = uiModel.getDefaultConf();
+                                    globalModeConf.name = "GlosSI GlobalMode/Desktop";
+									globalModeConf.launch.launch = false;
+									uiModel.addTarget(globalModeConf);
+                                    if (uiModel.addToSteam(globalModeConf, "")) {
 									    steamChangedDialog.open();
                                     }
-									const standaloneGID = uiModel.standaloneModeShortcutGameId();
-									standAloneGameId.text = standaloneGID;
+									const globalModeGID = uiModel.globalModeShortcutGameId();
+									GlobalModeGameId.text = globalModeGID;
                                     setTimeout(() => {
                                         uiModel.saveDefaultConf(config);
                                         done();
                                     }, 10);
 								}
 								highlighted: true
-                                visible: !uiModel.standaloneModeShortcutExists()
+                                visible: !uiModel.globalModeShortcutExists()
                             }
 							Button {
-                                id: standAloneGameIdConfigButton
-								text: qsTr("Open standalone-/desktop-mode controller config")
+                                id: GlobalModeGameIdConfigButton
+								text: qsTr("Open global-/desktop-mode controller config")
 								onClicked: {
-                                    Qt.openUrlExternally("steam://currentcontrollerconfig/" + uiModel.standaloneModeShortcutAppId() + "/");
+                                    Qt.openUrlExternally("steam://currentcontrollerconfig/" + uiModel.globalModeShortcutAppId() + "/");
 								}
-                                visible: uiModel.standaloneModeShortcutExists()
+                                visible: uiModel.globalModeShortcutExists()
                             }
                         }
                     }
