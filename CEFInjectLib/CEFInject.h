@@ -30,7 +30,41 @@ namespace CEFInject
 		internal::port_ = port;
 	}
 	bool CEFDebugAvailable(uint16_t port = internal::port_);
-	std::vector<std::wstring> AvailableTabs(uint16_t port = internal::port_);
-	nlohmann::json InjectJs(const std::wstring& tabname, const std::wstring& js, uint16_t port = internal::port_);
+	std::vector<std::wstring> AvailableTabNames(uint16_t port = internal::port_);
+	nlohmann::json::array_t AvailableTabs(uint16_t port = internal::port_);
+	nlohmann::json InjectJs(std::string_view debug_url, std::wstring_view js, uint16_t port = internal::port_);
+	nlohmann::json InjectJsByName(std::wstring_view tabname, std::wstring_view js, uint16_t port = internal::port_);
+
+	class SteamTweaks
+	{
+	public:
+		SteamTweaks() = default;
+
+		struct Tab_Info
+		{
+			std::string name;
+			std::string id;
+			std::string webSocketDebuggerUrl;
+		};
+		bool injectGlosSITweaks(std::string_view tab_name, uint16_t port = internal::port_);
+		bool injectGlosSITweaks(const Tab_Info& info, uint16_t port = internal::port_);
+	public:
+		bool uninstallTweaks();
+		
+		// TODO: Provide API to auto-inject
+
+		// TODO: build system to auto inject "user plugins"
+
+	private:
+		using tab_id = std::string;
+		std::map<tab_id, bool> glossi_tweaks_injected_map_;
+
+		static constexpr std::string_view steam_tweaks_path_ = "SteamTweaks";
+		static constexpr std::wstring_view uninstall_glossi_tweaks_js_ = LR"(
+				(() => {
+					return window.GlosSITweaks?.GlosSI?.uninstall();
+				})();
+			)";
+	};
 
 }
