@@ -216,6 +216,10 @@ void InputRedirector::runLoop()
                                      vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
+                            // TODO: make sense of DS4_OUTPUT_BUFFER
+                            // there is no doc? Ask @Nef about this...
+                            // ReSharper disable once CppDeprecatedEntity
+#pragma warning(disable : 4996)
                             const auto callback_register_res = vigem_target_ds4_register_notification(
                                 driver_,
                                 vt_pad_[i],
