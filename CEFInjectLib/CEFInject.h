@@ -49,7 +49,7 @@ namespace CEFInject
 		bool injectGlosSITweaks(std::string_view tab_name, uint16_t port = internal::port_);
 		bool injectGlosSITweaks(const Tab_Info& info, uint16_t port = internal::port_);
 	public:
-		bool uninstallTweaks();
+		bool uninstallTweaks(bool force = false);
 		
 		// TODO: Provide API to auto-inject
 

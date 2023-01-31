@@ -255,12 +255,12 @@ namespace CEFInject
 		return true;
 	}
 
-	bool SteamTweaks::uninstallTweaks()
+	bool SteamTweaks::uninstallTweaks(bool force)
 	{
 		if (!CEFDebugAvailable()) {
 			return false;
 		}
-		if (glossi_tweaks_injected_map_.empty()) {
+		if (glossi_tweaks_injected_map_.empty() && !force) {
 			return false;
 		}
 
