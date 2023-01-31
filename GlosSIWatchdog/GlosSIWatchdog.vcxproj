@@ -71,10 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\deps\spdlog\include;..\deps\json\include;..\deps\cpp-httplib;$(IncludePath)</IncludePath>
+    <IncludePath>..\deps\spdlog\include;..\deps\json\include;..\deps\cpp-httplib;..\CEFInjectLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\deps\spdlog\include;..\deps\json\include;..\deps\cpp-httplib;$(IncludePath)</IncludePath>
+    <IncludePath>..\deps\spdlog\include;..\deps\json\include;..\deps\cpp-httplib;..\CEFInjectLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\x64\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -119,7 +121,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;setupapi.lib;CefInjectLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>powershell.exe  $(SolutionDir)version_help.ps1</Command>
@@ -144,7 +146,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hid.lib;Cfgmgr32.lib;setupapi.lib;CefInjectLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Outputs>Upading version based on git;%(Outputs)</Outputs>

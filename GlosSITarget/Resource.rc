@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,2,0031000204300
- PRODUCTVERSION 0,1,2,0031000204300
+ FILEVERSION 0,1,2,0041007165813
+ PRODUCTVERSION 0,1,2,0041007165813
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Peter Repukat - FlatspotSoftware"
             VALUE "FileDescription", "GlosSI - SteamTarget"
-            VALUE "FileVersion", "0.1.2.0-31-gd2b43ff"
+            VALUE "FileVersion", "0.1.2.0-41-g7165813"
             VALUE "InternalName", "GlosSITarget"
             VALUE "LegalCopyright", "Copyright (C) 2021-2022 Peter Repukat - FlatspotSoftware"
             VALUE "OriginalFilename", "GlosSITarget.exe"
             VALUE "ProductName", "GlosSI"
-            VALUE "ProductVersion", "0.1.2.0-31-gd2b43ff"
+            VALUE "ProductVersion", "0.1.2.0-41-g7165813"
         END
     END
     BLOCK "VarFileInfo"

@@ -27,6 +27,7 @@ export default [
             dir: 'dist',
             sourcemap: "inline",
             format: 'iife',
+            // name: 'GlosSITweaks' // don't use name; don't pollute global namespace
         },
         plugins: [tsPluginConf],
     },
@@ -37,6 +38,7 @@ export default [
                 file: file.replace('src', 'dist').replace(/\.ts$/, '.js'),
                 sourcemap: "inline",
                 format: 'iife',
+                // name: path.basename(file).replace(/\.ts$/, '')  // don't use name; don't pollute global namespace
             },
             plugins: [tsPluginConf],
         }

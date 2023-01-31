@@ -1,4 +1,8 @@
 import type { SteamConfig } from './common/util/types';
+import { fetchWithTimeout } from './common/util/util';
+
+
+
 class SteamTargetApi {
     public getSteamSettings(): Promise<SteamConfig> {
         return fetch('http://localhost:8756/steam_settings')
@@ -8,7 +12,15 @@ class SteamTargetApi {
                 )
             );
     }
+
+    public getGlosSIActive() {
+        return fetchWithTimeout('http://localhost:8756/', { timeout: 10000 })
+            .then(
+                () => true
+            ).catch((e) => false);
+    }
 }
+
 
 class GlosSIApiCtor {
     public readonly SteamTarget: SteamTargetApi = new SteamTargetApi();
@@ -51,8 +63,23 @@ const installGlosSIApi = () => {
         }
     };
     window.GlosSITweaks.GlosSI.install();
+
+    const glossiCheckInterval = setInterval(() => {
+        if (window.GlosSIApi) {
+            window.GlosSIApi.SteamTarget.getGlosSIActive().then((active) => {
+                if (!active) {
+                    window?.GlosSITweaks?.GlosSI?.uninstall?.();
+                }
+            });
+            return;
+        }
+        clearTimeout(glossiCheckInterval)
+    }, 5000)
+
 };
 
 if (!window.GlosSITweaks || !window.GlosSIApi) {
     installGlosSIApi();
 }
+
+export default !!window.GlosSITweaks && !!window.GlosSIApi;

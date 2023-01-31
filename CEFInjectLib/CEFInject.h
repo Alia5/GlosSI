@@ -15,6 +15,7 @@ limitations under the License.
 */
 #pragma once
 
+#include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 
@@ -31,9 +32,9 @@ namespace CEFInject
 	}
 	bool CEFDebugAvailable(uint16_t port = internal::port_);
 	std::vector<std::wstring> AvailableTabNames(uint16_t port = internal::port_);
-	nlohmann::json::array_t AvailableTabs(uint16_t port = internal::port_);
-	nlohmann::json InjectJs(std::string_view debug_url, std::wstring_view js, uint16_t port = internal::port_);
-	nlohmann::json InjectJsByName(std::wstring_view tabname, std::wstring_view js, uint16_t port = internal::port_);
+	nlohmann::basic_json<> AvailableTabs(uint16_t port = internal::port_);
+	nlohmann::basic_json<> InjectJs(std::string_view tab_name, std::string_view debug_url, std::wstring_view js, uint16_t port = internal::port_);
+	nlohmann::basic_json<> InjectJsByName(std::wstring_view tabname, std::wstring_view js, uint16_t port = internal::port_);
 
 	class SteamTweaks
 	{
@@ -48,17 +49,36 @@ namespace CEFInject
 		};
 		bool injectGlosSITweaks(std::string_view tab_name, uint16_t port = internal::port_);
 		bool injectGlosSITweaks(const Tab_Info& info, uint16_t port = internal::port_);
-	public:
 		bool uninstallTweaks(bool force = false);
-		
-		// TODO: Provide API to auto-inject
 
-		// TODO: build system to auto inject "user plugins"
+		void update(float elapsed_time);
 
+		[[nodiscard]] bool isAutoInject() const;
+		void setAutoInject(const bool auto_inject);
 	private:
+		bool readGlosSITweaksJs();
+		void readAvailableTweaks(bool builtin = true);
+		bool auto_inject_ = false;
+
+		static constexpr float update_interval_ = 30.f;
+		float time_since_last_update_ = update_interval_;
 		using tab_id = std::string;
 		std::map<tab_id, bool> glossi_tweaks_injected_map_;
 
+		std::future<void> auto_inject_future_;
+
+		std::wstring glossi_tweaks_js_;
+
+		std::map<std::filesystem::path, std::wstring> js_tweaks_cache_;
+
+		using path_name = std::wstring;
+		using tab_name = std::string;
+		static inline const std::map<path_name, tab_name> path_tab_map_ = {
+			{L"SharedContext", "Steam Shared Context"},
+			{L"Overlay", "HOW TF GET OVERLAY TAB NAME?"}, // TODO: Figure out how to get the overlay tab name
+		};
+
+		static constexpr std::string_view steam_shared_ctx_tab_name_ = "Steam Shared Context";
 		static constexpr std::string_view steam_tweaks_path_ = "SteamTweaks";
 		static constexpr std::wstring_view uninstall_glossi_tweaks_js_ = LR"(
 				(() => {

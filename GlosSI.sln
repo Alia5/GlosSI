@@ -13,6 +13,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UWPOverlayEnablerDLL", "UWPOverlayEnablerDLL\UWPOverlayEnablerDLL.vcxproj", "{50212575-87E2-40AB-87EE-EAED19C8EBB2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GlosSIWatchdog", "GlosSIWatchdog\GlosSIWatchdog.vcxproj", "{BF273B90-CB69-43C8-9AF6-F3256DAFD41E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{74FBA967-AB7E-43EA-B561-3F4821954B3B} = {74FBA967-AB7E-43EA-B561-3F4821954B3B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CEFInjectLib", "CEFInjectLib\CEFInjectLib.vcxproj", "{74FBA967-AB7E-43EA-B561-3F4821954B3B}"
 EndProject
@@ -75,7 +78,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {789386B6-7D1E-4F9C-BF2E-9B5EDC3BB7C8}
 		Qt5Version = 6.2.2_msvc2019_64
+		SolutionGuid = {789386B6-7D1E-4F9C-BF2E-9B5EDC3BB7C8}
 	EndGlobalSection
 EndGlobal

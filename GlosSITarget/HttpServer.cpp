@@ -32,6 +32,12 @@ void HttpServer::run()
     auto setCorsHeader = [](httplib::Response& res) {
         res.set_header("Access-Control-Allow-Origin", "*");
     };
+
+    server_.Get("/", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        res.set_content("", "text/json");
+        setCorsHeader(res);
+    });
+
     server_.Get("/launched-pids", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
         const nlohmann::json j = app_launcher_.launchedPids();
         res.set_content(j.dump(), "text/json");
