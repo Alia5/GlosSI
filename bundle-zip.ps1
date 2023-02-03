@@ -19,6 +19,7 @@ Copy-Item "..\..\LICENSE" -Destination "./LICENSE"
 Copy-Item "..\..\QT_License" -Destination "./QT_License"
 Copy-Item "..\..\THIRD_PARTY_LICENSES.txt" -Destination "./THIRD_PARTY_LICENSES.txt"
 Copy-Item "..\..\steamgrid.exe" -Destination "./steamgrid.exe"
+Copy-Item "..\..\SteamTweaks\dist" -Destination "./SteamTweaks" -Recurse
 Copy-Item "C:\Qt\Tools\OpenSSL\Win_x64\bin\libcrypto-1_1-x64.dll" -Destination "./libcrypto-1_1-x64.dll"
 Copy-Item "C:\Qt\Tools\OpenSSL\Win_x64\bin\libssl-1_1-x64.dll" -Destination "./libssl-1_1-x64.dll"
 
