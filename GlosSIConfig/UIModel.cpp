@@ -65,6 +65,10 @@ UIModel::UIModel() : QObject(nullptr)
     font.setPointSize(11);
     font.setFamily("Roboto");
     QGuiApplication::setFont(font);
+
+    std::ofstream{getSteamPath() / ".cef-enable-remote-debugging"};
+
+
 }
 
 void UIModel::readTargetConfigs()
