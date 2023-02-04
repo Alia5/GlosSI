@@ -50,6 +50,7 @@ SteamTarget::SteamTarget()
 
 int SteamTarget::run()
 {
+    run_ = true;
     auto closeBPM = false;
     auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
@@ -64,6 +65,43 @@ int SteamTarget::run()
         overlay_.lock()->setEnabled(false);
 
     std::vector<std::function<void()>> end_frame_callbacks;
+
+    if (!CEFInject::CEFDebugAvailable()) {
+        auto overlay_id = std::make_shared<int>(-1);
+        *overlay_id = Overlay::AddOverlayElem(
+            [this, overlay_id, &end_frame_callbacks](bool window_has_focus, ImGuiID dockspace_id) {
+                can_fully_initialize_ = false;
+                ImGui::Begin("GlosSI - CEF Debug not available");
+                ImGui::Text("GlosSI makes use of Steam CEF Debugging for some functionality and plugins.");
+                ImGui::Text("GlosSI might not work fully without it.");
+
+                if (ImGui::Button("Ignore and continue")) {
+                    can_fully_initialize_ = true;
+                    cef_tweaks_enabled_ = false;
+                    if (*overlay_id != -1) {
+                        end_frame_callbacks.emplace_back([this, overlay_id] {
+                            Overlay::RemoveOverlayElem(*overlay_id);
+                        });
+                    }
+                }
+
+                if (ImGui::Button("Enable and restart Steam")) {
+
+                    std::ofstream{steam_path_ / ".cef-enable-remote-debugging"};
+                    system("taskkill.exe /im steam.exe /f");
+                    Sleep(200);
+                    launcher_.launchApp((steam_path_ / "Steam.exe").wstring());
+
+                    run_ = false;
+                }
+                ImGui::Text("GlosSI will close upon restarting Steam");
+
+                ImGui::End();
+            },
+            true);
+        can_fully_initialize_ = false;
+        cef_tweaks_enabled_ = false;
+    }
 
     if (!SteamOverlayDetector::IsSteamInjected() && Settings::common.allowGlobalMode && Settings::common.globalModeGameId == L"") {
         auto overlay_id = std::make_shared<int>(-1);
@@ -112,9 +150,7 @@ int SteamTarget::run()
             true);
         can_fully_initialize_ = false;
     }
-
-    run_ = true;
-
+    
     const auto tray = createTrayMenu();
 
     server_.run();
@@ -136,8 +172,9 @@ int SteamTarget::run()
         overlayHotkeyWorkaround();
         window_.update();
 
-        steam_tweaks.update(frame_time_clock.getElapsedTime().asSeconds());
-
+        if (cef_tweaks_enabled_ && fully_initialized_) {
+            steam_tweaks_.update(frame_time_clock.getElapsedTime().asSeconds());
+        }
 
         // Wait on shutdown; User might get confused if window closes to fast if anything with launchApp get's borked.
         if (delayed_shutdown_) {
@@ -156,7 +193,6 @@ int SteamTarget::run()
         end_frame_callbacks.clear();
         frame_time_clock.restart();
     }
-    steam_tweaks.uninstallTweaks();
     tray->exit();
 
     server_.stop();
@@ -166,8 +202,11 @@ int SteamTarget::run()
         hidhide_.disableHidHide();
 #endif
         launcher_.close();
+        if (cef_tweaks_enabled_) {
+            steam_tweaks_.uninstallTweaks();
+        }
     }
-    
+
     return 0;
 }
 
@@ -343,6 +382,11 @@ Application will not function!");
         launcher_.launchApp(Settings::launch.launchPath, Settings::launch.launchAppArgs);
     }
     keepControllerConfig(true);
+
+    if (cef_tweaks_enabled_) {
+        steam_tweaks_.setAutoInject(true);
+    }
+
     fully_initialized_ = true;
 }
 

@@ -29,6 +29,7 @@ limitations under the License.
 #include <filesystem>
 
 #include "AppLauncher.h"
+#include "CEFInject.h"
 #include "Overlay.h"
 #include "HttpServer.h"
 
@@ -50,6 +51,8 @@ class SteamTarget {
     std::filesystem::path steam_path_ = util::steam::getSteamPath();
     std::wstring steam_user_id_ = util::steam::getSteamUserId();
 
+    CEFInject::SteamTweaks steam_tweaks_;
+    bool cef_tweaks_enabled_ = true;
     bool steam_overlay_present_ = false;
     bool fully_initialized_ = false;
     bool can_fully_initialize_ = true;
