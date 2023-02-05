@@ -251,9 +251,11 @@ void AppLauncher::getProcessHwnds()
             IPropertyStore* propStore;
             SHGetPropertyStoreForWindow(curr_wnd, IID_IPropertyStore, reinterpret_cast<void**>(&propStore));
             PROPVARIANT prop;
-            propStore->GetValue(PKEY_AppUserModel_ID, &prop);
-            if (prop.bstrVal != nullptr && std::wstring(prop.bstrVal) == launched_uwp_path_) {
-                process_hwnds_.push_back(curr_wnd);
+            if (propStore != nullptr) {
+                propStore->GetValue(PKEY_AppUserModel_ID, &prop);
+                if (prop.bstrVal != nullptr && std::wstring(prop.bstrVal) == launched_uwp_path_) {
+                    process_hwnds_.push_back(curr_wnd);
+                }   
             }
         } while (curr_wnd != nullptr);
     }
