@@ -35,6 +35,7 @@ class InputRedirector {
   private:
     void runLoop();
 
+    int max_controllers_ = -1;
     static constexpr int start_delay_ms_ = 2000;
     bool run_ = false;
     int overlay_elem_id_ = -1;

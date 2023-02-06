@@ -65,7 +65,7 @@ namespace Settings
 
     inline struct Controller
     {
-        int maxControllers = 1;
+        int maxControllers = -1;
         bool allowDesktopConfig = false;
         bool emulateDS4 = false;
     } controller;
