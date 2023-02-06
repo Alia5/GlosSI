@@ -24,6 +24,7 @@ limitations under the License.
 #include <Propsys.h>
 #include <propkey.h>
 #include <shellapi.h>
+#include <winerror.h>
 
 #pragma comment(lib, "Shell32.lib")
 #endif
@@ -300,6 +301,9 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                     ? L"\"" + native_seps_path + L"\""
                     : native_seps_path) + L" " + args)
     );
+
+    DWORD pid;
+
     spdlog::debug(L"Launching Win32App app \"{}\"; args \"{}\"", native_seps_path, args_cpy);
     if (CreateProcessW(native_seps_path.data(),
                        args_cpy.empty() ? nullptr : args_cpy.data(),
@@ -311,17 +315,47 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        nullptr, // launch_dir.empty() ? nullptr : launch_dir.data(),
                        &info,
                        &process_info)) {
-        // spdlog::info(L"Started Program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
-        spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, process_info.dwProcessId);
-        if (!watchdog) {
-            pid_mutex_.lock();
-            pids_.push_back(process_info.dwProcessId);
-            pid_mutex_.unlock();
+
+        pid = process_info.dwProcessId;
+    } else {
+        DWORD error_code = GetLastError();
+
+        if (error_code == ERROR_ELEVATION_REQUIRED) {
+            spdlog::info("Elevated permissions required. Trying again with elevated permissions");
+
+            SHELLEXECUTEINFOW shExecInfo = {0};
+            shExecInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
+            shExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+            shExecInfo.hwnd = NULL;
+            shExecInfo.lpVerb = L"runas";
+            shExecInfo.lpFile = native_seps_path.data();
+            shExecInfo.lpParameters = args_cpy.empty() ? nullptr : args_cpy.data();
+            shExecInfo.lpDirectory = nullptr; // launch_dir.empty() ? nullptr : launch_dir.data(),
+            shExecInfo.nShow = SW_SHOW;
+            shExecInfo.hInstApp = NULL;
+
+            if (ShellExecuteExW(&shExecInfo)) {
+                pid = GetProcessId(shExecInfo.hProcess);
+                if (pid == 0u) {
+                    spdlog::error(L"Couldn't get process id after starting program: \"{}\"; Error code {}", native_seps_path, GetLastError());
+                }
+                CloseHandle(shExecInfo.hProcess);
+            } else {
+                spdlog::error(L"Couldn't start program with elevated permissions: \"{}\"; Error code {}", native_seps_path, GetLastError());
+                return;
+            }
+        } else {
+            spdlog::error(L"Could't start program: \"{}\"; Error code: {}", native_seps_path, error_code);
+            return;
         }
     }
-    else {
-        // spdlog::error(L"Couldn't start program: \"{}\" in directory: \"{}\"", native_seps_path, launch_dir);
-        spdlog::error(L"Couldn't start program: \"{}\"", native_seps_path);
+
+    spdlog::info(L"Started Program: \"{}\"; PID: {}", native_seps_path, pid);
+
+    if (!watchdog) {
+        pid_mutex_.lock();
+        pids_.push_back(pid);
+        pid_mutex_.unlock();
     }
 }
 
