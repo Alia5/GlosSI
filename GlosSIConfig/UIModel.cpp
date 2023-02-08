@@ -403,7 +403,8 @@ QVariantMap UIModel::getDefaultConf() const
         {"steamUserId",
          QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
         {"globalModeGameId", ""},
-        {"globalModeUseGamepadUI", false},
+        {"globalModeUseGamepadUI", true},
+        {"minimizeSteamGamepadUI", true},
         {"controller", QJsonObject{{"maxControllers", -1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
         {"devices",
          QJsonObject{

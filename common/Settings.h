@@ -83,6 +83,7 @@ namespace Settings
         std::wstring globalModeGameId; /* = L"12605636929694728192"; */
         bool globalModeUseGamepadUI = false;
         bool allowGlobalMode = true;
+        bool minimizeSteam = true;
     } common;
 
     inline const std::map<std::wstring, std::function<void()>> cmd_args = {
@@ -235,6 +236,7 @@ namespace Settings
 
             safeParseValue(json, "globalModeGameId", common.globalModeGameId);
             safeParseValue(json, "globalModeUseGamepadUI", common.globalModeUseGamepadUI);
+            safeParseValue(json, "minimizeSteam", common.minimizeSteam);
         }
         catch (const nlohmann::json::exception &e)
         {

@@ -76,6 +76,7 @@ namespace CEFInject
 		static inline const std::map<path_name, tab_name> path_tab_map_ = {
 			{L"SharedContext", "Steam Shared Context"},
 			{L"Overlay", "HOW TF GET OVERLAY TAB NAME?"}, // TODO: Figure out how to get the overlay tab name
+            {L"GamepadUI", "Steam Big Picture Mode"},
 		};
 
 		static constexpr std::string_view steam_shared_ctx_tab_name_ = "Steam Shared Context";
