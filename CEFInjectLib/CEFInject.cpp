@@ -169,7 +169,7 @@ namespace CEFInject
 			if (res->status == 200) {
 				const auto json = nlohmann::json::parse(res->body);
 				for (const auto& tab : json) {
-					if (tab["title"].get<std::wstring>().starts_with(tabname)) {
+					if (tab["title"].get<std::wstring>().find(tabname) != std::string::npos) {
 						return InjectJs(tab["title"].get<std::string>(), tab["webSocketDebuggerUrl"].get<std::string>(), js, port);
 					}
 				}
@@ -213,7 +213,7 @@ namespace CEFInject
 					return [&info](const nlohmann::json::array_t& tabList)
 					{
 						for (const auto& tab : tabList) {
-							if (tab["title"].get<std::string>().starts_with(info.name.data())) {
+							if (tab["title"].get<std::string>().find(info.name.data()) != std::string::npos) {
 								return tab;
 							}
 						}
@@ -347,7 +347,7 @@ namespace CEFInject
 							const auto dir_name = path.parent_path().filename();
 
 							if (path_tab_map_.contains(dir_name.wstring())) {
-								if (tab["title"].get<std::string>().starts_with(path_tab_map_.at(dir_name.wstring()))) {
+								if (tab["title"].get<std::string>().find(path_tab_map_.at(dir_name.wstring())) != std::string::npos) {
 									InjectJs(tab["title"].get<std::string>(), tab["webSocketDebuggerUrl"].get<std::string>(), js);
 								}
 							}
