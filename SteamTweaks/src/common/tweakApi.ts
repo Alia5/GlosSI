@@ -2,9 +2,9 @@
 export const initTweak = <T>(name: string, tweakMain: (() => T)|{
     install: () => T;
     uninstall: () => void;
-}, force = false): T|Error => {
+}, force = false): T => {
     if (!force && window.GlosSITweaks[name]) {
-        return new Error(`Tweak ${name} is already installed!`);
+        throw new Error(`Tweak ${name} is already installed!`);
     }
 
     if (typeof tweakMain === 'object') {

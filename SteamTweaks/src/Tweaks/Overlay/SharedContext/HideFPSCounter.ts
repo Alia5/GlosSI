@@ -1,6 +1,5 @@
-
-import type { SteamConfig } from "../../../common/util/types";
-import { initTweak } from "../../../common/tweakApi";
+import type { SteamConfig } from '../../../common/util/types';
+import { initTweak } from '../../../common/tweakApi';
 
 
 const backup: { originalFpsCorner?: number } = {};
@@ -20,4 +19,6 @@ initTweak('HideFPSCounter', {
             SteamClient.Settings.SetInGameOverlayShowFPSCorner((backup.originalFpsCorner ?? 0) as 0 | 1 | 2 | 3 | 4);
         }, 10 * 1000);
     }
-});
+}).then(() => {
+    console.log('HideFPSCounter installed');
+}).catch((e) => console.error('HideFPSCounter failed to install', e));

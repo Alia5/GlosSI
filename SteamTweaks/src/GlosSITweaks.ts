@@ -1,9 +1,15 @@
 import type { SteamConfig } from './common/util/types';
 import { fetchWithTimeout } from './common/util/util';
-
+import type { GlosSISettings } from './@types/GlosSISettings';
 
 
 class SteamTargetApi {
+    public getGlosSIActive() {
+        return fetchWithTimeout('http://localhost:8756/', { timeout: 500 })
+            .then(
+                () => true
+            ).catch(() => false);
+    }
     public getSteamSettings(): Promise<SteamConfig> {
         return fetch('http://localhost:8756/steam_settings')
             .then(
@@ -13,12 +19,15 @@ class SteamTargetApi {
             );
     }
 
-    public getGlosSIActive() {
-        return fetchWithTimeout('http://localhost:8756/', { timeout: 10000 })
+    public getGlosSISettings() {
+        return fetch('http://localhost:8756/settings')
             .then(
-                () => true
-            ).catch((e) => false);
+                (res) => res.json().then(
+                    (json) => json as GlosSISettings
+                )
+            );
     }
+
 }
 
 
@@ -27,18 +36,19 @@ class GlosSIApiCtor {
 }
 
 interface GlosSITweaks {
-    [tweakName: string]: { readonly install: () => unknown; readonly uninstall?: () => void }
+    [tweakName: string]: { readonly install: () => unknown; readonly uninstall?: () => void };
 }
 
 declare global {
     interface Window {
-        GlosSITweaks: GlosSITweaks
+        GlosSITweaks: GlosSITweaks;
         GlosSIApi: InstanceType<typeof GlosSIApiCtor>;
     }
 
     // eslint-disable-next-line
     const GlosSIApi: InstanceType<typeof GlosSIApiCtor>;
-    const GlosSITweaks: GlosSITweaks
+    // eslint-disable-next-line
+    const GlosSITweaks: GlosSITweaks;
 }
 
 
@@ -51,7 +61,7 @@ const installGlosSIApi = () => {
             },
             uninstall: () => {
                 Object.entries(window.GlosSITweaks)
-                    .filter(([tweakName, obj]) => (tweakName !== 'GlosSI'))
+                    .filter(([tweakName]) => (tweakName !== 'GlosSI'))
                     .forEach(([, obj]) => obj.uninstall?.());
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
@@ -66,15 +76,15 @@ const installGlosSIApi = () => {
 
     const glossiCheckInterval = setInterval(() => {
         if (window.GlosSIApi) {
-            window.GlosSIApi.SteamTarget.getGlosSIActive().then((active) => {
+            void window.GlosSIApi.SteamTarget.getGlosSIActive().then((active) => {
                 if (!active) {
                     window?.GlosSITweaks?.GlosSI?.uninstall?.();
                 }
             });
             return;
         }
-        clearTimeout(glossiCheckInterval)
-    }, 5000)
+        clearTimeout(glossiCheckInterval);
+    }, 5000);
 
 };
 
