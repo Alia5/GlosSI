@@ -328,6 +328,12 @@ void SteamTarget::init_FuckingRenameMe()
                     steamwindow = FindWindow(L"Steam Big Picture Mode", nullptr);
                     Sleep(50);
                 }
+
+                if (cef_tweaks_enabled_) {
+                    steam_tweaks_.setAutoInject(true);
+                    steam_tweaks_.update(999);
+                }
+
                 Sleep(6000); // DIRTY HACK to wait until BPM (GamepadUI) is initialized
                 // TODO: find way to force BPM even if BPM is not active
                 LoadLibrary((steam_path_ / "GameOverlayRenderer64.dll").wstring().c_str());
