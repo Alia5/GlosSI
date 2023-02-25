@@ -83,7 +83,7 @@ namespace Settings
         std::wstring globalModeGameId; /* = L"12605636929694728192"; */
         bool globalModeUseGamepadUI = false;
         bool allowGlobalMode = true;
-        bool minimizeSteam = true;
+        bool minimizeSteamGamepadUI = true;
     } common;
 
     inline const std::map<std::wstring, std::function<void()>> cmd_args = {
@@ -236,7 +236,7 @@ namespace Settings
 
             safeParseValue(json, "globalModeGameId", common.globalModeGameId);
             safeParseValue(json, "globalModeUseGamepadUI", common.globalModeUseGamepadUI);
-            safeParseValue(json, "minimizeSteam", common.minimizeSteam);
+            safeParseValue(json, "minimizeSteamGamepadUI", common.minimizeSteamGamepadUI);
         }
         catch (const nlohmann::json::exception &e)
         {
@@ -337,6 +337,16 @@ namespace Settings
         json["controller"]["maxControllers"] = controller.maxControllers;
         json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
         json["controller"]["emulateDS4"] = controller.emulateDS4;
+
+
+        json["globalModeGameId"] = common.globalModeGameId;;
+        json["globalModeUseGamepadUI"] = common.globalModeUseGamepadUI;
+        json["minimizeSteamGamepadUI"] = common.minimizeSteamGamepadUI;
+
+		// json["steamgridApiKey"] = common.steamgridApiKey;
+
+		json["steamPath"] = common.steamPath;
+		json["steamUserId"] = common.steamUserId;
 
         json["extendedLogging"] = common.extendedLogging;
         json["name"] = common.name;
