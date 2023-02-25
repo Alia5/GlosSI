@@ -452,6 +452,13 @@ namespace CEFInject
 		};
 		find_tweak_files(tweaks_path.wstring(), find_tweak_files);
 
+		for (const auto& tweak : js_tweaks_cache_ | std::views::keys) {
+			spdlog::debug(
+				"CEFInject: Found {} tweak: {}",
+				builtin ? "builtin" : "user",
+				tweak.string()
+			);
+		}
 
 	}
 }
