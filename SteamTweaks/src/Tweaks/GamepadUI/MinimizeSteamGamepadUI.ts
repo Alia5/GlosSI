@@ -1,11 +1,11 @@
-import { SteamUiMode } from '../../common/Steam';
 import { initTweak } from '../../common/tweakApi';
 
 
 initTweak('MinimizeSteamGamepadUI', async () => {
 
     const [isGamepadUI, minimizeGPUI] = await Promise.all([
-        (async () => (await SteamClient.UI.GetUiMode()) === SteamUiMode.GamepadUI)(),
+        // (async () => (await SteamClient.UI.GetUiMode()) === SteamUiMode.GamepadUI)(),
+        true, // Steam is always GamepadUI if injected into GamepadUI, duh!
         (async () => (await GlosSIApi.SteamTarget.getGlosSISettings()).minimizeSteamGamepadUI)()
     ]);
     if (isGamepadUI && minimizeGPUI) {
