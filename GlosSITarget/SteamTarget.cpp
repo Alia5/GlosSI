@@ -61,6 +61,10 @@ int SteamTarget::run()
             }
     auto steam_tweaks = CEFInject::SteamTweaks();
     steam_tweaks.setAutoInject(true);
+
+    server_.run();
+
+
     if (!overlay_.expired())
         overlay_.lock()->setEnabled(false);
 
@@ -152,9 +156,7 @@ int SteamTarget::run()
     }
     
     const auto tray = createTrayMenu();
-
-    server_.run();
-
+    
     bool delayed_full_init_1_frame = false;
     sf::Clock frame_time_clock;
 
