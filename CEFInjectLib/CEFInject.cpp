@@ -90,16 +90,6 @@ namespace CEFInject
 
 	nlohmann::basic_json<> InjectJs(std::string_view tab_name, std::string_view debug_url, std::wstring_view js, uint16_t port)
 	{
-#ifdef _WIN32
-		INT rc;
-		WSADATA wsaData;
-
-		rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (rc) {
-			printf("WSAStartup Failed.\n");
-			return nullptr;
-		}
-#endif
 
 		std::shared_ptr<easywsclient::WebSocket> ws{
 			easywsclient::WebSocket::from_url(debug_url.data())
@@ -145,20 +135,15 @@ namespace CEFInject
 						return res;
 					}
 				}
-			} catch (...) {
+			}
+			catch (...) {
 				spdlog::error(
 					"CEFInject: Error injecting JS into tab: {}, {}",
 					std::string(tab_name.data()),
 					std::string(debug_url.data()));
 			}
-#ifdef _WIN32
-			WSACleanup();
-#endif
 			return res;
 		}
-#ifdef _WIN32
-		WSACleanup();
-#endif
 		return nullptr;
 	}
 
@@ -176,6 +161,28 @@ namespace CEFInject
 			}
 		}
 		return nullptr;
+	}
+
+	WSAStartupWrap::WSAStartupWrap()
+	{
+#ifdef _WIN32
+		WSADATA wsa_data;
+		if (const INT rc = WSAStartup(MAKEWORD(2, 2), &wsa_data)) {
+			spdlog::error("WSAStartup Failed.");
+			return;
+		}
+		wsa_startup_succeeded_ = true;
+#endif
+	}
+
+	WSAStartupWrap::~WSAStartupWrap()
+	{
+#ifdef _WIN32
+		if (wsa_startup_succeeded_)
+		{
+			WSACleanup();
+		}
+#endif
 	}
 
 
@@ -292,7 +299,7 @@ namespace CEFInject
 
 		for (auto& f : futures)
 		{
-			if (f.valid()){
+			if (f.valid()) {
 				f.wait();
 			}
 		}
@@ -339,19 +346,19 @@ namespace CEFInject
 				}
 				glossi_tweaks_injected_map_[tab["id"].get<std::string>()] = true;
 
-				 futures.push_back(std::async([this, &tab]()
+				futures.push_back(std::async([this, &tab]()
 					{
 						InjectJs(tab["title"].get<std::string>(), tab["webSocketDebuggerUrl"].get<std::string>(), glossi_tweaks_js_);
 
-						for (auto& [path, js] : js_tweaks_cache_) {
-							const auto dir_name = path.parent_path().filename();
+				for (auto& [path, js] : js_tweaks_cache_) {
+					const auto dir_name = path.parent_path().filename();
 
-							if (path_tab_map_.contains(dir_name.wstring())) {
-								if (tab["title"].get<std::string>().find(path_tab_map_.at(dir_name.wstring())) != std::string::npos) {
-									InjectJs(tab["title"].get<std::string>(), tab["webSocketDebuggerUrl"].get<std::string>(), js);
-								}
-							}
+					if (path_tab_map_.contains(dir_name.wstring())) {
+						if (tab["title"].get<std::string>().find(path_tab_map_.at(dir_name.wstring())) != std::string::npos) {
+							InjectJs(tab["title"].get<std::string>(), tab["webSocketDebuggerUrl"].get<std::string>(), js);
 						}
+					}
+				}
 					}));
 			}
 			for (auto& f : futures)

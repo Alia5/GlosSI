@@ -36,6 +36,15 @@ namespace CEFInject
 	nlohmann::basic_json<> InjectJs(std::string_view tab_name, std::string_view debug_url, std::wstring_view js, uint16_t port = internal::port_);
 	nlohmann::basic_json<> InjectJsByName(std::wstring_view tabname, std::wstring_view js, uint16_t port = internal::port_);
 
+	class WSAStartupWrap
+	{
+		public:
+		explicit WSAStartupWrap();
+			~WSAStartupWrap();
+		private:
+			bool wsa_startup_succeeded_ = false;
+	};
+
 	class SteamTweaks
 	{
 	public:
@@ -87,5 +96,9 @@ namespace CEFInject
 				})();
 			)";
 	};
+
+	namespace internal {
+		static WSAStartupWrap wsa_startup_wrap{};
+	}
 
 }
