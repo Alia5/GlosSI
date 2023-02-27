@@ -68,6 +68,7 @@ namespace Settings
         int maxControllers = -1;
         bool allowDesktopConfig = false;
         bool emulateDS4 = false;
+        unsigned int updateRate = 144;
     } controller;
 
     inline struct Common
@@ -225,6 +226,7 @@ namespace Settings
                 safeParseValue(controllerConf, "maxControllers", controller.maxControllers);
                 safeParseValue(controllerConf, "allowDesktopConfig", controller.allowDesktopConfig);
                 safeParseValue(controllerConf, "emulateDS4", controller.emulateDS4);
+                safeParseValue(controllerConf, "updateRate", controller.updateRate);
             }
             safeParseValue(json, "extendedLogging", common.extendedLogging);
             safeParseValue(json, "name", common.name);
@@ -337,6 +339,7 @@ namespace Settings
         json["controller"]["maxControllers"] = controller.maxControllers;
         json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
         json["controller"]["emulateDS4"] = controller.emulateDS4;
+        json["controller"]["updateRate"] = controller.updateRate;
 
 
         json["globalModeGameId"] = common.globalModeGameId;;

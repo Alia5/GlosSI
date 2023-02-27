@@ -266,7 +266,7 @@ void InputRedirector::runLoop()
                 unplugVigemPad(i);
             }
         }
-        sf::sleep(sf::milliseconds(4));
+        Sleep(static_cast<int>(1000.f / Settings::controller.updateRate));
 
 #endif
     }

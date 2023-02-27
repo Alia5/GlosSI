@@ -405,7 +405,12 @@ QVariantMap UIModel::getDefaultConf() const
         {"globalModeGameId", ""},
         {"globalModeUseGamepadUI", true},
         {"minimizeSteamGamepadUI", true},
-        {"controller", QJsonObject{{"maxControllers", -1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
+        {"controller",
+            QJsonObject{{"maxControllers", -1},
+                {"emulateDS4", false},
+                {"allowDesktopConfig", false},
+                {"updateRate", 144}
+            }},
         {"devices",
          QJsonObject{
              {"hideDevices", true},
