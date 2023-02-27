@@ -149,6 +149,41 @@ void TargetWindow::setClickThrough(bool click_through)
 #endif
 }
 
+void TargetWindow::setTransparent(bool transparent) const
+{
+    HWND hwnd = window_.getSystemHandle();
+
+    if (transparent) {
+        // if (windowed_) {
+        //     DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
+        //     DwmEnableBlurBehindWindow(hwnd, &bb);
+        // } // semi-transparent in window mode, but deprecated api
+        //  On Linux the window will (should) automagically be semi-transparent
+
+        // transparent windows window...
+        auto style = GetWindowLong(hwnd, GWL_STYLE);
+        style &= ~WS_OVERLAPPED;
+        style |= WS_POPUP;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+
+        MARGINS margins = { -1 };
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        spdlog::debug("Setting window to transparent");
+
+    } else {
+        auto style = GetWindowLong(hwnd, GWL_STYLE);
+        style |= WS_OVERLAPPED;
+        style &= ~WS_POPUP;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+
+        MARGINS margins = {0};
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        spdlog::debug("Setting window to opaque");
+    }
+}
+
 void TargetWindow::update()
 {
     sf::Event event{};
@@ -364,22 +399,7 @@ void TargetWindow::createWindow()
     auto dpi = GetWindowDPI(hwnd);
     spdlog::debug("Screen DPI: {}", dpi);
 
-    //if (windowed_) {
-    //    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
-    //    DwmEnableBlurBehindWindow(hwnd, &bb);
-    //} // semi-transparent in window mode, but deprecated api
-    // On Linux the window will (should) automagically be semi-transparent
-
-    // transparent windows window...
-    auto style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~WS_OVERLAPPED;
-    style |= WS_POPUP;
-    SetWindowLong(hwnd, GWL_STYLE, style);
-    
-
-    MARGINS margins;
-    margins.cxLeftWidth = -1;
-    DwmExtendFrameIntoClientArea(hwnd, &margins);
+    setTransparent(true);
 
     DEVMODE dev_mode = {};
     dev_mode.dmSize = sizeof(DEVMODE);

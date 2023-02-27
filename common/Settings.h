@@ -61,6 +61,7 @@ namespace Settings
         bool disableOverlay = false;
         bool hideAltTab = true;
         bool disableGlosSIOverlay = false;
+        bool opaqueSteamOverlay = false;
     } window;
 
     inline struct Controller
@@ -219,6 +220,7 @@ namespace Settings
                 safeParseValue(winconf, "disableOverlay", window.disableOverlay);
                 safeParseValue(winconf, "hideAltTab", window.hideAltTab);
                 safeParseValue(winconf, "disableGlosSIOverlay", window.disableGlosSIOverlay);
+                safeParseValue(winconf, "opaqueSteamOverlay", window.opaqueSteamOverlay);
             }
 
             if (const auto controllerConf = json["controller"]; !controllerConf.is_null() && !controllerConf.empty() && controllerConf.is_object())
@@ -336,6 +338,7 @@ namespace Settings
         json["window"]["scale"] = window.scale;
         json["window"]["disableOverlay"] = window.disableOverlay;
         json["window"]["hideAltTab"] = window.hideAltTab;
+        json["window"]["opaqueSteamOverlay"] = window.opaqueSteamOverlay;
         json["controller"]["maxControllers"] = controller.maxControllers;
         json["controller"]["allowDesktopConfig"] = controller.allowDesktopConfig;
         json["controller"]["emulateDS4"] = controller.emulateDS4;

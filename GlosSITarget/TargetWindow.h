@@ -39,6 +39,7 @@ class TargetWindow {
 
     void setFpsLimit(unsigned int fps_limit);
     void setClickThrough(bool click_through);
+    void setTransparent(bool transparent) const;
     void update();
     void close();
 

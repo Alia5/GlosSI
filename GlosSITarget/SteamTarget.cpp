@@ -217,11 +217,17 @@ void SteamTarget::onOverlayChanged(bool overlay_open)
     if (overlay_open) {
         focusWindow(target_window_handle_);
         window_.setClickThrough(!overlay_open);
+        if (!Settings::window.windowMode && Settings::window.opaqueSteamOverlay) {
+            window_.setTransparent(false);
+        }
     }
     else {
         if (!(overlay_.expired() ? false : overlay_.lock()->isEnabled())) {
             window_.setClickThrough(!overlay_open);
             focusWindow(last_foreground_window_);
+            if (!Settings::window.windowMode && Settings::window.opaqueSteamOverlay) {
+                window_.setTransparent(true);
+            }
         }
     }
     if (!overlay_trigger_flag_) {

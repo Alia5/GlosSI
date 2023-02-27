@@ -434,7 +434,8 @@ QVariantMap UIModel::getDefaultConf() const
              {"maxFps", QJsonValue::Null},
              {"scale", QJsonValue::Null},
              {"windowMode", false},
-             {"disableGlosSIOverlay", false}
+             {"disableGlosSIOverlay", false},
+             {"opaqueSteamOverlay", false}
          }},
     };
 
