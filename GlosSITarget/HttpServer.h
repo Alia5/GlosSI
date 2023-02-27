@@ -23,16 +23,34 @@ class AppLauncher;
 class HttpServer {
 
   public:
-    explicit HttpServer(AppLauncher& app_launcher, std::function<void()> close);
+    explicit HttpServer(std::function<void()> close);
+
+    enum Method {
+        GET,
+        POST,
+        PUT,
+        PATCH,
+    };
+
+    struct Endpoint {
+        std::string path;
+        Method method;
+        std::function<void(const httplib::Request& req, httplib::Response& res)> handler;
+    };
+
+    static void AddEndpoint(const Endpoint&& e);
 
     void run();
     void stop();
+
 
   private:
     httplib::Server server_;
     std::thread server_thread_;
     uint16_t port_ = 8756;
 
-    AppLauncher& app_launcher_;
     std::function<void()> close_;
+
+    static inline std::vector<Endpoint> endpoints_;
+
 };

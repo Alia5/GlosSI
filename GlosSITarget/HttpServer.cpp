@@ -23,8 +23,13 @@ limitations under the License.
 #include "../common/Settings.h"
 #include "../common/steam_util.h"
 
-HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(std::move(close))
+HttpServer::HttpServer(std::function<void()> close) : close_(std::move(close))
 {
+}
+
+void HttpServer::AddEndpoint(const Endpoint&& e)
+{
+    endpoints_.push_back(e);
 }
 
 void HttpServer::run()
@@ -38,56 +43,57 @@ void HttpServer::run()
         setCorsHeader(res);
     });
 
-    server_.Get("/launched-pids", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
-        const nlohmann::json j = app_launcher_.launchedPids();
-        res.set_content(j.dump(), "text/json");
-        setCorsHeader(res);
-    });
+    for (const auto& e : endpoints_) {
+        const auto fn = ([this, &e]() -> httplib::Server& (httplib::Server::*)(const std::string&, httplib::Server::Handler) {
+            switch (e.method) {
+            case POST:
+                return &httplib::Server::Post;
+            case PUT:
+                return &httplib::Server::Put;
+            case PATCH:
+                return &httplib::Server::Patch;
+            default:
+                return &httplib::Server::Get;
+            }
+        })();
 
-    server_.Post("/launched-pids", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
-        setCorsHeader(res);
-        try {
-            const nlohmann::json postbody = nlohmann::json::parse(req.body);
-            app_launcher_.addPids(postbody.get<std::vector<DWORD>>());   
-        } catch (std::exception& e) {
-            res.status = 401;
-            res.set_content(nlohmann::json{
-                                {"code", 401},
-                                {"name", "Bad Request"},
-                                {"message", e.what()},
-                            }
-                                .dump(),
-                            "text/json");
-            return;
-        }
-        catch (...) {
-            res.status = 500;
-            res.set_content(nlohmann::json{
-                                {"code", 500},
-                                {"name", "Internal Server Error"},
-                                {"message", "Unknown Error"},
-                            }
-                                .dump(),
-                            "text/json");
-            return;
-        }
-        const nlohmann::json j = app_launcher_.launchedPids();
-        res.set_content(j.dump(), "text/json");
-    });
+        (server_.*fn)(e.path, [this, &e, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+            setCorsHeader(res);
+            res.status = 0;
+            res.content_length_ = 0;
+            try {
+                e.handler(req, res);
+            }
+            catch (std::exception& err) {
+                spdlog::error("Exception in http handler: {}", err.what());
+                res.status = res.status == 0 ? 500 : res.status;
+                if (res.content_length_ == 0) {
+                    res.set_content(nlohmann::json{
+                                        {"code", res.status},
+                                        {"name", "HandlerError"},
+                                        {"message", err.what()},
+                                    }
+                                        .dump(),
+                                    "text/json");
+                }
+            }
+            catch (...) {
+                res.status = 500;
+                res.set_content(nlohmann::json{
+                                    {"code", res.status},
+                                    {"name", "Internal Server Error"},
+                                    {"message", "Unknown Error"},
+                                }
+                                    .dump(),
+                                "text/json");
+                return;
+            }
+        });
+    }
 
     server_.Post("/quit", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
         setCorsHeader(res);
         close_();
-    });
-
-    server_.Get("/settings", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
-        setCorsHeader(res);
-        res.set_content(Settings::toJson().dump(), "text/json");
-    });
-
-    server_.Get("/steam_settings", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
-        setCorsHeader(res);
-        res.set_content(util::steam::getSteamConfig().dump(4), "text/json");
     });
 
     server_thread_ = std::thread([this]() {
@@ -96,7 +102,7 @@ void HttpServer::run()
             return;
         }
         spdlog::debug("Started http-server on port {}", static_cast<int>(port_));
-});
+    });
 }
 
 void HttpServer::stop()

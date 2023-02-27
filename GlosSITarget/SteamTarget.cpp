@@ -28,6 +28,8 @@ limitations under the License.
 
 #include <CEFInject.h>
 
+#include "CommonHttpEndpoints.h"
+
 SteamTarget::SteamTarget()
     : window_(
           [this] { run_ = false; },
@@ -43,7 +45,7 @@ SteamTarget::SteamTarget()
           delayed_shutdown_ = true;
           delay_shutdown_clock_.restart();
       }),
-      server_(launcher_, [this] { run_ = false; })
+      server_([this] { run_ = false; })
 {
     target_window_handle_ = window_.getSystemHandle();
 }
@@ -61,6 +63,8 @@ int SteamTarget::run()
             }
     auto steam_tweaks = CEFInject::SteamTweaks();
     steam_tweaks.setAutoInject(true);
+
+    CHTE::addEndpoints();
 
     server_.run();
 

@@ -28,10 +28,11 @@ limitations under the License.
 
 #pragma comment(lib, "Shell32.lib")
 #endif
-#include "..\common\Settings.h"
+#include "../common/Settings.h"
 
 #include <regex>
 
+#include "HttpServer.h"
 #include "Overlay.h"
 #include "../common/UnhookUtil.h"
 #include "../common/util.h"
@@ -47,6 +48,32 @@ AppLauncher::AppLauncher(
         spdlog::debug("App launch requested");
     }
 #endif
+
+    HttpServer::AddEndpoint({"/launched-pids",
+                             HttpServer::Method::GET,
+                             [this](const httplib::Request& req, httplib::Response& res) {
+                                 const nlohmann::json j = launchedPids();
+                                 res.set_content(j.dump(), "text/json");
+                             }});
+
+    HttpServer::AddEndpoint({"/launched-pids",
+                             HttpServer::Method::POST,
+                             [this](const httplib::Request& req, httplib::Response& res) {
+                                 try {
+                                     const nlohmann::json postbody = nlohmann::json::parse(req.body);
+                                     addPids(postbody.get<std::vector<DWORD>>());
+                                 }
+                                 catch (std::exception& e) {
+                                     res.status = 401;
+                                     res.set_content(nlohmann::json{
+                                                         {"code", 401},
+                                                         {"name", "Bad Request"},
+                                                         {"message", e.what()},
+                                                     }
+                                                         .dump(),
+                                                     "text/json");
+                                 }
+                             }});
 };
 
 void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)
@@ -255,7 +282,7 @@ void AppLauncher::getProcessHwnds()
                 propStore->GetValue(PKEY_AppUserModel_ID, &prop);
                 if (prop.bstrVal != nullptr && std::wstring(prop.bstrVal) == launched_uwp_path_) {
                     process_hwnds_.push_back(curr_wnd);
-                }   
+                }
             }
         } while (curr_wnd != nullptr);
     }
@@ -298,11 +325,11 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
     // }
     std::wstring args_cpy(
         args.empty()
-        ? L""
+            ? L""
             : ((native_seps_path.find(L" ") != std::wstring::npos
                     ? L"\"" + native_seps_path + L"\""
-                    : native_seps_path) + L" " + args)
-    );
+                    : native_seps_path) +
+               L" " + args));
 
     DWORD pid;
 
@@ -319,7 +346,8 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                        &process_info)) {
 
         pid = process_info.dwProcessId;
-    } else {
+    }
+    else {
         DWORD error_code = GetLastError();
 
         if (error_code == ERROR_ELEVATION_REQUIRED) {
@@ -342,11 +370,13 @@ void AppLauncher::launchWin32App(const std::wstring& path, const std::wstring& a
                     spdlog::error(L"Couldn't get process id after starting program: \"{}\"; Error code {}", native_seps_path, GetLastError());
                 }
                 CloseHandle(shExecInfo.hProcess);
-            } else {
+            }
+            else {
                 spdlog::error(L"Couldn't start program with elevated permissions: \"{}\"; Error code {}", native_seps_path, GetLastError());
                 return;
             }
-        } else {
+        }
+        else {
             spdlog::error(L"Could't start program: \"{}\"; Error code: {}", native_seps_path, error_code);
             return;
         }
