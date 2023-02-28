@@ -32,8 +32,6 @@ limitations under the License.
 #include "../common/Settings.h"
 #include "../common/HidHide.h"
 
-#include <CEFInject.h>
-
 bool IsProcessRunning(DWORD pid)
 {
 	const HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
@@ -118,10 +116,6 @@ DWORD WINAPI watchdog(HMODULE hModule)
 	spdlog::info("GlosSITarget was closed. Resetting HidHide state...");
 	HidHide hidhide;
 	hidhide.disableHidHide();
-
-	spdlog::info("Uninstalling GlosSITweaks");
-	auto steam_tweaks = CEFInject::SteamTweaks();
-	steam_tweaks.uninstallTweaks(true);
 
 	if (Settings::launch.closeOnExit)
 	{
