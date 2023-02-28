@@ -49,31 +49,38 @@ AppLauncher::AppLauncher(
     }
 #endif
 
-    HttpServer::AddEndpoint({"/launched-pids",
-                             HttpServer::Method::GET,
-                             [this](const httplib::Request& req, httplib::Response& res) {
-                                 const nlohmann::json j = launchedPids();
-                                 res.set_content(j.dump(), "text/json");
-                             }});
+    HttpServer::AddEndpoint({
+        "/launched-pids",
+        HttpServer::Method::GET,
+        [this](const httplib::Request& req, httplib::Response& res) {
+            const nlohmann::json j = launchedPids();
+            res.set_content(j.dump(), "text/json");
+        },
+        {1, 2, 3},
+    });
 
-    HttpServer::AddEndpoint({"/launched-pids",
-                             HttpServer::Method::POST,
-                             [this](const httplib::Request& req, httplib::Response& res) {
-                                 try {
-                                     const nlohmann::json postbody = nlohmann::json::parse(req.body);
-                                     addPids(postbody.get<std::vector<DWORD>>());
-                                 }
-                                 catch (std::exception& e) {
-                                     res.status = 401;
-                                     res.set_content(nlohmann::json{
-                                                         {"code", 401},
-                                                         {"name", "Bad Request"},
-                                                         {"message", e.what()},
-                                                     }
-                                                         .dump(),
-                                                     "text/json");
-                                 }
-                             }});
+    HttpServer::AddEndpoint({
+        "/launched-pids",
+        HttpServer::Method::POST,
+        [this](const httplib::Request& req, httplib::Response& res) {
+            try {
+                const nlohmann::json postbody = nlohmann::json::parse(req.body);
+                addPids(postbody.get<std::vector<DWORD>>());
+            }
+            catch (std::exception& e) {
+                res.status = 401;
+                res.set_content(nlohmann::json{
+                                    {"code", 401},
+                                    {"name", "Bad Request"},
+                                    {"message", e.what()},
+                                }
+                                    .dump(),
+                                "text/json");
+            }
+        },
+        {1, 2, 3, 4},
+        {2, 3, 4},
+    });
 };
 
 void AppLauncher::launchApp(const std::wstring& path, const std::wstring& args)

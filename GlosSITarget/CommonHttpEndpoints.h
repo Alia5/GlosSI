@@ -7,19 +7,23 @@ namespace CHTE {
 
 inline void addEndpoints()
 {
+
     HttpServer::AddEndpoint(
         {"/settings",
          HttpServer::Method::GET,
          [](const httplib::Request& req, httplib::Response& res) {
              res.set_content(Settings::toJson().dump(), "text/json");
-         }});
+         },
+             "json"});
 
     HttpServer::AddEndpoint(
         {"/steam_settings",
          HttpServer::Method::GET,
          [](const httplib::Request& req, httplib::Response& res) {
              res.set_content(util::steam::getSteamConfig().dump(4), "text/json");
-         }});
+         },
+         "json"});
+    
 };
 
 } // namespace CHTE

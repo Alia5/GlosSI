@@ -17,6 +17,7 @@ limitations under the License.
 #include <thread>
 
 #include <httplib.h>
+#include <nlohmann/json.hpp>
 
 class AppLauncher;
 
@@ -25,17 +26,22 @@ class HttpServer {
   public:
     explicit HttpServer(std::function<void()> close);
 
+    // C++ enums suck.
     enum Method {
         GET,
         POST,
         PUT,
         PATCH,
     };
+    // but im not in the mood of adding yet another dependency for just that shit here.
+    static std::string ToString(Method m);
 
     struct Endpoint {
         std::string path;
         Method method;
         std::function<void(const httplib::Request& req, httplib::Response& res)> handler;
+        nlohmann::json response_hint = nullptr;
+        nlohmann::json payload_hint = nullptr;
     };
 
     static void AddEndpoint(const Endpoint&& e);

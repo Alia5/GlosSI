@@ -16,15 +16,26 @@ limitations under the License.
 #include "HttpServer.h"
 
 #include <spdlog/spdlog.h>
-#include <nlohmann/json.hpp>
 #include <utility>
 
-#include "AppLauncher.h"
-#include "../common/Settings.h"
-#include "../common/steam_util.h"
+#include <algorithm>
 
 HttpServer::HttpServer(std::function<void()> close) : close_(std::move(close))
 {
+}
+
+std::string HttpServer::ToString(Method m)
+{
+    switch (m) {
+    case POST:
+        return "POST";
+    case PATCH:
+        return "PATCH";
+    case PUT:
+        return "PUT";
+    default:
+        return "GET";
+    }
 }
 
 void HttpServer::AddEndpoint(const Endpoint&& e)
@@ -39,8 +50,29 @@ void HttpServer::run()
     };
 
     server_.Get("/", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
-        res.set_content("", "text/json");
         setCorsHeader(res);
+
+        auto content_json = nlohmann::json{
+            {"endpoints", nlohmann::json::array()}};
+
+        for (const auto& e : endpoints_) {
+            content_json["endpoints"].push_back(
+                nlohmann::json{
+                    {"path", e.path},
+                    {"method", ToString(e.method)},
+                    {"response", e.response_hint},
+                    {"payload", e.payload_hint},
+                });
+        }
+
+        content_json["endpoints"].push_back(
+            nlohmann::json{
+                {"path", "/quit"},
+                {"method", "POST"}
+            });
+
+        res.set_content(content_json.dump(4),
+                        "text/json");
     });
 
     for (const auto& e : endpoints_) {
@@ -86,7 +118,6 @@ void HttpServer::run()
                                 }
                                     .dump(),
                                 "text/json");
-                return;
             }
         });
     }
