@@ -79,8 +79,8 @@ int SteamTarget::run()
         *overlay_id = Overlay::AddOverlayElem(
             [this, overlay_id, &end_frame_callbacks](bool window_has_focus, ImGuiID dockspace_id) {
                 can_fully_initialize_ = false;
-                ImGui::Begin("GlosSI - CEF Debug not available");
-                ImGui::Text("GlosSI makes use of Steam CEF Debugging for some functionality and plugins.");
+                ImGui::Begin("GlosSI - CEF remote debug not available");
+                ImGui::Text("GlosSI makes use of Steam CEF remote debugging for some functionality and plugins.");
                 ImGui::Text("GlosSI might not work fully without it.");
 
                 if (ImGui::Button("Ignore and continue")) {
