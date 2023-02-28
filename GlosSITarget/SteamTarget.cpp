@@ -138,6 +138,23 @@ int SteamTarget::run()
         can_fully_initialize_ = false;
     }
 
+    if (!SteamOverlayDetector::IsSteamInjected() && Settings::common.allowGlobalMode) {
+        auto overlay_id = std::make_shared<int>(-1);
+        *overlay_id = Overlay::AddOverlayElem(
+            [this, overlay_id, &end_frame_callbacks](bool window_has_focus, ImGuiID dockspace_id) {
+                ImGui::Begin("Global mode", nullptr, ImGuiWindowFlags_NoSavedSettings);
+                ImGui::Text("Global mode is initializing, please stand by...");
+                ImGui::End();
+                if (fully_initialized_) {
+                    end_frame_callbacks.emplace_back([this, overlay_id] {
+                        Overlay::RemoveOverlayElem(*overlay_id);
+                    });
+                }
+            },
+            true);
+        window_.update();
+    }
+
     if (!util::steam::getXBCRebindingEnabled(steam_path_, steam_user_id_)) {
         auto overlay_id = std::make_shared<int>(-1);
         *overlay_id = Overlay::AddOverlayElem(
