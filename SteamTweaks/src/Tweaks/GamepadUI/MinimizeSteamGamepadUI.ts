@@ -13,9 +13,9 @@ initTweak('MinimizeSteamGamepadUI', async () => {
         return true;
     }
     if (!isGamepadUI && minimizeGPUI) {
-        console.warn('MinimizeSteamGamepadUI is enabled but Steam is not in GamepadUI mode');
+        GlosSIApi.SteamTarget.log('warn', 'MinimizeSteamGamepadUI is enabled but Steam is not in GamepadUI mode');
     }
     return false;
 }).then((minimized: boolean) => {
-    console.log('MinimizeSteamGamepadUI installed; Minimized GamepadUI:', minimized);
-}).catch((e) => console.error('MinimizeSteamGamepadUI failed to install', e));
+    GlosSIApi.SteamTarget.log('debug', 'MinimizeSteamGamepadUI installed; Minimized GamepadUI:', minimized);
+}).catch((e) =>GlosSIApi.SteamTarget.log('error', 'MinimizeSteamGamepadUI failed to install', e));

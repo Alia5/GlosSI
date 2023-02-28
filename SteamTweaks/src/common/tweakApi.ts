@@ -9,12 +9,21 @@ export const initTweak = <T>(name: string, tweakMain: (() => T)|{
 
     if (typeof tweakMain === 'object') {
         window.GlosSITweaks[name] = { install: tweakMain.install, uninstall: () => {
-            tweakMain.uninstall();
+            try {
+                tweakMain.uninstall();
+            } catch (e) {
+                GlosSIApi.SteamTarget.log('error', e);
+            }
             delete window.GlosSITweaks[name];
         } };
     } else {
         window.GlosSITweaks[name] = { install: tweakMain };
     }
-    return window.GlosSITweaks[name].install() as T;
+    try {
+        return window.GlosSITweaks[name].install() as T;
+    } catch (e) {
+        GlosSIApi.SteamTarget.log('error', e);
+        throw e;
+    }
 
 };

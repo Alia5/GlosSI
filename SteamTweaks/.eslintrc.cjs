@@ -86,32 +86,32 @@ module.exports = {
             }
         ],
         '@typescript-eslint/no-use-before-define': ['error', { 'functions': false }],
-        "@typescript-eslint/naming-convention": [
-            "error",
-            {
-                "selector": "default",
-                "format": ["camelCase", "PascalCase"]
-            },
-            {
-                "selector": "variable",
-                "format": ["camelCase", "UPPER_CASE"]
-            },
-            {
-                "selector": "parameter",
-                "format": ["camelCase"],
-                "leadingUnderscore": "allow"
-            },
-            {
-                "selector": "memberLike",
-                "modifiers": ["private"],
-                "format": ["camelCase"],
-                "leadingUnderscore": "require"
-            },
-            {
-                "selector": "typeLike",
-                "format": ["PascalCase"]
-            }
-        ],
+        // "@typescript-eslint/naming-convention": [
+        //     "error",
+        //     {
+        //         "selector": "default",
+        //         "format": ["camelCase", "PascalCase"]
+        //     },
+        //     {
+        //         "selector": "variable",
+        //         "format": ["camelCase", "UPPER_CASE"]
+        //     },
+        //     {
+        //         "selector": "parameter",
+        //         "format": ["camelCase"],
+        //         "leadingUnderscore": "allow"
+        //     },
+        //     {
+        //         "selector": "memberLike",
+        //         "modifiers": ["private"],
+        //         "format": ["camelCase"],
+        //         "leadingUnderscore": "require"
+        //     },
+        //     {
+        //         "selector": "typeLike",
+        //         "format": ["PascalCase"]
+        //     }
+        // ],
         'no-console': 'off',
         'no-return-await': 'error',
         'arrow-body-style': 'error',

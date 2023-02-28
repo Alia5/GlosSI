@@ -27,6 +27,39 @@ class SteamTargetApi {
         }, 666);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public log(level: string, ...args: any[]) {
+        void fetch('http://localhost:8756/log', {
+            method: 'POST',
+            body: JSON.stringify({
+                level,
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                message: `${args}`
+            })
+        });
+        switch (level) {
+            case 'error':
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                console.error(...args);
+                break;
+            case 'warn':
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                console.warn(...args);
+                break;
+            case 'info':
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                console.info(...args);
+                break;
+            case 'debug':
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                console.debug(...args);
+                break;
+            default:
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                console.log(...args);
+        }
+    }
+
     public async getGlosSIActive() {
         return fetchWithTimeout('http://localhost:8756/running', { timeout: 500 })
             .then(
