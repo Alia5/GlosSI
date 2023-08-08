@@ -121,7 +121,7 @@ The GlosSI overlay can also be navigated with controller-inputs
 
     Rename the shortcut in Steam to the Steam-AppID of the game you want to access to community-configs.  
     Community configs may only be available **before** you launch the shortcut.  
-    AppIDs can be retrieved from AppIDs can be retrieved from [SteamDB](https://steamdb.info/apps/) & [Steambase(https://steambase.io/apps)
+    AppIDs can be retrieved from AppIDs can be retrieved from [SteamDB](https://steamdb.info/apps/) or [Steambase](https://steambase.io/apps)
 
     <details>
     <summary>Screenie 📸</summary>
