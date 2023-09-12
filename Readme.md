@@ -23,9 +23,9 @@ You can read the announcement [here](https://docs.nefarius.at/projects/ViGEm/End
 
 As I don't think holding on to deprecated dependencies is a good way of moving forward, this effectively kills GlosSI as well since without ViGEm and HidHide GlosSI cannot function.
 
-Until December, the GlosSI website will be taken down as well, to not provide an old ViGEm installer that potentially leaks your IP to an unexpected company.
-There will be a last ViGEm version that won't have this issue though.
+There will be a last deprecated version of ViGEm circumventing an issue stated in their announcement.
 GlosSI will be updated a last time as well, providing this version bundled with it.
+The GlosSI website will be taken down, however, you can then fin the last release, here on GitHub
 
 ### GlosSI won't be taken down or magically stop working, nor will it be unsafe to use. Just a maintenance stop.
 
