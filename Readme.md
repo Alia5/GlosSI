@@ -13,6 +13,28 @@ GlosSI can, but isn't required to, launch any of your favorite games or applicat
 It is **the tool** to enjoy any game that has trouble with Steam and/or *add extra functionality* to your Steam-Input needs  
 
 ---
+```
+```
+
+# Notes on ViGEm End of Life
+
+As you may or may not have already noticed ViGEm, a substantial part in making GlosSI work it's magic is End of Life.  
+You can read the announcement [here](https://docs.nefarius.at/projects/ViGEm/End-of-Life/)
+
+### This effectively kills GlosSI as well since without ViGEm and HidHide GlosSI cannot function.
+
+Until December, the GlosSI website will be taken down as well, to not provide an old ViGEm installer that potentially leaks your IP to an unexpected company.
+The latest snapshot build, however, will be available on GitHub, with a big-fat warning about this.
+
+### Will GlosSI continue?
+
+Probably. But most likely not in its current form.  
+A successor to ViGEm is being worked on, but nothing has been publicly released, yet.  
+Until I can get my hands on it, the future is unsure.  
+
+```
+```
+---
 
 ## How does it work? / What does it do?
 
