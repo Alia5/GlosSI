@@ -16,21 +16,34 @@ It is **the tool** to enjoy any game that has trouble with Steam and/or *add ext
 ```
 ```
 
-# Notes on ViGEm End of Life
+# ViGEm End of Life
 
-As you may or may not have already noticed ViGEm, a substantial part in making GlosSI work it's magic is End of Life.  
-You can read the announcement [here](https://docs.nefarius.at/projects/ViGEm/End-of-Life/)
+As you may or may not have already noticed ViGEm, a substantial part in making GlosSI work it's magic is End of Life.
+You can read the announcement here
 
-### This effectively kills GlosSI as well since without ViGEm and HidHide GlosSI cannot function.
+This effectively kills GlosSI  as well since without ViGEm and HidHide GlosSI cannot function.
 
 Until December, the GlosSI website will be taken down as well, to not provide an old ViGEm installer that potentially leaks your IP to an unexpected company.
-The latest snapshot build, however, will be available on GitHub, with a big-fat warning about this.
+However, to not leave anyone in the dark, the latest GlosSI-snapshot build bundled with all dependencies will be available on GitHub with a big-fat warning about this.
 
-### Will GlosSI continue?
+---
 
-Probably. But most likely not in its current form.  
-A successor to ViGEm is being worked on, but nothing has been publicly released, yet.  
-Until I can get my hands on it, the future is unsure.  
+I also want to take the opportunity to give a MASSIVE shoutout to @Nefarius , the creator of ViGEm, HidHide and many other awesome tools
+Back when good old GloSC was just a cobbled together PoC using parts of the very old ScpToolkit he has been massively helpful and even shared ViGEm with me way before it was ready to be run on any machine that doesn't belong to a wizard (or should I say sorcerer?) like him.
+
+--- 
+
+Will GlosSI continue?
+
+Probably. But most likely not in its current form.
+@Nefarius wizardry is continuing and a successor to ViGEm is being worked on, but nothing has been publicly released, yet.
+
+As I severely lack the time to properly maintain a project like GlosSI (as you probably have already noticed, I'm sure), I'm quite fond of the idea of rebooting the project yet again, once ViGEms successor becomes available.
+However, I'm not sure if I find the time and motivation again to continue with GlosSI
+Until I can (and want to) get my hands on it, the future is unsure...
+
+I'll be back to silence for now then.
+Thanks for all the support, it was a blast!
 
 ```
 ```
