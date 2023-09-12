@@ -19,12 +19,15 @@ It is **the tool** to enjoy any game that has trouble with Steam and/or *add ext
 # ViGEm End of Life
 
 As you may or may not have already noticed ViGEm, a substantial part in making GlosSI work it's magic is End of Life.
-You can read the announcement here
+You can read the announcement [here](https://docs.nefarius.at/projects/ViGEm/End-of-Life/)
 
-This effectively kills GlosSI  as well since without ViGEm and HidHide GlosSI cannot function.
+As I don't think holding on to deprecated dependencies is a good way of moving forward, this effectively kills GlosSI as well since without ViGEm and HidHide GlosSI cannot function.
 
 Until December, the GlosSI website will be taken down as well, to not provide an old ViGEm installer that potentially leaks your IP to an unexpected company.
-However, to not leave anyone in the dark, the latest GlosSI-snapshot build bundled with all dependencies will be available on GitHub with a big-fat warning about this.
+There will be a last ViGEm version that won't have this issue though.
+GlosSI will be updated a last time as well, providing this version bundled with it.
+
+### GlosSI won't be taken down or magically stop working, nor will it be unsafe to use. Just a maintenance stop.
 
 ---
 
