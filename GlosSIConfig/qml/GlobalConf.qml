@@ -120,6 +120,85 @@ Item {
 
             Item {
                 width: 1
+                height: 4
+            }
+
+            RPane {
+                width: parent.width
+                radius: 4
+		        Material.elevation: 32
+                bgOpacity: 0.97
+                Column {
+                    width: parent.width
+                    height: parent.height
+                    spacing: 4
+					Label {
+                        font.bold: true
+                        font.pixelSize: 24
+						text: qsTr("Experimental 🧪")
+                    }
+                    Row {
+                        Row {
+                            CheckBox {
+                                id: globalModeUseGamepadUI
+                                text: qsTr("Use BPM for global-/desktop-mode")
+                                checked: config.globalModeUseGamepadUI
+                                onCheckedChanged: config.globalModeUseGamepadUI = checked
+                            }
+                        }
+                    }
+                    Row {
+                    	leftPadding: 12
+                        Row {
+                            spacing: 16
+                            Label {
+                                topPadding: 8
+                                id: globalModeGameIdLabel
+                                text: qsTr("GlobalMode GameId")
+                            }
+                            FluentTextInput {
+                                width: 128
+                                id: globalModeGameId
+								enabled: false
+                                text: config.globalModeGameId
+                                onTextChanged: config.globalModeGameId = text
+                            }
+							Button {
+                                id: globalModeGameIdButton
+								text: qsTr("Create global-/desktop-mode shortcut")
+								onClicked: {
+									const globalModeConf = uiModel.getDefaultConf();
+                                    globalModeConf.name = "GlosSI GlobalMode/Desktop";
+									globalModeConf.launch.launch = false;
+									uiModel.addTarget(globalModeConf);
+                                    if (uiModel.addToSteam(globalModeConf, "")) {
+									    steamChangedDialog.open();
+                                    }
+									const globalModeGID = uiModel.globalModeShortcutGameId();
+									globalModeGameId.text = globalModeGID;
+                                    setTimeout(() => {
+                                        uiModel.saveDefaultConf(config);
+                                        done();
+                                    }, 10);
+								}
+								highlighted: true
+                                visible: !uiModel.globalModeShortcutExists()
+                            }
+							Button {
+                                id: globalModeGameIdConfigButton
+								text: qsTr("Open global-/desktop-mode controller config")
+								onClicked: {
+                                    Qt.openUrlExternally("steam://currentcontrollerconfig/" + uiModel.globalModeShortcutAppId() + "/");
+								}
+                                visible: uiModel.globalModeShortcutExists()
+                            }
+                        }
+                    }
+				}
+			}
+
+            Item {
+                width: 1
                 height: 32
             }
         }

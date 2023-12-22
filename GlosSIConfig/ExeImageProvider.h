@@ -2,6 +2,7 @@
 #include <QQuickImageProvider>
 #include <Windows.h>
 #include <QRegularExpression>
+#include <shellapi.h>
 class ExeImageProvider : public QQuickImageProvider {
   public:
     ExeImageProvider()

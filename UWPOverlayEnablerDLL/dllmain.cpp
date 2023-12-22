@@ -44,7 +44,8 @@ There are two (known to me, at time of writing) ways to get a working overlay fo
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <ShlObj.h>
+
+#include "../common/util.h"
 
 #define SUBHOOK_STATIC
 #include <atomic>
@@ -141,22 +142,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
 	{
-		wchar_t* localAppDataFolder;
-		std::filesystem::path configDirPath;
-		if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-			configDirPath = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-		}
-		else {
-			configDirPath = std::filesystem::path(localAppDataFolder).parent_path();
-		}
-
-		configDirPath /= "Roaming";
-		configDirPath /= "GlosSI";
-		if (!std::filesystem::exists(configDirPath))
-			std::filesystem::create_directories(configDirPath);
-
-
-
+		auto configDirPath = util::path::getDataDirPath();
 		auto logPath = configDirPath;
 		logPath /= "UWPOverlayEnabler.log";
 		const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logPath.string(), true);

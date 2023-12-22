@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Build Solution (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:Build",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}",
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      },
+      {
+        "type": "shell",
+        "label": "Re-Build Solution (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:Rebuild",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}",
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      }
+    ]
+  }

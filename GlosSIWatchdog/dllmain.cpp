@@ -15,10 +15,9 @@ limitations under the License.
 */
 
 #include <httplib.h>
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#include <ShlObj.h>
+
+#include "../common/util.h"
+
 
 #include <filesystem>
 
@@ -28,10 +27,10 @@ limitations under the License.
 
 #include <nlohmann/json.hpp>
 
+
 #include "../version.hpp"
-#include "../GlosSITarget/Settings.h"
-#include "../GlosSITarget/HidHide.h"
-#include "../GlosSITarget/util.h"
+#include "../common/Settings.h"
+#include "../common/HidHide.h"
 
 bool IsProcessRunning(DWORD pid)
 {
@@ -66,20 +65,7 @@ void fetchSettings(httplib::Client& http_client, int retried_count = 0) {
 
 DWORD WINAPI watchdog(HMODULE hModule)
 {
-	wchar_t* localAppDataFolder;
-	std::filesystem::path configDirPath;
-	if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-		configDirPath = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-	}
-	else {
-		configDirPath = std::filesystem::path(localAppDataFolder).parent_path();
-	}
-
-	configDirPath /= "Roaming";
-	configDirPath /= "GlosSI";
-	if (!std::filesystem::exists(configDirPath))
-		std::filesystem::create_directories(configDirPath);
-
+	auto configDirPath = util::path::getDataDirPath();
 	auto logPath = configDirPath;
 	logPath /= "GlosSIWatchdog.log";
 	const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logPath.wstring(), true);
@@ -143,7 +129,7 @@ DWORD WINAPI watchdog(HMODULE hModule)
 			}
 			if (IsProcessRunning(pid))
 			{
-				glossi_util::KillProcess(pid);
+				util::win::process::KillProcess(pid);
 			}
 			else
 			{

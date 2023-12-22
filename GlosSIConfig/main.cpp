@@ -22,14 +22,16 @@ limitations under the License.
 #include <QFile>
 #include <QTextStream>
 
+#include "../common/util.h"
+
 #ifdef _WIN32
 #include <Windows.h>
 #include <VersionHelpers.h>
 #include <dwmapi.h>
-#include <ShlObj.h>
 #pragma comment(lib, "Dwmapi.lib")
 #include "ExeImageProvider.h"
 #endif
+
 
 #include "UIModel.h"
 #include "WinEventFilter.h"
@@ -90,19 +92,7 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& 
         break;
     }
 
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!std::filesystem::exists(path))
-        std::filesystem::create_directories(path);
+    auto path = util::path::getDataDirPath();
 
     QFile outFile(QString::fromStdWString(path) + "/glossiconfig.log");
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -120,18 +110,7 @@ int main(int argc, char* argv[])
 #endif
 
     if (argc < 3) {
-        wchar_t* localAppDataFolder;
-        std::filesystem::path path;
-        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-            path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-        }
-        else {
-            path = std::filesystem::path(localAppDataFolder).parent_path();
-        }
-        path /= "Roaming";
-        path /= "GlosSI";
-        if (!std::filesystem::exists(path))
-            std::filesystem::create_directories(path);
+        auto path = util::path::getDataDirPath();
 
         QFile outFile(QString::fromStdWString(path) + "/glossiconfig.log");
         outFile.open(QIODevice::WriteOnly);

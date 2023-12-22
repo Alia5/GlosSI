@@ -20,7 +20,7 @@ limitations under the License.
 #include <spdlog/spdlog.h>
 
 #include "Overlay.h"
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 InputRedirector::InputRedirector()
 {
@@ -49,6 +49,22 @@ InputRedirector::~InputRedirector()
 void InputRedirector::run()
 {
     run_ = vigem_connected_;
+    max_controllers_ = Settings::controller.maxControllers;
+    if (max_controllers_ < 0) {
+        for (int i = 0; i < XUSER_MAX_COUNT; i++) {
+            XINPUT_STATE state{};
+            if (XInputGetState(i, &state) == ERROR_SUCCESS) {
+                max_controllers_ = i + 1;
+            }
+        }
+        if (max_controllers_ < 0) {
+            max_controllers_ = 1;
+            spdlog::error("Failed to auto detect controller count. Defaulting to 1");
+        }
+        else {
+            spdlog::info("Auto detected {} controllers", max_controllers_);
+        }
+    }
     controller_thread_ = std::thread(&InputRedirector::runLoop, this);
 #ifdef _WIN32
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
@@ -58,13 +74,17 @@ void InputRedirector::run()
         ImGui::Text("Max. controller count");
         ImGui::SameLine();
         ImGui::InputInt("##Max. controller count", &countcopy, 1, 1);
+        ImGui::Text("-1 = Auto-detection (auto-detection only works on launch");
         if (countcopy > XUSER_MAX_COUNT) {
             countcopy = XUSER_MAX_COUNT;
         }
-        if (countcopy < 0) {
-            countcopy = 0;
+        if (countcopy < -1) {
+            countcopy = -1;
         }
         Settings::controller.maxControllers = countcopy;
+        if (Settings::controller.maxControllers > -1) {
+            max_controllers_ = countcopy;
+        }
 
         if (ImGui::Checkbox("Emulate DS4 (instead of Xbox360 controller)", &Settings::controller.emulateDS4)) {
             controller_settings_changed_ = true;
@@ -131,12 +151,12 @@ void InputRedirector::runLoop()
                 unplugVigemPad(i);
             }
         }
-        if (Settings::controller.maxControllers < XUSER_MAX_COUNT) {
-            for (int i = Settings::controller.maxControllers; i < XUSER_MAX_COUNT; i++) {
+        if (max_controllers_ < XUSER_MAX_COUNT) {
+            for (int i = max_controllers_; i < XUSER_MAX_COUNT; i++) {
                 unplugVigemPad(i);
             }
         }
-        for (int i = 0; i < XUSER_MAX_COUNT && i < Settings::controller.maxControllers; i++) {
+        for (int i = 0; i < XUSER_MAX_COUNT && i < max_controllers_; i++) {
             XINPUT_STATE state{};
             if (XInputGetState(i, &state) == ERROR_SUCCESS) {
                 if (vt_pad_[i] != nullptr) {
@@ -216,6 +236,10 @@ void InputRedirector::runLoop()
                                      vigem_target_get_pid(vt_pad_[i]));
 
                         if (Settings::controller.emulateDS4) {
+                            // TODO: make sense of DS4_OUTPUT_BUFFER
+                            // there is no doc? Ask @Nef about this...
+                            // ReSharper disable once CppDeprecatedEntity
+#pragma warning(disable : 4996)
                             const auto callback_register_res = vigem_target_ds4_register_notification(
                                 driver_,
                                 vt_pad_[i],
@@ -242,7 +266,7 @@ void InputRedirector::runLoop()
                 unplugVigemPad(i);
             }
         }
-        sf::sleep(sf::milliseconds(4));
+        Sleep(static_cast<int>(1000.f / Settings::controller.updateRate));
 
 #endif
     }

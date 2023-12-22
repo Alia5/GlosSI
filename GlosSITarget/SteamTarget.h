@@ -21,18 +21,23 @@ limitations under the License.
 #include "TargetWindow.h"
 
 #ifdef _WIN32
-#include "HidHide.h"
+#include "../common/HidHide.h"
 #include "InputRedirector.h"
 #include <subhook.h>
 #endif
 
+#include <filesystem>
+
 #include "AppLauncher.h"
+#include "CEFInject.h"
 #include "Overlay.h"
 #include "HttpServer.h"
 
+#include "../common/steam_util.h"
 
-#include <filesystem>
-
+namespace Tray {
+class Tray;
+}
 class SteamTarget {
   public:
     explicit SteamTarget();
@@ -42,17 +47,16 @@ class SteamTarget {
     void onOverlayChanged(bool overlay_open);
     void toggleGlossiOverlay();
     void focusWindow(WindowHandle hndl);
-    std::filesystem::path getSteamPath() const;
-    std::wstring getSteamUserId() const;
 
-    std::filesystem::path steam_path_ = getSteamPath();
-    std::wstring steam_user_id_ = getSteamUserId();
+    std::filesystem::path steam_path_ = util::steam::getSteamPath();
+    std::wstring steam_user_id_ = util::steam::getSteamUserId();
 
-    std::vector<std::string> getOverlayHotkey();
-    std::vector<std::string> getScreenshotHotkey();
-    bool getXBCRebindingEnabled();
-
+    CEFInject::SteamTweaks steam_tweaks_;
+    bool cef_tweaks_enabled_ = true;
     bool steam_overlay_present_ = false;
+    bool fully_initialized_ = false;
+    bool can_fully_initialize_ = true;
+    void init_FuckingRenameMe();
 
     // Keep controllerConfig even is window is switched.
     // On Windoze hooking "GetForeGroundWindow" is enough;
@@ -65,6 +69,8 @@ class SteamTarget {
     static inline HWND last_real_hwnd_ = nullptr;
 #endif
 
+    std::unique_ptr<Tray::Tray> createTrayMenu();
+
     /*
      * Run once per frame
      * detects steam configured overlay hotkey, and simulates key presses to window
@@ -74,7 +80,7 @@ class SteamTarget {
     void overlayHotkeyWorkaround();
 
     bool run_ = false;
-    std::vector<std::string> overlay_hotkey_ = getOverlayHotkey();
+    std::vector<std::string> overlay_hotkey_ = util::steam::getOverlayHotkey(steam_path_, steam_user_id_);
 
 #ifdef _WIN32
     HidHide hidhide_;
@@ -89,14 +95,9 @@ class SteamTarget {
     static inline WindowHandle target_window_handle_ = nullptr;
 
     sf::Clock overlay_trigger_clock_;
-    uint32_t overlay_trigger_max_seconds_ = 1;
+    float overlay_trigger_max_seconds_ = 2.5;
     bool overlay_trigger_flag_ = false;
 
     bool delayed_shutdown_ = false;
     sf::Clock delay_shutdown_clock_;
-
-    static constexpr std::wstring_view user_data_path_ = L"/userdata/";
-    static constexpr std::wstring_view config_file_name_ = L"/config/localconfig.vdf";
-    static constexpr std::string_view overlay_hotkey_name_ = "InGameOverlayShortcutKey ";
-    static constexpr std::string_view screenshot_hotkey_name_ = "InGameOverlayScreenshotHotKey ";
 };

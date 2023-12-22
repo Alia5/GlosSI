@@ -30,7 +30,7 @@ limitations under the License.
 
 #include "ProcessPriority.h"
 
-#include "Settings.h"
+#include "..\common\Settings.h"
 
 #if !defined(WM_DPICHANGED)
 #define WM_DPICHANGED 0x02E0
@@ -73,7 +73,7 @@ TargetWindow::TargetWindow(
             }
             if (Settings::window.maxFps < 15 && Settings::window.maxFps > 0) {
                 Settings::window.maxFps = 0;
-                setFpsLimit(screen_refresh_rate_);
+                setFpsLimit(TargetWindow::calcAutoRefreshRate(screen_refresh_rate_));
             } else {
                 setFpsLimit(Settings::window.maxFps);
             }
@@ -147,6 +147,41 @@ void TargetWindow::setClickThrough(bool click_through)
         }
     }
 #endif
+}
+
+void TargetWindow::setTransparent(bool transparent) const
+{
+    HWND hwnd = window_.getSystemHandle();
+
+    if (transparent) {
+        // if (windowed_) {
+        //     DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
+        //     DwmEnableBlurBehindWindow(hwnd, &bb);
+        // } // semi-transparent in window mode, but deprecated api
+        //  On Linux the window will (should) automagically be semi-transparent
+
+        // transparent windows window...
+        auto style = GetWindowLong(hwnd, GWL_STYLE);
+        style &= ~WS_OVERLAPPED;
+        style |= WS_POPUP;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+
+        MARGINS margins = { -1 };
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        spdlog::debug("Setting window to transparent");
+
+    } else {
+        auto style = GetWindowLong(hwnd, GWL_STYLE);
+        style |= WS_OVERLAPPED;
+        style &= ~WS_POPUP;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+
+        MARGINS margins = {0};
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        spdlog::debug("Setting window to opaque");
+    }
 }
 
 void TargetWindow::update()
@@ -307,6 +342,18 @@ WORD TargetWindow::GetWindowDPI(HWND hWnd)
 }
 #endif
 
+unsigned int TargetWindow::calcAutoRefreshRate(unsigned int rate)
+{
+    unsigned int auto_refresh_rate = rate;
+    while (auto_refresh_rate > 60) {
+        auto_refresh_rate /= 2;
+    }
+    if (auto_refresh_rate < 30) {
+        auto_refresh_rate = 30;
+    }
+    return auto_refresh_rate;
+}
+
 void TargetWindow::createWindow()
 {
     toggle_window_mode_after_frame_ = false;
@@ -352,22 +399,7 @@ void TargetWindow::createWindow()
     auto dpi = GetWindowDPI(hwnd);
     spdlog::debug("Screen DPI: {}", dpi);
 
-    //if (windowed_) {
-    //    DWM_BLURBEHIND bb{.dwFlags = DWM_BB_ENABLE, .fEnable = true, .hRgnBlur = nullptr};
-    //    DwmEnableBlurBehindWindow(hwnd, &bb);
-    //} // semi-transparent in window mode, but deprecated api
-    // On Linux the window will (should) automagically be semi-transparent
-
-    // transparent windows window...
-    auto style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~WS_OVERLAPPED;
-    style |= WS_POPUP;
-    SetWindowLong(hwnd, GWL_STYLE, style);
-    
-
-    MARGINS margins;
-    margins.cxLeftWidth = -1;
-    DwmExtendFrameIntoClientArea(hwnd, &margins);
+    setTransparent(true);
 
     DEVMODE dev_mode = {};
     dev_mode.dmSize = sizeof(DEVMODE);
@@ -379,14 +411,14 @@ void TargetWindow::createWindow()
         screen_refresh_rate_ = 60;
     }
     else {
-        setFpsLimit(dev_mode.dmDisplayFrequency);
+        setFpsLimit(TargetWindow::calcAutoRefreshRate(dev_mode.dmDisplayFrequency));
         screen_refresh_rate_ = dev_mode.dmDisplayFrequency;
     }
 
     overlay_ = std::make_shared<Overlay>(
         window_, [this]() { close(); }, toggle_overlay_state_, Settings::window.windowMode);
 
-    spdlog::debug("auto screen sCale: {}", dpi/96.f);
+    spdlog::debug("auto screen Scale: {}", dpi/96.f);
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = dpi / 96.f;
     ImGui::SFML::UpdateFontTexture();

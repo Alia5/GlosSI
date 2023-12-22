@@ -51,9 +51,6 @@
     <ClCompile Include="InputRedirector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HidHide.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Overlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,10 +111,13 @@
     <ClCompile Include="..\deps\traypp\tray\src\components\toggle.cpp">
       <Filter>Source Files\tray</Filter>
     </ClCompile>
-    <ClCompile Include="UnhookUtil.cpp">
+    <ClCompile Include="HttpServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HttpServer.cpp">
+    <ClCompile Include="..\common\UnhookUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\HidHide.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -135,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InputRedirector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HidHide.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Overlay.h">
@@ -161,9 +158,6 @@
     <ClInclude Include="AppLauncher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Settings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -182,13 +176,10 @@
     <ClInclude Include="GlosSI_logo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UnhookUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HttpServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonHttpEndpoints.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

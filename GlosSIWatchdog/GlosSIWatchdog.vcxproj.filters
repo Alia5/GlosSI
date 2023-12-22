@@ -18,10 +18,10 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GlosSITarget\HidHide.cpp">
+    <ClCompile Include="..\common\HidHide.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GlosSITarget\UnhookUtil.cpp">
+    <ClCompile Include="..\common\UnhookUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

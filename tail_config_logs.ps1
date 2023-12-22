@@ -1,0 +1,1 @@
+Get-Content "$env:appdata\GlosSI\glossiconfig.log" -Wait

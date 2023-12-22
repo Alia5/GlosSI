@@ -1,15 +1,43 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "cmake",
-			"command": "build",
-			"label": "Build",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"problemMatcher": []
-		}
-	]
-}
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Build GlosSITarget (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:GlosSITarget",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      },
+      {
+        "type": "shell",
+        "label": "Re-Build GlosSITarget (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:GlosSITarget:Rebuild",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      }
+    ]
+  }

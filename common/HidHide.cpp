@@ -21,6 +21,8 @@ limitations under the License.
 #include "HidHide.h"
 
 #include <numeric>
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#define SPDLOG_WCHAR_FILENAMES
 #include <spdlog/spdlog.h>
 #include <vector>
 
@@ -29,7 +31,7 @@ limitations under the License.
 #include <cfgmgr32.h>
 
 #ifndef WATCHDOG
-#include "Overlay.h"
+#include "../GlosSITarget/Overlay.h"
 #endif
 
 #include "Settings.h"
@@ -41,7 +43,7 @@ limitations under the License.
 #include <atlbase.h>
 
 
-#include "UnhookUtil.h"
+#include "../common/UnhookUtil.h"
 
 #pragma comment(lib, "Setupapi.lib")
 
@@ -52,7 +54,7 @@ DEFINE_GUID(GUID_DEVINTERFACE_XUSB, 0xEC87F1E3, 0xC13B, 0x4100, 0xB5, 0xF7, 0x8B
 // {00000000-0000-0000-FFFF-FFFFFFFFFFFF} the system container id
 DEFINE_GUID(GUID_CONTAINER_ID_SYSTEM, 0x00000000, 0x0000, 0x0000, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
-HidHide::HidHide(){};
+HidHide::HidHide() {};
 
 void HidHide::openCtrlDevice()
 {
@@ -85,7 +87,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         spdlog::info("Hiding devices is disabled; Not un-patching valve hooks, not looking for HidHide");
         return;
     }
-    
+
     spdlog::debug("Setting up device hiding...");
 
     UnPatchValveHooks();
@@ -112,12 +114,12 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
 
     for (const auto& exe : whitelist_executeables_) {
         auto path = std::regex_replace(steam_path_string, std::wregex(L"(.:)(\\/|\\\\)"), dos_device + L"\\");
-        path = std::regex_replace(path, std::wregex(L"\\/"), L"\\") + L"\\" + std::wstring{exe};
+        path = std::regex_replace(path, std::wregex(L"\\/"), L"\\") + L"\\" + std::wstring{ exe };
         if (std::ranges::none_of(whitelist, [&path](auto ep) { // make copy!
-                auto p = path;                                 // non-const(!) copy of path
-                std::ranges::transform(path, p.begin(), tolower);
-                std::ranges::transform(ep, ep.begin(), tolower);
-                return p == ep;
+            auto p = path;                                 // non-const(!) copy of path
+        std::ranges::transform(path, p.begin(), tolower);
+        std::ranges::transform(ep, ep.begin(), tolower);
+        return p == ep;
             })) {
             whitelist.push_back(path);
         }
@@ -125,7 +127,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
     if (Settings::common.extendedLogging) {
         std::ranges::for_each(whitelist, [](const auto& exe) {
             spdlog::trace(L"Whitelisted executable: {}", exe);
-        });
+            });
     }
     setAppWhiteList(whitelist);
 
@@ -133,13 +135,13 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
     if (Settings::common.extendedLogging) {
         std::ranges::for_each(avail_devices_, [](const auto& dev) {
             spdlog::trace(L"AvailDevice device: {}", dev.name);
-        });
+            });
     }
     blacklisted_devices_ = getBlackListDevices();
 
     for (const auto& dev : avail_devices_) {
         if (std::ranges::none_of(blacklisted_devices_, [&dev](const auto& blackdev) {
-                return blackdev == dev.device_instance_path || blackdev == dev.base_container_device_instance_path;
+            return blackdev == dev.device_instance_path || blackdev == dev.base_container_device_instance_path;
             })) {
             // Valve emulated gamepad PID/VID; mirrord by ViGEm
             if (!(dev.vendor_id == 0x28de && (dev.product_id == 0x11FF || dev.product_id == 0x028E))) {
@@ -160,7 +162,7 @@ void HidHide::hideDevices(const std::filesystem::path& steam_path)
         if (Settings::common.extendedLogging) {
             std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
                 spdlog::trace(L"Blacklisted device: {}", dev);
-            });
+                });
         }
     }
     closeCtrlDevice();
@@ -199,80 +201,81 @@ void HidHide::enableOverlayElement()
 {
     Overlay::AddOverlayElem([this](bool window_has_focus, ImGuiID dockspace_id) {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("Hidden Devices")) {
-            if (device_hiding_setup_) {
-                if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
-                    // UnPatchValveHooks();
-                    openCtrlDevice();
-                    bool hidehide_state_store = hidhide_active_;
-                    if (Settings::common.extendedLogging) {
-                        spdlog::debug("Refreshing HID devices");
-                    }
-                    if (hidhide_active_) {
-                        setActive(false);
-                    }
-                    avail_devices_ = GetHidDeviceList();
-                    if (Settings::common.extendedLogging) {
-                        std::ranges::for_each(avail_devices_, [](const auto& dev) {
-                            spdlog::trace(L"AvailDevice device: {}", dev.name);
+    if (ImGui::Begin("Hidden Devices")) {
+        if (device_hiding_setup_) {
+            if (window_has_focus && (overlay_elem_clock_.getElapsedTime().asSeconds() > OVERLAY_ELEM_REFRESH_INTERVAL_S_)) {
+                // UnPatchValveHooks();
+                openCtrlDevice();
+                bool hidehide_state_store = hidhide_active_;
+                if (Settings::common.extendedLogging) {
+                    spdlog::debug("Refreshing HID devices");
+                }
+                if (hidhide_active_) {
+                    setActive(false);
+                }
+                avail_devices_ = GetHidDeviceList();
+                if (Settings::common.extendedLogging) {
+                    std::ranges::for_each(avail_devices_, [](const auto& dev) {
+                        spdlog::trace(L"AvailDevice device: {}", dev.name);
                         });
-                    }
-                    blacklisted_devices_ = getBlackListDevices();
-                    if (hidehide_state_store && Settings::devices.hideDevices) {
-                        setActive(true);
-                    }
-                    closeCtrlDevice();
-                    overlay_elem_clock_.restart();
                 }
-                ImGui::BeginChild("Inner", {0.f, ImGui::GetItemRectSize().y - 64}, true);
-                std::ranges::for_each(avail_devices_, [this](const auto& device) {
-                    std::string label = (std::string(device.name.begin(), std::ranges::find(device.name, L'\0')) + "##" + std::string(device.device_instance_path.begin(), device.device_instance_path.end()));
-                    const auto findDeviceFn = [&device](const auto& blackdev) {
-                        return device.device_instance_path == blackdev || device.base_container_device_instance_path == blackdev;
-                    };
-                    bool hidden = std::ranges::find_if(blacklisted_devices_, findDeviceFn) != blacklisted_devices_.end();
-                    if (ImGui::Checkbox(label.data(), &hidden)) {
-                        openCtrlDevice();
-                        if (hidden) {
-                            if (std::ranges::none_of(blacklisted_devices_, findDeviceFn)) {
-                                if (!device.device_instance_path.empty()) {
-                                    blacklisted_devices_.push_back(device.device_instance_path);
-                                }
-                                if (!device.device_instance_path.empty()) {
-                                    blacklisted_devices_.push_back(device.base_container_device_instance_path);
-                                }
-                            }
-                        }
-                        else {
-                            blacklisted_devices_.erase(std::ranges::remove_if(blacklisted_devices_, findDeviceFn).begin(),
-                                                       blacklisted_devices_.end());
-                        }
-                        setBlacklistDevices(blacklisted_devices_);
-                        if (Settings::common.extendedLogging) {
-                            std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
-                                spdlog::trace(L"Blacklisted device: {}", dev);
-                            });
-                        }
-                        closeCtrlDevice();
-                    }
-                });
-                ImGui::EndChild();   
-            } else {
-                ImGui::Text("Enable \"Hide Devices\" to see a list of gaming-devices");
+                blacklisted_devices_ = getBlackListDevices();
+                if (hidehide_state_store && Settings::devices.hideDevices) {
+                    setActive(true);
+                }
+                closeCtrlDevice();
+                overlay_elem_clock_.restart();
             }
-            if (ImGui::Checkbox("Hide devices", &Settings::devices.hideDevices)) {
-                if (!device_hiding_setup_) {
-                    hideDevices(steam_path_);
+            ImGui::BeginChild("Inner", { 0.f, ImGui::GetItemRectSize().y - 64 }, true);
+            std::ranges::for_each(avail_devices_, [this](const auto& device) {
+                std::string label = (std::string(device.name.begin(), std::ranges::find(device.name, L'\0')) + "##" + std::string(device.device_instance_path.begin(), device.device_instance_path.end()));
+            const auto findDeviceFn = [&device](const auto& blackdev) {
+                return device.device_instance_path == blackdev || device.base_container_device_instance_path == blackdev;
+            };
+            bool hidden = std::ranges::find_if(blacklisted_devices_, findDeviceFn) != blacklisted_devices_.end();
+            if (ImGui::Checkbox(label.data(), &hidden)) {
+                openCtrlDevice();
+                if (hidden) {
+                    if (std::ranges::none_of(blacklisted_devices_, findDeviceFn)) {
+                        if (!device.device_instance_path.empty()) {
+                            blacklisted_devices_.push_back(device.device_instance_path);
+                        }
+                        if (!device.device_instance_path.empty()) {
+                            blacklisted_devices_.push_back(device.base_container_device_instance_path);
+                        }
+                    }
                 }
-                if (hidhide_active_ != Settings::devices.hideDevices) {
-                    openCtrlDevice();
-                    setActive(Settings::devices.hideDevices);
-                    closeCtrlDevice();
+                else {
+                    blacklisted_devices_.erase(std::ranges::remove_if(blacklisted_devices_, findDeviceFn).begin(),
+                        blacklisted_devices_.end());
                 }
+                setBlacklistDevices(blacklisted_devices_);
+                if (Settings::common.extendedLogging) {
+                    std::ranges::for_each(blacklisted_devices_, [](const auto& dev) {
+                        spdlog::trace(L"Blacklisted device: {}", dev);
+                        });
+                }
+                closeCtrlDevice();
+            }
+                });
+            ImGui::EndChild();
+        }
+        else {
+            ImGui::Text("Enable \"Hide Devices\" to see a list of gaming-devices");
+        }
+        if (ImGui::Checkbox("Hide devices", &Settings::devices.hideDevices)) {
+            if (!device_hiding_setup_) {
+                hideDevices(steam_path_);
+            }
+            if (hidhide_active_ != Settings::devices.hideDevices) {
+                openCtrlDevice();
+                setActive(Settings::devices.hideDevices);
+                closeCtrlDevice();
             }
         }
-        ImGui::End();
-    });
+    }
+    ImGui::End();
+        });
 }
 #endif
 
@@ -280,7 +283,7 @@ std::wstring HidHide::DosDeviceForVolume(const std::wstring& volume)
 {
     std::vector<WCHAR> buffer(UNICODE_STRING_MAX_CHARS);
     QueryDosDeviceW(volume.c_str(), buffer.data(), static_cast<DWORD>(buffer.size()));
-    return {buffer.data()};
+    return { buffer.data() };
 }
 
 std::vector<std::wstring> HidHide::getAppWhiteList() const
@@ -291,7 +294,7 @@ std::vector<std::wstring> HidHide::getAppWhiteList() const
     }
     std::vector<WCHAR> buffer(bytes_needed);
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_WHITELIST), nullptr, 0, buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_WHITELIST), nullptr, 0, buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), &bytes_needed, nullptr)) {
         spdlog::error("Couldn't retrieve HidHide Whitelist");
         return std::vector<std::wstring>{};
     }
@@ -306,7 +309,7 @@ std::vector<std::wstring> HidHide::getBlackListDevices() const
     }
     std::vector<WCHAR> buffer(bytes_needed);
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_BLACKLIST), nullptr, 0, buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_BLACKLIST), nullptr, 0, buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), &bytes_needed, nullptr)) {
         spdlog::error("Couldn't retrieve HidHide Blacklist");
         return std::vector<std::wstring>{};
     }
@@ -318,7 +321,7 @@ bool HidHide::getActive()
     DWORD bytes_needed;
     BOOLEAN res;
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_ACTIVE), nullptr, 0, &res, sizeof(BOOLEAN), &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::GET_ACTIVE), nullptr, 0, &res, sizeof(BOOLEAN), &bytes_needed, nullptr)) {
         spdlog::error("Couldn't retrieve HidHide State");
         return false;
     }
@@ -331,7 +334,7 @@ void HidHide::setAppWhiteList(const std::vector<std::wstring>& whitelist) const
     DWORD bytes_needed;
     auto buffer = StringListToMultiString(whitelist);
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_WHITELIST), buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), nullptr, 0, &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_WHITELIST), buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), nullptr, 0, &bytes_needed, nullptr)) {
         spdlog::error("Couldn't set HidHide WhiteList");
     }
 }
@@ -341,7 +344,7 @@ void HidHide::setBlacklistDevices(const std::vector<std::wstring>& blacklist) co
     DWORD bytes_needed;
     auto buffer = StringListToMultiString(blacklist);
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_BLACKLIST), buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), nullptr, 0, &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_BLACKLIST), buffer.data(), static_cast<DWORD>(buffer.size() * sizeof(WCHAR)), nullptr, 0, &bytes_needed, nullptr)) {
         spdlog::error("Couldn't set HidHide BlackList");
     }
 }
@@ -350,7 +353,7 @@ void HidHide::setActive(bool active)
 {
     DWORD bytes_needed;
     if (!DeviceIoControl(
-            hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_ACTIVE), &active, sizeof(BOOLEAN), nullptr, 0, &bytes_needed, nullptr)) {
+        hidhide_handle, static_cast<DWORD>(IOCTL_TYPE::SET_ACTIVE), &active, sizeof(BOOLEAN), nullptr, 0, &bytes_needed, nullptr)) {
         spdlog::error("Couldn't set HidHide State");
         return;
     }
@@ -394,9 +397,9 @@ std::vector<WCHAR> HidHide::StringListToMultiString(const std::vector<std::wstri
 {
     auto res = std::accumulate(stringlist.begin(), stringlist.end(), std::vector<WCHAR>{}, [](auto acc, const auto& curr) {
         acc.insert(acc.end(), curr.begin(), curr.end());
-        acc.push_back(L'\0');
-        return acc;
-    });
+    acc.push_back(L'\0');
+    return acc;
+        });
     res.push_back(L'\0');
     return res;
 }
@@ -426,7 +429,7 @@ std::vector<HidHide::SmallHidInfo> HidHide::GetHidDeviceList()
         std::ranges::remove_if(
             device_instance_paths,
             [](const auto& dev) { return !DevicePresent(dev); })
-            .begin(),
+        .begin(),
         device_instance_paths.end());
 
     GUID hid_device_interface_guid{};
@@ -443,7 +446,7 @@ std::vector<HidHide::SmallHidInfo> HidHide::GetHidDeviceList()
         std::ranges::remove_if(
             res,
             [](const auto& dev) { return !dev.gaming_device; })
-            .begin(),
+        .begin(),
         res.end());
 
     return res;
@@ -504,8 +507,8 @@ HidHide::SmallHidInfo HidHide::GetDeviceInfo(const DeviceInstancePath& instance_
     std::wstring buffer;
     buffer.resize(127 * sizeof WCHAR);
     res.name = (HidD_GetProductString(device_object.get(), buffer.data(), static_cast<ULONG>(sizeof(WCHAR) * buffer.size()))
-                    ? buffer
-                    : L"");
+        ? buffer
+        : L"");
     for (size_t i = 0; i < res.name.size(); ++i) {
         if (res.name[i] == L'\0') {
             res.name.resize(i + 1);
@@ -566,13 +569,13 @@ std::filesystem::path HidHide::SymbolicLink(GUID const& interface_guid, DeviceIn
     std::vector<BYTE> buffer(needed);
 
     // Acquire the detailed data containing the symbolic link (aka. device path)
-    auto& [cbSize, DevicePath]{*reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(buffer.data())};
+    auto& [cbSize, DevicePath] {*reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(buffer.data())};
     cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
     if (!SetupDiGetDeviceInterfaceDetailW(handle.get(), &device_interface_data, reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA_W>(buffer.data()), static_cast<DWORD>(buffer.size()), nullptr, nullptr)) {
         spdlog::error(L"Couldn't get Device interface details; device: {}", instance_path);
         return {};
     }
-    return {std::wstring(DevicePath)};
+    return { std::wstring(DevicePath) };
 }
 
 HidHide::DeviceInstancePath HidHide::BaseContainerDeviceInstancePath(DeviceInstancePath const& device_instance_path)
@@ -580,7 +583,7 @@ HidHide::DeviceInstancePath HidHide::BaseContainerDeviceInstancePath(DeviceInsta
     const GUID base_container_id(BaseContainerId(device_instance_path));
     if ((GUID_NULL == base_container_id) || (GUID_CONTAINER_ID_SYSTEM == base_container_id))
         return (std::wstring{});
-    for (auto it{device_instance_path};;) {
+    for (auto it{ device_instance_path };;) {
         if (const auto device_instance_path_parent = DeviceInstancePathParent(it); (base_container_id == BaseContainerId(device_instance_path_parent)))
             it = device_instance_path_parent;
         else
@@ -597,7 +600,7 @@ GUID HidHide::BaseContainerId(DeviceInstancePath const& device_instance_path)
     DEVINST devInst{};
     DEVPROPTYPE devPropType{};
     GUID buffer{};
-    ULONG needed{sizeof(buffer)};
+    ULONG needed{ sizeof(buffer) };
     if (const auto result = CM_Locate_DevNodeW(&devInst, const_cast<DEVINSTID_W>(device_instance_path.c_str()), CM_LOCATE_DEVNODE_PHANTOM); (CR_SUCCESS != result)) {
         spdlog::error(L"Couldn't locate device DevNode; Device {}; Code: {}", device_instance_path, result);
         return {};
@@ -624,7 +627,7 @@ HidHide::DeviceInstancePath HidHide::DeviceInstancePathParent(DeviceInstancePath
     DEVINST dev_inst_parent{};
     std::wstring res;
     res.resize(UNICODE_STRING_MAX_CHARS);
-    ULONG needed{static_cast<ULONG>(res.size())};
+    ULONG needed{ static_cast<ULONG>(res.size()) };
     if (const auto result = CM_Locate_DevNodeW(&dev_inst, const_cast<DEVINSTID_W>(device_instance_path.c_str()), CM_LOCATE_DEVNODE_PHANTOM); (CR_SUCCESS != result)) {
         spdlog::error(L"Couldn't locate device DevNode; Device {}; Code: {}", device_instance_path, result);
         return {};

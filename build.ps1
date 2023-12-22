@@ -5,6 +5,10 @@ Remove-Item -Recurse -Force "x64\Release"
 $env:_CL_="/MD"
 msbuild.exe GlosSI.sln /t:Build /p:Configuration=Release /p:Platform=x64
 
+cd ./SteamTweaks
+npm i
+npm run build
+cd ..
 
 cd ./x64/Release/
 
@@ -26,6 +30,8 @@ Copy-Item "..\..\vc_redist.x64.exe" -Destination "."
 Copy-Item "..\..\LICENSE" -Destination "./LICENSE"
 Copy-Item "..\..\QT_License" -Destination "./QT_License"
 Copy-Item "..\..\THIRD_PARTY_LICENSES.txt" -Destination "./THIRD_PARTY_LICENSES.txt"
+Copy-Item "..\..\SteamTweaks\dist" -Destination "./SteamTweaks" -Recurse
+
 
 #7z a GlosSI-snapshot.zip *
 

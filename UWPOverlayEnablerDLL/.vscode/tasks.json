@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Build UWPOverlayEnablerDLL (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:UWPOverlayEnablerDLL",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      },
+      {
+        "type": "shell",
+        "label": "Re-Build UWPOverlayEnablerDLL (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:UWPOverlayEnablerDLL:Rebuild",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      }
+    ]
+  }

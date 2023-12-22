@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "Build GlosSIConfig (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:GlosSIConfig",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      },
+            {
+        "type": "shell",
+        "label": "Re-Build GlosSIConfig (Debug)",
+        "command": "msbuild.exe",
+        "args": [
+            "GlosSI.sln",
+            "/target:GlosSIConfig:Rebuild",
+            "/p:Configuration=Debug",
+            "/p:Platform=x64"
+        ],
+        "options": {
+          "cwd": "${workspaceFolder}/..",
+
+        },
+        "problemMatcher": ["$msCompile"],
+        "group": {
+          "kind": "build",
+        },
+      }
+    ]
+  }

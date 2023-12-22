@@ -16,58 +16,115 @@ limitations under the License.
 #include "HttpServer.h"
 
 #include <spdlog/spdlog.h>
-#include <nlohmann/json.hpp>
+#include <utility>
 
-#include "AppLauncher.h"
-#include "Settings.h"
+#include <algorithm>
 
-HttpServer::HttpServer(AppLauncher& app_launcher, std::function<void()> close) : app_launcher_(app_launcher), close_(close)
+HttpServer::HttpServer(std::function<void()> close) : close_(std::move(close))
 {
+}
+
+std::string HttpServer::ToString(Method m)
+{
+    switch (m) {
+    case POST:
+        return "POST";
+    case PATCH:
+        return "PATCH";
+    case PUT:
+        return "PUT";
+    default:
+        return "GET";
+    }
+}
+
+void HttpServer::AddEndpoint(const Endpoint&& e)
+{
+    endpoints_.push_back(e);
 }
 
 void HttpServer::run()
 {
-    server_.Get("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
-        const nlohmann::json j = app_launcher_.launchedPids();
-        res.set_content(j.dump(), "text/json");
+    auto setCorsHeader = [](httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+    };
+
+    server_.Get("/", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
+
+        auto content_json = nlohmann::json{
+            {"endpoints", nlohmann::json::array()}};
+
+        for (const auto& e : endpoints_) {
+            content_json["endpoints"].push_back(
+                nlohmann::json{
+                    {"path", e.path},
+                    {"method", ToString(e.method)},
+                    {"response", e.response_hint},
+                    {"payload", e.payload_hint},
+                });
+        }
+
+        content_json["endpoints"].push_back(
+            nlohmann::json{
+                {"path", "/quit"},
+                {"method", "POST"}
+            });
+
+        res.set_content(content_json.dump(4),
+                        "text/json");
     });
 
-    server_.Post("/launched-pids", [this](const httplib::Request& req, httplib::Response& res) {
-        try {
-            const nlohmann::json postbody = nlohmann::json::parse(req.body);
-            app_launcher_.addPids(postbody.get<std::vector<DWORD>>());   
-        } catch (std::exception& e) {
-            res.status = 401;
-            res.set_content(nlohmann::json{
-                                {"code", 401},
-                                {"name", "Bad Request"},
-                                {"message", e.what()},
-                            }
-                                .dump(),
-                            "text/json");
-            return;
-        }
-        catch (...) {
-            res.status = 500;
-            res.set_content(nlohmann::json{
-                                {"code", 500},
-                                {"name", "Internal Server Error"},
-                                {"message", "Unknown Error"},
-                            }
-                                .dump(),
-                            "text/json");
-            return;
-        }
-        const nlohmann::json j = app_launcher_.launchedPids();
-        res.set_content(j.dump(), "text/json");
-    });
+    for (const auto& e : endpoints_) {
+        const auto fn = ([this, &e]() -> httplib::Server& (httplib::Server::*)(const std::string&, httplib::Server::Handler) {
+            switch (e.method) {
+            case POST:
+                return &httplib::Server::Post;
+            case PUT:
+                return &httplib::Server::Put;
+            case PATCH:
+                return &httplib::Server::Patch;
+            default:
+                return &httplib::Server::Get;
+            }
+        })();
 
-    server_.Post("/quit", [this](const httplib::Request& req, httplib::Response& res) {
+        (server_.*fn)(e.path, [this, &e, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+            setCorsHeader(res);
+            res.status = 0;
+            res.content_length_ = 0;
+            try {
+                e.handler(req, res);
+            }
+            catch (std::exception& err) {
+                spdlog::error("Exception in http handler: {}", err.what());
+                res.status = res.status == 0 ? 500 : res.status;
+                if (res.content_length_ == 0) {
+                    res.set_content(nlohmann::json{
+                                        {"code", res.status},
+                                        {"name", "HandlerError"},
+                                        {"message", err.what()},
+                                    }
+                                        .dump(),
+                                    "text/json");
+                }
+            }
+            catch (...) {
+                res.status = 500;
+                res.set_content(nlohmann::json{
+                                    {"code", res.status},
+                                    {"name", "Internal Server Error"},
+                                    {"message", "Unknown Error"},
+                                }
+                                    .dump(),
+                                "text/json");
+            }
+        });
+    }
+
+    server_.Post("/quit", [this, &setCorsHeader](const httplib::Request& req, httplib::Response& res) {
+        setCorsHeader(res);
         close_();
-    });
-
-    server_.Get("/settings", [this](const httplib::Request& req, httplib::Response& res) {
-        res.set_content(Settings::toJson().dump(), "text/json");
     });
 
     server_thread_ = std::thread([this]() {

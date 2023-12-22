@@ -39,6 +39,7 @@ class TargetWindow {
 
     void setFpsLimit(unsigned int fps_limit);
     void setClickThrough(bool click_through);
+    void setTransparent(bool transparent) const;
     void update();
     void close();
 
@@ -79,6 +80,7 @@ class TargetWindow {
 
     std::shared_ptr<Overlay> overlay_;
 
+    static unsigned int calcAutoRefreshRate(unsigned int rate);
     void createWindow();
 
     bool toggle_window_mode_after_frame_ = false;

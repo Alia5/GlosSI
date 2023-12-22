@@ -5,7 +5,6 @@
 
 #include "DllInjector.h"
 #include "Overlay.h"
-#include "util.h"
 
 namespace UWPOverlayEnabler {
 

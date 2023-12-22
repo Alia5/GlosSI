@@ -32,30 +32,18 @@ limitations under the License.
 #ifdef _WIN32
 #include "UWPFetch.h"
 #include <Windows.h>
-#include <shlobj.h>
 #endif
 
 #include "ExeImageProvider.h"
 #include "../version.hpp"
 
-#include "../../GlosSITarget/UnhookUtil.h"
+#include "../common/UnhookUtil.h"
 
+#include "../common/util.h"
 
 UIModel::UIModel() : QObject(nullptr)
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-
-    path /= "Roaming";
-    path /= "GlosSI";
-    if (!std::filesystem::exists(path))
-        std::filesystem::create_directories(path);
+    auto path = util::path::getDataDirPath();
 
     qDebug() << "Version: " << getVersionString();
 
@@ -77,6 +65,10 @@ UIModel::UIModel() : QObject(nullptr)
     font.setPointSize(11);
     font.setFamily("Roboto");
     QGuiApplication::setFont(font);
+
+    std::ofstream{getSteamPath() / ".cef-enable-remote-debugging"};
+
+
 }
 
 void UIModel::readTargetConfigs()
@@ -204,6 +196,21 @@ uint32_t UIModel::getAppId(QVariant shortcut)
         }
     }
     return 0;
+}
+
+Q_INVOKABLE QString UIModel::getGameId(QVariant shortcut) {
+
+	/*
+    * enum SteamLaunchableType
+        {
+            App = 0,
+            GameMod = 1,
+            Shortcut = 2,
+            P2P = 3
+        }
+    */
+    uint64_t gameId = (((uint64_t)getAppId(shortcut) << 32) | ((uint32_t)2 << 24) | 0);
+    return QVariant(gameId).toString();
 }
 
 bool UIModel::addToSteam(QVariant shortcut, const QString& shortcutspath, bool from_cmd)
@@ -380,17 +387,8 @@ void UIModel::updateCheck()
 
 QVariantMap UIModel::getDefaultConf() const
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
+    auto path = util::path::getDataDirPath();
 
-    path /= "Roaming";
-    path /= "GlosSI";
     path /= "default.json";
     
     QJsonObject defaults = {
@@ -404,7 +402,15 @@ QVariantMap UIModel::getDefaultConf() const
          QJsonValue::fromVariant(QString::fromStdWString(getSteamPath(false).wstring()))},
         {"steamUserId",
          QJsonValue::fromVariant(QString::fromStdWString(getSteamUserId(false)))},
-        {"controller", QJsonObject{{"maxControllers", 1}, {"emulateDS4", false}, {"allowDesktopConfig", false}}},
+        {"globalModeGameId", ""},
+        {"globalModeUseGamepadUI", true},
+        {"minimizeSteamGamepadUI", true},
+        {"controller",
+            QJsonObject{{"maxControllers", -1},
+                {"emulateDS4", false},
+                {"allowDesktopConfig", false},
+                {"updateRate", 144}
+            }},
         {"devices",
          QJsonObject{
              {"hideDevices", true},
@@ -424,11 +430,12 @@ QVariantMap UIModel::getDefaultConf() const
         {"window",
          QJsonObject{
              {"disableOverlay", false},
-             {"hideAltTab", false},
+             {"hideAltTab", true},
              {"maxFps", QJsonValue::Null},
              {"scale", QJsonValue::Null},
              {"windowMode", false},
              {"disableGlosSIOverlay", false},
+             {"opaqueSteamOverlay", false}
          }},
     };
 
@@ -464,16 +471,8 @@ QVariantMap UIModel::getDefaultConf() const
 
 void UIModel::saveDefaultConf(QVariantMap conf) const
 {
-    wchar_t* localAppDataFolder;
-    std::filesystem::path path;
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, NULL, &localAppDataFolder) != S_OK) {
-        path = std::filesystem::temp_directory_path().parent_path().parent_path().parent_path();
-    }
-    else {
-        path = std::filesystem::path(localAppDataFolder).parent_path();
-    }
-    path /= "Roaming";
-    path /= "GlosSI";
+    auto path = util::path::getDataDirPath();
+
     path /= "default.json";
 
     QFile file(path);
@@ -484,6 +483,38 @@ void UIModel::saveDefaultConf(QVariantMap conf) const
 
     file.write(QString(QJsonDocument::fromVariant(conf).toJson(QJsonDocument::Indented)).toStdString().data());
     file.close();
+}
+
+Q_INVOKABLE QVariant UIModel::globalModeShortcutConf() {
+    for (auto& target : targets_) {
+        const auto map = target.toMap();
+        if (map["name"] == "GlosSI GlobalMode/Desktop") {
+            return target;
+        }
+    }
+    return QVariant();
+}
+
+Q_INVOKABLE bool UIModel::globalModeShortcutExists() {
+    const auto map = globalModeShortcutConf().toMap();
+    if (map["name"] == "GlosSI GlobalMode/Desktop") {
+        return true;
+    }
+    return false;
+}
+
+Q_INVOKABLE uint32_t UIModel::globalModeShortcutAppId() {
+    if (!globalModeShortcutExists()) {
+        return 0;
+    }
+    return getAppId(globalModeShortcutConf());
+}
+
+Q_INVOKABLE QString UIModel::globalModeShortcutGameId() {
+    if (!globalModeShortcutExists()) {
+        return "";
+    }
+    return getGameId(globalModeShortcutConf());
 }
 
 #ifdef _WIN32

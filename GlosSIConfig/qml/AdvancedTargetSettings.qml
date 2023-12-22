@@ -261,8 +261,14 @@ CollapsiblePane {
                             width: 128
                             editable: true
                             value: shortcutInfo.controller.maxControllers
-                            from: 0
+                            from: -1
                             to: 4
+                            textFromValue: function(value) {
+                                if (value == -1) {
+                                    return qsTr("auto");
+                                }
+                                return Number(value);
+                            }
                             onValueChanged: shortcutInfo.controller.maxControllers = value
                         }
                         RoundButton {
@@ -271,7 +277,12 @@ CollapsiblePane {
                                 helpInfoDialog.text = 
                                     qsTr("GlosSI will only provide [NUMBER] of controllers")
                                     + "\n"
-                                    + qsTr("Required to set to actually connected controller count when using \"real device IDs\" ")
+                                    + qsTr("-1 ^= auto-detect")
+                                    + "\n"
+                                    + qsTr("auto detection only works upon launch")
+                                    + "\n"
+                                    + "\n"
+                                    + qsTr("Required to manuelly set to actually connected controller count when using \"real device IDs\" ")
                                 helpInfoDialog.open()
                             }
                             width: 48
