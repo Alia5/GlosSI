@@ -56,11 +56,13 @@ int SteamTarget::run()
     auto closeBPM = false;
     auto closeBPMTimer = sf::Clock{};
     if (!SteamOverlayDetector::IsSteamInjected()) {
-        if (Settings::common.allowStandAlone) {
+        if (Settings::common.allowGlobalMode) {
             spdlog::warn("GlosSI not launched via Steam.\nEnabling EXPERIMENTAL global controller and overlay...");
-            if (Settings::common.standaloneModeGameId == L"") {
+            if (Settings::common.globalModeGameId == L"") {
                 spdlog::error("No game id set for standalone mode. Controller will use desktop-config!");
             }
+        }
+    }
     auto steam_tweaks = CEFInject::SteamTweaks();
     steam_tweaks.setAutoInject(true);
 

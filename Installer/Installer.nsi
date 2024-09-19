@@ -3,7 +3,7 @@
 !define APP_NAME "GlosSI"
 !define COMP_NAME "Peter Repukat - Flatspotsoftware"
 !define WEB_SITE "https://glossi.flatspot.pictures/"
-!define VERSION "0.1.2.0-68-g0f02eca"
+!define VERSION "0.1.2.0-72-gaebb0a4"
 !define COPYRIGHT "Peter Repukat - FlatspotSoftware  © 2017-2022"
 !define DESCRIPTION "SteamInput compatibility tool"
 !define INSTALLER_NAME "GlosSI-Installer.exe"
@@ -190,6 +190,7 @@ RmDir "$SMPROGRAMS\GlosSI"
 DeleteRegKey ${REG_ROOT} "${REG_APP_PATH}"
 DeleteRegKey ${REG_ROOT} "${UNINSTALL_PATH}"
 SectionEnd
+
 
 
 
