@@ -5,6 +5,15 @@
   GlosSI&nbsp;-&nbsp;Global&nbsp;(systemwide)&nbsp;Steam&nbsp;Input</h1>
 </div>
 
+---
+
+# 🧟 THIS PROJECT HAS BEEN SUPERSEEDED 🧟
+### Checkout [SISR✂️](https://github.com/Alia5/SISR) for a glimpse of what might or might not be coming.
+
+
+---
+
+
 GlosSI formerly knows as GloSC (Global Steam Controller), is a tool that allows one to use Steam-Input controller rebinding at a system-level alongside a system wide (borderless window) Steam overlay  
 
 The primary use case of GlosSI is to use SteamInput (required for SteamController / SteamDeck-buttons) with incompatible Games such as Windows-Store titles or Emulators.  
